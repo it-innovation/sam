@@ -25,16 +25,33 @@ may.create(factory, taskT).
 
 /* Behaviour */
 
-maycall("Unknown", ?X, ?Y) :- hasVar("Unknown", ?X), hasVar("Unknown", ?Y).
-parameter("Unknown", "ref").
+maycall("Unknown", ?X, ?Y, ?Z) :- hasVar("Unknown", ?X), hasVar("Unknown", ?Y), hasVar("Unknown", ?Z).
+hasParameter("Unknown", "ref").
+mayreturn("Unknown", ?X) :- hasVar("Unknown", ?X).
+
+maycreate("Factory", "Task", "task").
+mayreturn("Factory", "task").
 
 
 /* System */
 
-didcall(?Caller, ?TargetValue, ?ArgValue) :- isA(?Caller, ?Type), maycall(?Type, ?TargetVar, ?ArgVar), value(?Caller, ?TargetVar, ?TargetValue), value(?Caller, ?ArgVar, ?ArgValue).
-value(?Object, ?ParamVar, ?ArgValue) :- isA(?Object, ?Type), parameter(?Type, ?ParamVar), didcall(?Caller, ?Object, ?ArgValue).
+/* Caller did a call if caller might do "def _ := targetVar(argVar)" */
+didcall(?Caller, ?TargetValue, ?ArgValue) :- isA(?Caller, ?Type), maycall(?Type, ?TargetVar, ?ArgVar, ?ReturnVar), value(?Caller, ?TargetVar, ?TargetValue), value(?Caller, ?ArgVar, ?ArgValue).
+
+/* If Caller did call target and may accept a return value and target may return a value then Caller's var may now be the returned value. */
+value(?Caller, ?ReturnVar, ?ReturnValue) :- didcall(?Caller, ?TargetValue, ?ArgValue), isA(?Caller, ?Type), maycall(?Type, ?TargetVar, ?ArgVar, ?ReturnVar), isA(?TargetValue, ?TargetType), mayreturn(?TargetType, ?TargetReturnVar), value(?TargetValue, ?TargetReturnVar, ?ReturnValue).
+
+/* Target's parameter variable may contain ArgValue if someone called it with that value. */
+value(?Target, ?ParamVar, ?ArgValue) :- isA(?Target, ?Type), hasParameter(?Type, ?ParamVar), didcall(?Caller, ?Target, ?ArgValue).
+
+/* Every object has a 'this' variable with a reference to itself. */
 hasVar(?X, "this") :- isA(?Object, ?X).
 value(?X, "this", ?X) :- isA(?X, ?Type), hasVar(?Type, "this").
+
+/* All parameters are variables */
+hasVar(?X, ?Var) :- hasParameter(?X, ?Var).
+
+value(?Object, ?Var, ?NewChild) :- isA(?Object, ?Type), maycreate(?Type, ?ChildType, ?Var), aggregatedChild(?Object, ?ChildType, ?NewChild).
 
 
 /*
@@ -43,17 +60,15 @@ did.invoke(_, target, _) => live(target).
 did.invoke(caller, target, resultVar), aggregate(caller, new) => maybe(resultVar, new).
 
 may.invoke(caller, target, arg), aggregate(caller, target, invocation) => did.invoke(caller, invocation, arg).
+*/
 
 
-% Aggregation:
+/* Aggregation */
 
-did.invoke(a, factory) => did.invoke(a, factory_a).
-did.invoke(X, factory), notA(X) => did.invoke(a, factory_other).
-
-did.invoke(a, factory) => aggregate(taskT, newA).
-did.invoke(X, factory), notA(X) => aggregate(taskT, newOther).
+aggregatedChild("factory", "Task", "newTasks").
 
 
+/*
 Config:
 
 maybe(factory, factory).
@@ -70,6 +85,13 @@ maybe(makeUnknown.refs, factory).
 maybe.invoked(factory, factory).
 */
 
+
+/* An object is willing to create a new object, but we didn't say how to aggregate it. */
+wantCreate(?Object, ?ChildType) :- isA(?Object, ?Type), maycreate(?Type, ?ChildType, ?Var).
+error(?Object, ?ChildType) :- wantCreate(?Object, ?ChildType), !aggregatedChild(?Object, ?ChildType, ?NewChild).
+
+
 ?- isA(?X, ?Y).
 ?- didcall(?Caller, ?Target, ?Arg).
 ?- value(?Object, ?Name, ?Value).
+?- error(?Object, ?ChildType).
