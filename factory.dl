@@ -1,0 +1,75 @@
+/* vim: set syntax=prolog : */
+
+/*
+Variables: v_factory, v_a, v_b, v_makeUnknown, v_makeUnknown.refs
+Objects: factory, makeUnknown, newA, newOther
+Types: makeUnknownT, factoryT, taskT
+Invocations: factory_a, factory_other
+*/
+
+
+/* Config */
+
+isA("alice", "Unknown").
+isA("factory", "Factory").
+value("alice", "ref", "factory").
+
+hasVar("Unknown", "ref").
+
+/*
+may.invoke(top, v_makeUnknown, v_factory, v_a)
+may.invoke(top, v_makeUnknown, v_factory, v_b).
+maybe.invoked(_, v_makeUnknown, argValue) => maybe(v_makeUnknown.refs, argValue).
+may.create(factory, taskT).
+*/
+
+/* Behaviour */
+
+maycall("Unknown", ?X, ?Y) :- hasVar("Unknown", ?X), hasVar("Unknown", ?Y).
+parameter("Unknown", "ref").
+
+
+/* System */
+
+didcall(?Caller, ?TargetValue, ?ArgValue) :- isA(?Caller, ?Type), maycall(?Type, ?TargetVar, ?ArgVar), value(?Caller, ?TargetVar, ?TargetValue), value(?Caller, ?ArgVar, ?ArgValue).
+value(?Object, ?ParamVar, ?ArgValue) :- isA(?Object, ?Type), parameter(?Type, ?ParamVar), didcall(?Caller, ?Object, ?ArgValue).
+hasVar(?X, "this") :- isA(?Object, ?X).
+value(?X, "this", ?X) :- isA(?X, ?Type), hasVar(?Type, "this").
+
+
+/*
+live(caller), may.invoke(caller, targetVar, argVar), maybe(targetVar, targetValue), maybe(argVar, argValue) => did.invoke(caller, targetValue, argValue)
+did.invoke(_, target, _) => live(target).
+did.invoke(caller, target, resultVar), aggregate(caller, new) => maybe(resultVar, new).
+
+may.invoke(caller, target, arg), aggregate(caller, target, invocation) => did.invoke(caller, invocation, arg).
+
+
+% Aggregation:
+
+did.invoke(a, factory) => did.invoke(a, factory_a).
+did.invoke(X, factory), notA(X) => did.invoke(a, factory_other).
+
+did.invoke(a, factory) => aggregate(taskT, newA).
+did.invoke(X, factory), notA(X) => aggregate(taskT, newOther).
+
+
+Config:
+
+maybe(factory, factory).
+maybe(makeUnknown, makeUnknown).
+live(top).
+
+
+Run:
+
+maybe.invoked(makeUnknown, factory).
+live(makeUnknown).
+may.invoke(makeUnknown, makeUnknown.refs, makeUnknown.refs).
+maybe(makeUnknown.refs, factory).
+maybe.invoked(factory, factory).
+*/
+
+?- isA(?X, ?Y).
+?- didcall(?Caller, ?Target, ?Arg).
+?- value(?Object, ?Name, ?Value).
