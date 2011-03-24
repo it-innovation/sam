@@ -66,6 +66,7 @@ may.invoke(caller, target, arg), aggregate(caller, target, invocation) => did.in
 /* Aggregation */
 
 aggregatedChild("factory", "Task", "newTasks").
+isA("newTasks", "Task").
 
 
 /*
@@ -90,6 +91,8 @@ maybe.invoked(factory, factory).
 wantCreate(?Object, ?ChildType) :- isA(?Object, ?Type), maycreate(?Type, ?ChildType, ?Var).
 error(?Object, ?ChildType) :- wantCreate(?Object, ?ChildType), !aggregatedChild(?Object, ?ChildType, ?NewChild).
 
+error('Not an object (no type!)', ?Object) :- access(?X, ?Object), !isA(?Object, ?Type).
+
 
 /* Graphing */
 
@@ -99,5 +102,4 @@ access(?X, ?Y) :- value(?X, ?Var, ?Y).
 ?- isA(?X, ?Y).
 ?- didcall(?Caller, ?Target, ?Arg).
 ?- value(?Object, ?Name, ?Value).
-?- error(?Object, ?ChildType).
 ?- access(?X, ?Y).

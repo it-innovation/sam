@@ -87,6 +87,16 @@ public class Eval {
 		IQuery accessQuery = BASIC.createQuery(accessLiteral);
 		IRelation accessResults = knowledgeBase.execute(accessQuery);
 		graph(accessResults, new File("access.dot"));
+
+		IPredicate errorPredicate = BASIC.createPredicate("error", 2);
+		ILiteral errorLiteral = BASIC.createLiteral(true, errorPredicate, xAndY);
+		IQuery errorQuery = BASIC.createQuery(errorLiteral);
+		IRelation errorResults = knowledgeBase.execute(errorQuery);
+		if (errorResults.size() != 0) {
+			System.out.println("\n=== Errors detected ===\n");
+			formatResults(errorResults);
+			System.exit(1);
+		}
 	}
 
 	static private void formatResults(IRelation m )
