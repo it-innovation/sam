@@ -91,7 +91,13 @@ wantCreate(?Object, ?ChildType) :- isA(?Object, ?Type), maycreate(?Type, ?ChildT
 error(?Object, ?ChildType) :- wantCreate(?Object, ?ChildType), !aggregatedChild(?Object, ?ChildType, ?NewChild).
 
 
+/* Graphing */
+
+access(?X, ?Y) :- value(?X, ?Var, ?Y).
+
+
 ?- isA(?X, ?Y).
 ?- didcall(?Caller, ?Target, ?Arg).
 ?- value(?Object, ?Name, ?Value).
 ?- error(?Object, ?ChildType).
+?- access(?X, ?Y).
