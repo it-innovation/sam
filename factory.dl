@@ -21,7 +21,9 @@ mayreturn("Unknown", ?X) :- hasVar("Unknown", ?X).
 maycreate("Factory", "Task", "task").
 mayreturn("Factory", "task").
 
-/* isA(?X, "Unknown") :- isA(?X, "Task"). */
+isField("Unknown", ?X) :- hasVar("Unknown", ?X).
+
+isA(?X, "Unknown") :- isA(?X, "Task").
 
 
 /* System */
@@ -51,48 +53,52 @@ value(?X, "this", ?X) :- isA(?X, ?Type), hasVar(?Type, "this").
 /* All parameters are variables */
 hasVar(?X, ?Var) :- hasParameter(?X, ?Var).
 
-value(?Invocation, ?Var, ?NewChild) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type), maycreate(?Type, ?ChildType, ?Var), aggregatedChild(?Invocation, ?ChildType, ?NewChild).
+value(?Invocation, ?Var, ?NewChild) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type), maycreate(?Type, ?ChildType, ?Var), newObject(?Invocation, ?ChildType, ?NewChild).
+
+/* Fields are stores on the object, not just the invocation. */
+/* value(?Object, ?Var, ?Value) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type), isField(?Type, ?Var), value(?Invocation, ?Var, ?Value). */
 
 /* If we specified a separate invocation object, use that. Otherwise, use the object itself. */
 invocationObject(?Sender, ?Target, ?Invocation) :- aggregateInvocations(?Sender, ?Target, ?Invocation).
 invocationObject(?Sender, ?Target, ?Target) :- isObject(?Sender), isObject(?Target), !aggregateInvocations(?Sender, ?Target, ?Invocation).
 hasInvocation(?Object, ?Invocation) :- invocationObject(?Sender, ?Object, ?Invocation).
 hasVar(?Invocation, ?Var) :- hasInvocation(?Object, ?Invocation), hasVar(?Object, ?Var).
-value(?Invocation, ?Var, ?Value) :- hasInvocation(?Object, ?Invocation), value(?Object, ?Var, ?Value).
+/* value(?Invocation, ?Var, ?Value) :- hasInvocation(?Object, ?Invocation), value(?Object, ?Var, ?Value). */
 /* isA(?Invocation, ?Type) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type). */
 
 
-isA(?NewObject, ?Type) :- aggregatedChild(?Caller, ?Type, ?NewObject).
+isA(?NewObject, ?Type) :- newObject(?Invocation, ?Type, ?NewObject).
+
+newObject(?Invocation, ?ChildType, ?NewObject) :- aggregatedChild(?Invocation, ?ChildType, ?NewObject).
+newObject(?Invocation, ?ChildType, ?Object) :- maycreate(?ParentType, ?ChildType, ?Var), hasInvocation(?Object, ?Invocation), isA(?Object, ?ParentType), !aggregatedChild(?Invocation, ?ChildType, ?NewObject).
+
 
 /* Aggregation */
 
 aggregateInvocations("alice", "factory", "factory(alice)").
+aggregateInvocations("newTasks(alice)", "factory", "factory(alice)").
 aggregateInvocations("bob", "factory", "factory(bob)").
-/* aggregatedChild("factory", "Task", "newTasks"). */
+aggregateInvocations("newTasks(bob)", "factory", "factory(bob)").
+
+/* aggregateInvocations("newTasks", "factory", "factory(bob)"). */
+aggregatedChild("factory", "Task", "newTasks").
+
 aggregatedChild("factory(alice)", "Task", "newTasks(alice)").
 aggregatedChild("factory(bob)", "Task", "newTasks(bob)").
 
-
-/* An object is willing to create a new object, but we didn't say how to aggregate it. */
-wantCreate(?Invocation, ?ChildType) :- isInvocation(?Invocation), isA(?Invocation, ?Type), maycreate(?Type, ?ChildType, ?Var).
-error(?Invocation, ?ChildType) :- wantCreate(?Invocation, ?ChildType), !aggregatedChild(?Object, ?ChildType, ?NewChild).
 
 error('Not an object (no type!)', ?Object) :- value(?X, ?Var, ?Object), !isObject(?Object).
 
 
 /* Graphing */
 
-access(?Caller, ?Object) :- value(?Caller, ?Var, ?Object), ?Caller != ?Object.
-access(?Caller, ?Invocation) :- value(?Caller, ?Var, ?Object), invocationObject(?Caller, ?Object, ?Invocation), ?Caller != ?Invocation.
+graphObjects(?Caller, ?Object) :- value(?Caller, ?Var, ?Object), ?Caller != ?Object.
+graphInvocable(?Caller, ?Invocation) :- value(?Caller, ?Var, ?Object), invocationObject(?Caller, ?Object, ?Invocation), ?Caller != ?Invocation.
 
 /* Goals */
 
-error('newTasks(alice) accessible to Bob!', 1) :- access('bob', 'newTasks(alice)').
+error('newTasks(alice) accessible to Bob!', 1) :- value('bob', ?Var, 'newTasks(alice)').
 
 
 ?- isA(?X, ?Y).
-?- didcall(?Caller, ?Target, ?Arg).
-?- value(?Object, ?Name, ?Value).
-?- value('newTasks(alice)', ?V, ?Value).
-?- hasParameter(?Target, ?P).
-?- didget(?Caller, ?Invocation, ?Var, 'bob').
+?- invocationObject(?Sender, ?Object, ?Instance).

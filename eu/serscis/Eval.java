@@ -81,12 +81,19 @@ public class Eval {
 			}
 		}
 
-		IPredicate accessPredicate = BASIC.createPredicate("access", 2);
 		ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
-		ILiteral accessLiteral = BASIC.createLiteral(true, accessPredicate, xAndY);
-		IQuery accessQuery = BASIC.createQuery(accessLiteral);
-		IRelation accessResults = knowledgeBase.execute(accessQuery);
-		graph(accessResults, new File("access.dot"));
+
+		IPredicate graphObjectsPredicate = BASIC.createPredicate("graphObjects", 2);
+		ILiteral graphObjectsLiteral = BASIC.createLiteral(true, graphObjectsPredicate, xAndY);
+		IQuery graphObjectsQuery = BASIC.createQuery(graphObjectsLiteral);
+		IRelation graphObjectsResults = knowledgeBase.execute(graphObjectsQuery);
+
+		IPredicate graphInvocablePredicate = BASIC.createPredicate("graphInvocable", 2);
+		ILiteral graphInvocableLiteral = BASIC.createLiteral(true, graphInvocablePredicate, xAndY);
+		IQuery graphInvocableQuery = BASIC.createQuery(graphInvocableLiteral);
+		IRelation graphInvocableResults = knowledgeBase.execute(graphInvocableQuery);
+
+		graph(graphObjectsResults, graphInvocableResults, new File("access.dot"));
 
 		IPredicate errorPredicate = BASIC.createPredicate("error", 2);
 		ILiteral errorLiteral = BASIC.createLiteral(true, errorPredicate, xAndY);
@@ -112,17 +119,33 @@ public class Eval {
 		return "\"" + term.getValue().toString() + "\"";
 	}
 
-	static private void graph(IRelation relation, File dotFile) throws Exception {
+	/* (skips self references and uses a single double-headed arrow for two-way relations) */
+	static private void graphRelation(FileWriter writer, IRelation relation) throws Exception {
+		for (int t = 0; t < relation.size(); t++) {
+			ITuple tuple = relation.get(t);
+			ITerm a = tuple.get(0);
+			ITerm b = tuple.get(1);
+			if (relation.contains(BASIC.createTuple(b, a))) {
+				// both ways (or a == b)
+				if (a.toString().compareTo(b.toString()) > 0) {
+					writer.write(format(a) + " -> " + format(b) + " [dir=both];\n");
+				}
+			} else {
+				// one-way
+				writer.write(format(a) + " -> " + format(b) + ";\n");
+			}
+		}
+	}
+
+	static private void graph(IRelation objects, IRelation invocable, File dotFile) throws Exception {
 		FileWriter writer = new FileWriter(dotFile);
 		writer.write("digraph a {\n");
-		writer.write("  concentrate=true;\n");
+		//writer.write("  concentrate=true;\n");
 
-		for (int t = 0; t < relation.size(); t++)
-		{
-			ITuple tuple = relation.get(t);
+		graphRelation(writer, objects);
 
-			writer.write(format(tuple.get(0)) + " -> " + format(tuple.get(1)) + ";\n");
-		}
+		writer.write("  edge [color=green];\n");
+		graphRelation(writer, invocable);
 
 		writer.write("}\n");
 		writer.close();
