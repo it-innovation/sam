@@ -61,7 +61,7 @@ value(?Invocation, ?Var, ?NewChild) :- hasInvocation(?Object, ?Invocation), isA(
 /* If we specified a separate invocation object, use that. Otherwise, use the object itself. */
 invocationObject(?Sender, ?Target, ?Invocation) :- aggregateInvocations(?Sender, ?Target, ?Invocation).
 invocationObject(?Sender, ?Target, ?Target) :- isObject(?Sender), isObject(?Target), !aggregateInvocations(?Sender, ?Target, ?Invocation).
-hasInvocation(?Object, ?Invocation) :- invocationObject(?Sender, ?Object, ?Invocation).
+hasInvocation(?Object, ?Invocation) :- invocationObject(?Sender, ?Object, ?Invocation), didcall(?Someone, ?Invocation, ?SomeArg).
 hasVar(?Invocation, ?Var) :- hasInvocation(?Object, ?Invocation), hasVar(?Object, ?Var).
 /* value(?Invocation, ?Var, ?Value) :- hasInvocation(?Object, ?Invocation), value(?Object, ?Var, ?Value). */
 /* isA(?Invocation, ?Type) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type). */
@@ -92,8 +92,13 @@ error('Not an object (no type!)', ?Object) :- value(?X, ?Var, ?Object), !isObjec
 
 /* Graphing */
 
+/*
 graphObjects(?Caller, ?Object) :- value(?Caller, ?Var, ?Object), ?Caller != ?Object.
 graphInvocable(?Caller, ?Invocation) :- value(?Caller, ?Var, ?Object), invocationObject(?Caller, ?Object, ?Invocation), ?Caller != ?Invocation.
+*/
+
+graphObjects(?Caller, ?Object) :- isObject(?Caller), value(?Caller, ?Var, ?Object), ?Caller != ?Object.
+
 
 /* Goals */
 
@@ -101,4 +106,4 @@ error('newTasks(alice) accessible to Bob!', 1) :- value('bob', ?Var, 'newTasks(a
 
 
 ?- isA(?X, ?Y).
-?- invocationObject(?Sender, ?Object, ?Instance).
+?- invocationObject(?Caller, ?Object, ?Invocation).
