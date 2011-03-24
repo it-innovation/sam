@@ -1,27 +1,16 @@
 /* vim: set syntax=prolog : */
 
-/*
-Variables: v_factory, v_a, v_b, v_makeUnknown, v_makeUnknown.refs
-Objects: factory, makeUnknown, newA, newOther
-Types: makeUnknownT, factoryT, taskT
-Invocations: factory_a, factory_other
-*/
-
 
 /* Config */
 
 isA("alice", "Unknown").
+isA("bob", "Unknown").
 isA("factory", "Factory").
 value("alice", "ref", "factory").
+value("bob", "ref", "factory").
 
 hasVar("Unknown", "ref").
 
-/*
-may.invoke(top, v_makeUnknown, v_factory, v_a)
-may.invoke(top, v_makeUnknown, v_factory, v_b).
-maybe.invoked(_, v_makeUnknown, argValue) => maybe(v_makeUnknown.refs, argValue).
-may.create(factory, taskT).
-*/
 
 /* Behaviour */
 
@@ -35,8 +24,13 @@ mayreturn("Factory", "task").
 
 /* System */
 
+isObject(?X) :- isA(?X, ?Type).
+
+/* The concrete objects that may be called, based on the behaviour (in terms of variables) and the values of those variables. */
+mayCallObject(?Caller, ?TargetValue, ?ArgValue, ?ReturnVar) :- isA(?Caller, ?Type), maycall(?Type, ?TargetVar, ?ArgVar, ?ReturnVar), value(?Caller, ?TargetVar, ?TargetValue), value(?Caller, ?ArgVar, ?ArgValue).
+
 /* Caller did a call if caller might do "def _ := targetVar(argVar)" */
-didcall(?Caller, ?TargetValue, ?ArgValue) :- isA(?Caller, ?Type), maycall(?Type, ?TargetVar, ?ArgVar, ?ReturnVar), value(?Caller, ?TargetVar, ?TargetValue), value(?Caller, ?ArgVar, ?ArgValue).
+didcall(?Caller, ?TargetInvocation, ?ArgValue) :- mayCallObject(?Caller, ?TargetValue, ?ArgValue, ?ReturnVar), invocationObject(?Caller, ?TargetValue, ?TargetInvocation).
 
 /* If Caller did call target and may accept a return value and target may return a value then Caller's var may now be the returned value. */
 value(?Caller, ?ReturnVar, ?ReturnValue) :- didcall(?Caller, ?TargetValue, ?ArgValue), isA(?Caller, ?Type), maycall(?Type, ?TargetVar, ?ArgVar, ?ReturnVar), isA(?TargetValue, ?TargetType), mayreturn(?TargetType, ?TargetReturnVar), value(?TargetValue, ?TargetReturnVar, ?ReturnValue).
@@ -53,38 +47,22 @@ hasVar(?X, ?Var) :- hasParameter(?X, ?Var).
 
 value(?Object, ?Var, ?NewChild) :- isA(?Object, ?Type), maycreate(?Type, ?ChildType, ?Var), aggregatedChild(?Object, ?ChildType, ?NewChild).
 
+/* If we specified a separate invocation object, use that. Otherwise, use the object itself. */
+invocationObject(?Sender, ?Target, ?Invocation) :- aggregateInvocations(?Sender, ?Target, ?Invocation).
+invocationObject(?Sender, ?Target, ?Target) :- isObject(?Sender), isObject(?Target), !aggregateInvocations(?Sender, ?Target, ?Invocation).
+hasInvocation(?Object, ?Invocation) :- invocationObject(?Sender, ?Object, ?Invocation).
+hasVar(?Invocation, ?Var) :- hasInvocation(?Object, ?Invocation), hasVar(?Object, ?Var).
+value(?Invocation, ?Var, ?Value) :- hasInvocation(?Object, ?Invocation), value(?Object, ?Var, ?Value).
+isA(?Invocation, ?Type) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type).
 
-/*
-live(caller), may.invoke(caller, targetVar, argVar), maybe(targetVar, targetValue), maybe(argVar, argValue) => did.invoke(caller, targetValue, argValue)
-did.invoke(_, target, _) => live(target).
-did.invoke(caller, target, resultVar), aggregate(caller, new) => maybe(resultVar, new).
 
-may.invoke(caller, target, arg), aggregate(caller, target, invocation) => did.invoke(caller, invocation, arg).
-*/
-
+isA(?NewObject, ?Type) :- aggregatedChild(?Caller, ?Type, ?NewObject).
 
 /* Aggregation */
 
+aggregateInvocations("alice", "factory", "factory(alice)").
 aggregatedChild("factory", "Task", "newTasks").
-isA("newTasks", "Task").
-
-
-/*
-Config:
-
-maybe(factory, factory).
-maybe(makeUnknown, makeUnknown).
-live(top).
-
-
-Run:
-
-maybe.invoked(makeUnknown, factory).
-live(makeUnknown).
-may.invoke(makeUnknown, makeUnknown.refs, makeUnknown.refs).
-maybe(makeUnknown.refs, factory).
-maybe.invoked(factory, factory).
-*/
+aggregatedChild("factory(alice)", "Task", "newTasks(alice)").
 
 
 /* An object is willing to create a new object, but we didn't say how to aggregate it. */
@@ -96,7 +74,12 @@ error('Not an object (no type!)', ?Object) :- access(?X, ?Object), !isA(?Object,
 
 /* Graphing */
 
-access(?X, ?Y) :- value(?X, ?Var, ?Y).
+/* access(?Caller, ?Object) :- value(?Caller, ?Var, ?Object), ?Caller != ?Object. */
+access(?Caller, ?Invocation) :- value(?Caller, ?Var, ?Object), invocationObject(?Caller, ?Object, ?Invocation), ?Caller != ?Invocation.
+
+/* Goals */
+
+error('newTasks(alice) accessible to Bob!', 1) :- access('bob', 'newTasks(alice)').
 
 
 ?- isA(?X, ?Y).
