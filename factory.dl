@@ -21,10 +21,13 @@ mayreturn("Unknown", ?X) :- hasVar("Unknown", ?X).
 maycreate("Factory", "Task", "task").
 mayreturn("Factory", "task").
 
+/* isA(?X, "Unknown") :- isA(?X, "Task"). */
+
 
 /* System */
 
 isObject(?X) :- isA(?X, ?Type).
+isInvocation(?Invocation) :- hasInvocation(?Object, ?Invocation).
 
 /* The concrete objects that may be called, based on the behaviour (in terms of variables) and the values of those variables. */
 mayCallObject(?Caller, ?TargetValue, ?ArgValue, ?ReturnVar) :- isA(?Caller, ?Type), maycall(?Type, ?TargetVar, ?ArgVar, ?ReturnVar), value(?Caller, ?TargetVar, ?TargetValue), value(?Caller, ?ArgVar, ?ArgValue).
@@ -32,11 +35,14 @@ mayCallObject(?Caller, ?TargetValue, ?ArgValue, ?ReturnVar) :- isA(?Caller, ?Typ
 /* Caller did a call if caller might do "def _ := targetVar(argVar)" */
 didcall(?Caller, ?TargetInvocation, ?ArgValue) :- mayCallObject(?Caller, ?TargetValue, ?ArgValue, ?ReturnVar), invocationObject(?Caller, ?TargetValue, ?TargetInvocation).
 
-/* If Caller did call target and may accept a return value and target may return a value then Caller's var may now be the returned value. */
-value(?Caller, ?ReturnVar, ?ReturnValue) :- didcall(?Caller, ?TargetValue, ?ArgValue), isA(?Caller, ?Type), maycall(?Type, ?TargetVar, ?ArgVar, ?ReturnVar), isA(?TargetValue, ?TargetType), mayreturn(?TargetType, ?TargetReturnVar), value(?TargetValue, ?TargetReturnVar, ?ReturnValue).
+/* If Caller may call target and may accept a return value and target may return a value then Caller's var may now be the returned value. */
+didget(?Caller, ?TargetInvocation, ?ReturnVar, ?ReturnValue) :- mayCallObject(?Caller, ?TargetObject, ?ArgValue, ?ReturnVar), invocationObject(?Caller, ?TargetObject, ?TargetInvocation), isA(?TargetObject, ?TargetType), mayreturn(?TargetType, ?TargetReturnVar), value(?TargetInvocation, ?TargetReturnVar, ?ReturnValue).
+
+/* The caller may store the result of any call. */
+value(?Caller, ?ReturnVar, ?ReturnValue) :- didget(?Caller, ?TargetInvocation, ?ReturnVar, ?ReturnValue).
 
 /* Target's parameter variable may contain ArgValue if someone called it with that value. */
-value(?Target, ?ParamVar, ?ArgValue) :- isA(?Target, ?Type), hasParameter(?Type, ?ParamVar), didcall(?Caller, ?Target, ?ArgValue).
+value(?TargetInvocation, ?ParamVar, ?ArgValue) :- hasInvocation(?Target, ?TargetInvocation), isA(?Target, ?Type), hasParameter(?Type, ?ParamVar), didcall(?Caller, ?TargetInvocation, ?ArgValue).
 
 /* Every object has a 'this' variable with a reference to itself. */
 hasVar(?X, "this") :- isA(?Object, ?X).
@@ -45,7 +51,7 @@ value(?X, "this", ?X) :- isA(?X, ?Type), hasVar(?Type, "this").
 /* All parameters are variables */
 hasVar(?X, ?Var) :- hasParameter(?X, ?Var).
 
-value(?Object, ?Var, ?NewChild) :- isA(?Object, ?Type), maycreate(?Type, ?ChildType, ?Var), aggregatedChild(?Object, ?ChildType, ?NewChild).
+value(?Invocation, ?Var, ?NewChild) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type), maycreate(?Type, ?ChildType, ?Var), aggregatedChild(?Invocation, ?ChildType, ?NewChild).
 
 /* If we specified a separate invocation object, use that. Otherwise, use the object itself. */
 invocationObject(?Sender, ?Target, ?Invocation) :- aggregateInvocations(?Sender, ?Target, ?Invocation).
@@ -53,7 +59,7 @@ invocationObject(?Sender, ?Target, ?Target) :- isObject(?Sender), isObject(?Targ
 hasInvocation(?Object, ?Invocation) :- invocationObject(?Sender, ?Object, ?Invocation).
 hasVar(?Invocation, ?Var) :- hasInvocation(?Object, ?Invocation), hasVar(?Object, ?Var).
 value(?Invocation, ?Var, ?Value) :- hasInvocation(?Object, ?Invocation), value(?Object, ?Var, ?Value).
-isA(?Invocation, ?Type) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type).
+/* isA(?Invocation, ?Type) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type). */
 
 
 isA(?NewObject, ?Type) :- aggregatedChild(?Caller, ?Type, ?NewObject).
@@ -61,20 +67,22 @@ isA(?NewObject, ?Type) :- aggregatedChild(?Caller, ?Type, ?NewObject).
 /* Aggregation */
 
 aggregateInvocations("alice", "factory", "factory(alice)").
-aggregatedChild("factory", "Task", "newTasks").
+aggregateInvocations("bob", "factory", "factory(bob)").
+/* aggregatedChild("factory", "Task", "newTasks"). */
 aggregatedChild("factory(alice)", "Task", "newTasks(alice)").
+aggregatedChild("factory(bob)", "Task", "newTasks(bob)").
 
 
 /* An object is willing to create a new object, but we didn't say how to aggregate it. */
-wantCreate(?Object, ?ChildType) :- isA(?Object, ?Type), maycreate(?Type, ?ChildType, ?Var).
-error(?Object, ?ChildType) :- wantCreate(?Object, ?ChildType), !aggregatedChild(?Object, ?ChildType, ?NewChild).
+wantCreate(?Invocation, ?ChildType) :- isInvocation(?Invocation), isA(?Invocation, ?Type), maycreate(?Type, ?ChildType, ?Var).
+error(?Invocation, ?ChildType) :- wantCreate(?Invocation, ?ChildType), !aggregatedChild(?Object, ?ChildType, ?NewChild).
 
-error('Not an object (no type!)', ?Object) :- access(?X, ?Object), !isA(?Object, ?Type).
+error('Not an object (no type!)', ?Object) :- value(?X, ?Var, ?Object), !isObject(?Object).
 
 
 /* Graphing */
 
-/* access(?Caller, ?Object) :- value(?Caller, ?Var, ?Object), ?Caller != ?Object. */
+access(?Caller, ?Object) :- value(?Caller, ?Var, ?Object), ?Caller != ?Object.
 access(?Caller, ?Invocation) :- value(?Caller, ?Var, ?Object), invocationObject(?Caller, ?Object, ?Invocation), ?Caller != ?Invocation.
 
 /* Goals */
@@ -85,4 +93,6 @@ error('newTasks(alice) accessible to Bob!', 1) :- access('bob', 'newTasks(alice)
 ?- isA(?X, ?Y).
 ?- didcall(?Caller, ?Target, ?Arg).
 ?- value(?Object, ?Name, ?Value).
-?- access(?X, ?Y).
+?- value('newTasks(alice)', ?V, ?Value).
+?- hasParameter(?Target, ?P).
+?- didget(?Caller, ?Invocation, ?Var, 'bob').

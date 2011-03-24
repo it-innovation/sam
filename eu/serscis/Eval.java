@@ -95,7 +95,7 @@ public class Eval {
 		if (errorResults.size() != 0) {
 			System.out.println("\n=== Errors detected ===\n");
 			formatResults(errorResults);
-			System.exit(1);
+			//System.exit(1);
 		}
 	}
 
@@ -115,6 +115,7 @@ public class Eval {
 	static private void graph(IRelation relation, File dotFile) throws Exception {
 		FileWriter writer = new FileWriter(dotFile);
 		writer.write("digraph a {\n");
+		writer.write("  concentrate=true;\n");
 
 		for (int t = 0; t < relation.size(); t++)
 		{
