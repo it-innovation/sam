@@ -1,5 +1,7 @@
 package eu.serscis;
 
+import java.io.FileWriter;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,9 +14,12 @@ import org.deri.iris.api.basics.IPredicate;
 import org.deri.iris.api.basics.IQuery;
 import org.deri.iris.api.basics.IRule;
 import org.deri.iris.api.basics.ITuple;
+import org.deri.iris.api.basics.ILiteral;
 import org.deri.iris.api.terms.IVariable;
+import org.deri.iris.api.terms.ITerm;
 import org.deri.iris.compiler.Parser;
 import org.deri.iris.storage.IRelation;
+import static org.deri.iris.factory.Factory.*;
 
 // Based on IRIS Demo code
 
@@ -75,6 +80,13 @@ public class Eval {
 				formatResults( results );
 			}
 		}
+
+		IPredicate accessPredicate = BASIC.createPredicate("access", 2);
+		ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
+		ILiteral accessLiteral = BASIC.createLiteral(true, accessPredicate, xAndY);
+		IQuery accessQuery = BASIC.createQuery(accessLiteral);
+		IRelation accessResults = knowledgeBase.execute(accessQuery);
+		graph(accessResults, new File("access.dot"));
 	}
 
 	static private void formatResults(IRelation m )
@@ -86,4 +98,22 @@ public class Eval {
 		}
 	}
 
+	static private String format(ITerm term) {
+		return "\"" + term.getValue().toString() + "\"";
+	}
+
+	static private void graph(IRelation relation, File dotFile) throws Exception {
+		FileWriter writer = new FileWriter(dotFile);
+		writer.write("digraph a {\n");
+
+		for (int t = 0; t < relation.size(); t++)
+		{
+			ITuple tuple = relation.get(t);
+
+			writer.write(format(tuple.get(0)) + " -> " + format(tuple.get(1)) + ";\n");
+		}
+
+		writer.write("}\n");
+		writer.close();
+	}
 }
