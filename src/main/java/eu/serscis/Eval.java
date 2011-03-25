@@ -67,6 +67,7 @@ public class Eval {
 		parse(parser, rules, facts, new File("scenario.dl"));
 		List<IQuery> queries = parser.getQueries();
 		parse(parser, rules, facts, new File("base.dl"));
+		parse(parser, rules, facts, new File("graph.dl"));
 
 		IKnowledgeBase initialKnowledgeBase = KnowledgeBaseFactory.createKnowledgeBase( facts, rules, configuration );
 		graph(initialKnowledgeBase, new File("initial.dot"));

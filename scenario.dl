@@ -10,8 +10,8 @@ field("alice", "ref", "factory").
 field("bob", "ref", "factory").
 
 
-initialInvocation("alice", "alice(start)").
-initialInvocation("bob", "bob(start)").
+initialInvocation("alice", "alice(any)").
+initialInvocation("bob", "bob(any)").
 
 
 /* Aggregation */
@@ -23,10 +23,10 @@ defaultInvocationObject("newTasksForBob", "newTasksForBob(any)").
 defaultInvocationObject("newTasks", "newTasks(any)").
 defaultInvocationObject("factory", "factory(any)").
 
-invocationObject("alice(start)", "factory", "factory(alice)").
+invocationObject("alice(any)", "factory", "factory(alice)").
 invocationObject("newTasksForAlice(any)", "factory", "factory(alice)").
 
-invocationObject("bob(start)", "factory", "factory(bob)").
+invocationObject("bob(any)", "factory", "factory(bob)").
 invocationObject("newTasksForBob(any)", "factory", "factory(bob)").
 
 newObject("factory(alice)", "Task", "newTasksForAlice").
@@ -37,46 +37,9 @@ newObject("factory(any)", "Task", "newTasks").
 
 /* Graphing */
 
-graphNode(?Object, "fontcolor=red") :- live(?Object), isA(?Object, "Unknown").
-graphNode(?Object, "") :- live(?Object), isObject(?Object), !isA(?Object, "Unknown").
-
-graphField(?Object, ?Target) :- isObject(?Object), field(?Object, ?Var, ?Target), ?Object != ?Target.
-graphLocal(?Object, ?Target) :- isInvocation(?Caller), hasInvocation(?Object, ?Caller), local(?Caller, ?Var, ?Target), ?Object != ?Target, !graphField(?Object, ?Target).
-
-graphEdge(?Object, ?Target, "") :- graphField(?Object, ?Target), !graphField(?Target, ?Object).
-graphEdge(?Object, ?Target, "dir=both") :- graphField(?Object, ?Target), graphField(?Target, ?Object), ?Target > ?Object.
-
-graphEdge(?Object, ?Target, "color=blue") :- graphLocal(?Object, ?Target), !graphLocal(?Target, ?Object).
-graphEdge(?Object, ?Target, "dir=both,color=blue") :- graphLocal(?Object, ?Target), graphLocal(?Target, ?Object), ?Target > ?Object.
-
-graphEdge(?Object, ?Target, "color=red") :- haveBadAccess(?Object, ?Target).
-graphEdge(?Object, ?Target, "color=red") :- missingGoodAccess(?Object, ?Target).
-
-
-/* Show invocation objects */
 //showInvocation(?Invocation) :- isInvocation(?Invocation).
 showInvocation(?Invocation) :- hasInvocation('factory', ?Invocation).
-
-graphNode(?Invocation, "color=green,fontcolor=green") :- showInvocation(?Invocation), live(?Invocation), isInvocation(?Invocation).
-
-shouldGraphInvocation(?SourceInvocation, ?TargetInvocation) :- isInvocation(?TargetInvocation), showInvocation(?SourceInvocation).
-shouldGraphInvocation(?SourceInvocation, ?TargetInvocation) :- isInvocation(?SourceInvocation), showInvocation(?TargetInvocation).
-graphInvocation(?Invocation, ?Invocation) :- showInvocation(?Invocation).
-graphInvocation(?Invocation, ?Object) :- hasInvocation(?Object, ?Invocation), !showInvocation(?Invocation).
-
-graphInvocationEdge(?GraphSourceNode, ?GraphTargetNode) :-
-	realInvocationObject(?SourceInvocation, ?TargetObject, ?TargetInvocation),
-	shouldGraphInvocation(?SourceInvocation, ?TargetInvocation),
-	didCall(?SourceInvocation, ?TargetInvocation, ?A, ?R),
-	graphInvocation(?SourceInvocation, ?GraphSourceNode),
-	graphInvocation(?TargetInvocation, ?GraphTargetNode),
-	?GraphSourceNode != ?GraphTargetNode.
-
-graphEdge(?A, ?B, "color=green") :- graphInvocationEdge(?A, ?B), !graphInvocationEdge(?B, ?A).
-graphEdge(?A, ?B, "color=green,dir=both") :- graphInvocationEdge(?A, ?B), graphInvocationEdge(?B, ?A), ?B > ?A.
-
-graphEdge(?Invocation, ?Object, "color=blue") :-
-	showInvocation(?Invocation), local(?Invocation, ?Var, ?Object).
+//showInvocation(?Invocation) :- hasInvocation('alice', ?Invocation).
 
 
 /* Goals */
