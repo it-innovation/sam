@@ -42,6 +42,9 @@ graphObjects(?Invocation, ?Object) :- hasInvocation(?Object, ?Invocation).
 graphInvocable(?Caller, ?TargetInvocation) :- didCall(?Caller, ?TargetInvocation, ?Arg, ?Result).
 */
 
+graphNode(?Object, "fontcolor=red") :- live(?Object), isA(?Object, "Unknown").
+graphNode(?Object, "") :- live(?Object), isObject(?Object), !isA(?Object, "Unknown").
+
 graphField(?Object, ?Target) :- isObject(?Object), field(?Object, ?Var, ?Target), ?Object != ?Target.
 graphLocal(?Object, ?Target) :- isInvocation(?Caller), hasInvocation(?Object, ?Caller), local(?Caller, ?Var, ?Target), ?Object != ?Target, !graphField(?Object, ?Target).
 
