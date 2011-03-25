@@ -54,10 +54,29 @@ graphEdge(?Object, ?Target, "color=red") :- missingGoodAccess(?Object, ?Target).
 
 
 /* Show invocation objects */
-//showInvocations.
-graphNode(?Invocation, "color=green,fontcolor=green") :- showInvocations, live(?Invocation), isInvocation(?Invocation).
-graphEdge(?Object, ?Invocation, "color=green") :- showInvocations, invocationObject(?Object, ?Target, ?Invocation).
-graphEdge(?Invocation, ?Object, "color=blue") :- showInvocations, local(?Invocation, ?Var, ?Object).
+//showInvocation(?Invocation) :- isInvocation(?Invocation).
+showInvocation(?Invocation) :- hasInvocation('factory', ?Invocation).
+
+graphNode(?Invocation, "color=green,fontcolor=green") :- showInvocation(?Invocation), live(?Invocation), isInvocation(?Invocation).
+
+shouldGraphInvocation(?SourceInvocation, ?TargetInvocation) :- isInvocation(?TargetInvocation), showInvocation(?SourceInvocation).
+shouldGraphInvocation(?SourceInvocation, ?TargetInvocation) :- isInvocation(?SourceInvocation), showInvocation(?TargetInvocation).
+graphInvocation(?Invocation, ?Invocation) :- showInvocation(?Invocation).
+graphInvocation(?Invocation, ?Object) :- hasInvocation(?Object, ?Invocation), !showInvocation(?Invocation).
+
+graphInvocationEdge(?GraphSourceNode, ?GraphTargetNode) :-
+	realInvocationObject(?SourceInvocation, ?TargetObject, ?TargetInvocation),
+	shouldGraphInvocation(?SourceInvocation, ?TargetInvocation),
+	didCall(?SourceInvocation, ?TargetInvocation, ?A, ?R),
+	graphInvocation(?SourceInvocation, ?GraphSourceNode),
+	graphInvocation(?TargetInvocation, ?GraphTargetNode),
+	?GraphSourceNode != ?GraphTargetNode.
+
+graphEdge(?A, ?B, "color=green") :- graphInvocationEdge(?A, ?B), !graphInvocationEdge(?B, ?A).
+graphEdge(?A, ?B, "color=green,dir=both") :- graphInvocationEdge(?A, ?B), graphInvocationEdge(?B, ?A), ?B > ?A.
+
+graphEdge(?Invocation, ?Object, "color=blue") :-
+	showInvocation(?Invocation), local(?Invocation, ?Var, ?Object).
 
 
 /* Goals */
