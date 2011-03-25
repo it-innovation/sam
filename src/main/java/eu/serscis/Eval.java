@@ -164,6 +164,7 @@ public class Eval {
 		writer.write("digraph a {\n");
 		//writer.write("  concentrate=true;\n");
 		//writer.write("  rankdir=LR;\n");
+		writer.write("  node[shape=plaintext];\n");
 
 		for (int t = 0; t < nodes.size(); t++) {
 			ITuple tuple = nodes.get(t);

@@ -38,7 +38,7 @@ newObject("factory(any)", "Task", "newTasks").
 /* Graphing */
 
 //showInvocation(?Invocation) :- isInvocation(?Invocation).
-showInvocation(?Invocation) :- hasInvocation('factory', ?Invocation).
+//showInvocation(?Invocation) :- hasInvocation('factory', ?Invocation).
 //showInvocation(?Invocation) :- hasInvocation('alice', ?Invocation).
 
 

@@ -39,4 +39,6 @@ graphEdge(?A, ?B, "color=green") :- graphInvocationEdge(?A, ?B), !graphInvocatio
 graphEdge(?A, ?B, "color=green,dir=both") :- graphInvocationEdge(?A, ?B), graphInvocationEdge(?B, ?A), ?B > ?A.
 
 graphEdge(?Invocation, ?Object, "color=blue") :-
-	showInvocation(?Invocation), local(?Invocation, ?Var, ?Object).
+	showInvocation(?Invocation), local(?Invocation, ?Var, ?Object), !hasInvocation(?Object, ?Invocation).
+graphEdge(?Invocation, ?Object, "color=blue,style=bold,weight=40") :-
+	showInvocation(?Invocation), live(?Invocation), hasInvocation(?Object, ?Invocation).
