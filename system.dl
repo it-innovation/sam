@@ -13,6 +13,8 @@ didCall(?CallerInvocation, ?TargetInvocation, ?ArgValue, ?ResultVar) :-
 	mayCallObject(?CallerInvocation, ?TargetObject, ?ArgValue, ?ResultVar),
 	realInvocationObject(?CallerInvocation, ?TargetObject, ?TargetInvocation).
 
+live(?TargetInvocation) :- didCall(?Caller, ?TargetInvocation, ?A, ?R).
+
 /* If Caller may call target and may accept a return value and target may return a value then Caller's var may now be the returned value. */
 didGet(?CallerInvocation, ?ResultVar, ?ResultValue) :-
 	didCall(?CallerInvocation, ?TargetInvocation, ?ArgValue, ?ResultVar),
@@ -38,6 +40,7 @@ local(?TargetInvocation, ?ParamVar, ?ArgValue) :-
 	mayAccept(?TargetType, ?ParamVar).
 
 didCreate(?Invocation, ?Var, ?ChildType) :-
+	live(?Invocation),
 	invocationType(?Invocation, ?Type),
 	mayCreate(?Type, ?ChildType, ?Var).
 
@@ -45,6 +48,9 @@ local(?Invocation, ?Var, ?NewChild) :-
 	didCreate(?Invocation, ?Var, ?ChildType),
 	newObject(?Invocation, ?ChildType, ?NewChild).
 
+live(?NewChild) :-
+	didCreate(?Invocation, ?Var, ?ChildType),
+	newObject(?Invocation, ?ChildType, ?NewChild).
 
 /* Sanity checking */
 

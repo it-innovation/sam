@@ -1,15 +1,13 @@
 /* vim: set syntax=prolog : */
 
-
 /* Config */
 
-isA("alice", "Unknown").
-isA("bob", "Unknown").
-isA("factory", "Factory").
+initialObject("alice", "Unknown").
+initialObject("bob", "Unknown").
+initialObject("factory", "Factory").
+
 field("alice", "ref", "factory").
 field("bob", "ref", "factory").
-
-hasVar("Unknown", "ref").
 
 
 hasInvocation("alice", "alice(start)").

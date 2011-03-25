@@ -28,6 +28,8 @@ hasLocal(?Type, ?ChildVar) :- mayCreate(?Type, ?ChildType, ?ChildVar).
 /* predicates on objects */
 
 isObject(?X) :- isA(?X, ?Type).
+live(?Object) :- initialObject(?Object, ?Type).
+isA(?Object, ?Type) :- initialObject(?Object, ?Type).
 
 
 /* predicates on invocations */
@@ -63,3 +65,6 @@ error('Unknown mayAccept var', ?Type, ?ArgVar) :- mayAccept(?Type, ?ArgVar), !ha
 error('Unknown mayReturn var', ?Type, ?ReturnVar) :- mayReturn(?Type, ?ReturnVar), !hasVar(?Type, ?ReturnVar).
 
 error('Unknown mayCreate local var', ?Type, ?Var) :- mayCreate(?Type, ?ChildType, ?Var), !hasLocal(?Type, ?Var).
+
+error('Live invocation for non-alive object', ?Invocation, ?Object) :-
+	hasInvocation(?Object, ?Invocation), live(?Invocation), !live(?Object).
