@@ -31,6 +31,9 @@ isObject(?X) :- isA(?X, ?Type).
 live(?Object) :- initialObject(?Object, ?Type).
 isA(?Object, ?Type) :- initialObject(?Object, ?Type).
 
+hasInvocation(?Object, ?Invocation) :- initialInvocation(?Object, ?Invocation).
+live(?Invocation) :- initialInvocation(?Object, ?Invocation).
+
 
 /* predicates on invocations */
 
@@ -42,8 +45,8 @@ invocationType(?Invocation, ?Type) :- hasInvocation(?Object, ?Invocation), isA(?
 hasRef(?Invocation, ?Value) :- local(?Invocation, ?AnyVar, ?Value).
 hasRef(?Invocation, ?Value) :- hasInvocation(?Object, ?Invocation), field(?Object, ?AnyVar, ?Value).
 
-/* Every object has a 'this' variable with a reference to itself. */
-local(?Invocation, "this", ?Object) :- hasInvocation(?Object, ?Invocation).
+/* Every invocation has a 'this' variable with a reference to its object. */
+local(?Invocation, "this", ?Object) :- live(?Invocation), hasInvocation(?Object, ?Invocation).
 
 isA(?NewObject, ?Type) :- newObject(?Invocation, ?Type, ?NewObject).
 
@@ -91,3 +94,13 @@ missingGoodAccess(?SourceObject, ?TargetObject) :-
 
 error('required access is not possible', ?SourceObject, ?TargetObject) :-
 	missingGoodAccess(?SourceObject, ?TargetObject).
+
+error('Undeclared field', ?Object, ?Field) :-
+	field(?Field, ?Value),
+	isA(?Object, ?Type),
+	!hasField(?Type, ?Field).
+
+error('Undeclared variable', ?Invocation, ?Var) :-
+	local(?Var, ?Value),
+	invocationType(?Invocation, ?Type),
+	!hasLocal(?Type, ?Var).

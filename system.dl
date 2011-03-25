@@ -10,6 +10,7 @@ mayCallObject(?CallerInvocation, ?TargetValue, ?ArgValue, ?ResultVar) :-
 
 /* Assume caller did a call if caller might do "Object resultVar = targetObject.do(argValue)" */
 didCall(?CallerInvocation, ?TargetInvocation, ?ArgValue, ?ResultVar) :-
+	live(?CallerInvocation),
 	mayCallObject(?CallerInvocation, ?TargetObject, ?ArgValue, ?ResultVar),
 	realInvocationObject(?CallerInvocation, ?TargetObject, ?TargetInvocation).
 
@@ -26,7 +27,7 @@ didGet(?CallerInvocation, ?ResultVar, ?ResultValue) :-
 local(?CallerInvocation, ?ResultVar, ?ResultValue) :-
 	didGet(?CallerInvocation, ?ResultVar, ?ResultValue),
 	invocationType(?CallerInvocation, ?Type),
-	hasLocal(?Type, ?ResultValue).
+	hasLocal(?Type, ?ResultVar).
 field(?CallerObject, ?ResultVar, ?ResultValue) :-
 	didGet(?CallerInvocation, ?ResultVar, ?ResultValue),
 	hasInvocation(?CallerObject, ?CallerInvocation),

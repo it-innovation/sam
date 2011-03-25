@@ -10,12 +10,14 @@ field("alice", "ref", "factory").
 field("bob", "ref", "factory").
 
 
-hasInvocation("alice", "alice(start)").
-hasInvocation("bob", "bob(start)").
+initialInvocation("alice", "alice(start)").
+initialInvocation("bob", "bob(start)").
 
 
 /* Aggregation */
 
+defaultInvocationObject("alice", "alice(any)").
+defaultInvocationObject("bob", "bob(any)").
 defaultInvocationObject("newTasksForAlice", "newTasksForAlice(any)").
 defaultInvocationObject("newTasksForBob", "newTasksForBob(any)").
 defaultInvocationObject("newTasks", "newTasks(any)").
@@ -35,13 +37,6 @@ newObject("factory(any)", "Task", "newTasks").
 
 /* Graphing */
 
-/*
-graphObjects(?Object, ?Target) :- isObject(?Object), field(?Object, ?Var, ?Target), ?Object != ?Target.
-graphObjects(?Object, ?Target) :- isInvocation(?Caller), hasInvocation(?Object, ?Caller), local(?Caller, ?Var, ?Target), ?Object != ?Target.
-graphObjects(?Invocation, ?Object) :- hasInvocation(?Object, ?Invocation).
-graphInvocable(?Caller, ?TargetInvocation) :- didCall(?Caller, ?TargetInvocation, ?Arg, ?Result).
-*/
-
 graphNode(?Object, "fontcolor=red") :- live(?Object), isA(?Object, "Unknown").
 graphNode(?Object, "") :- live(?Object), isObject(?Object), !isA(?Object, "Unknown").
 
@@ -57,6 +52,12 @@ graphEdge(?Object, ?Target, "dir=both,color=blue") :- graphLocal(?Object, ?Targe
 graphEdge(?Object, ?Target, "color=red") :- haveBadAccess(?Object, ?Target).
 graphEdge(?Object, ?Target, "color=red") :- missingGoodAccess(?Object, ?Target).
 
+
+/* Show invocation objects */
+//showInvocations.
+graphNode(?Invocation, "color=green,fontcolor=green") :- showInvocations, live(?Invocation), isInvocation(?Invocation).
+graphEdge(?Object, ?Invocation, "color=green") :- showInvocations, invocationObject(?Object, ?Target, ?Invocation).
+graphEdge(?Invocation, ?Object, "color=blue") :- showInvocations, local(?Invocation, ?Var, ?Object).
 
 
 /* Goals */
