@@ -1,5 +1,5 @@
-all: eu/serscis/Eval.class
-	java -cp .:${CLASSPATH} eu.serscis.Eval scenario.dl
+all: src/main/java/eu/serscis/Eval.class
+	java -cp src/main/java:${CLASSPATH} eu.serscis.Eval scenario.dl
 	dot -Tpng access.dot > access.png
 	dot -Tpng initial.dot > initial.png
 
