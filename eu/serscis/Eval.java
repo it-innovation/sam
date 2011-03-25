@@ -100,16 +100,21 @@ public class Eval {
 	}
 
 	static private void checkForErrors(IKnowledgeBase knowledgeBase) throws Exception {
-		ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
+		List<ITerm> terms = new LinkedList<ITerm>();
 
-		IPredicate errorPredicate = BASIC.createPredicate("error", 2);
-		ILiteral errorLiteral = BASIC.createLiteral(true, errorPredicate, xAndY);
-		IQuery errorQuery = BASIC.createQuery(errorLiteral);
-		IRelation errorResults = knowledgeBase.execute(errorQuery);
-		if (errorResults.size() != 0) {
-			System.out.println("\n=== Errors detected ===\n");
-			formatResults(errorResults);
-			//System.exit(1);
+		for (int i = 0; i < 5; i++) {
+			IPredicate errorPredicate = BASIC.createPredicate("error", i);
+			ILiteral errorLiteral = BASIC.createLiteral(true, errorPredicate, BASIC.createTuple(terms));
+			IQuery errorQuery = BASIC.createQuery(errorLiteral);
+			IRelation errorResults = knowledgeBase.execute(errorQuery);
+			if (errorResults.size() != 0) {
+				System.out.println("\n=== Errors detected ===\n");
+				formatResults(errorResults);
+				//System.exit(1);
+			}
+
+			ITerm newTerm = TERM.createVariable("t" + i);
+			terms.add(newTerm);
 		}
 	}
 
