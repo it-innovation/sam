@@ -6,42 +6,51 @@
 isA("alice", "Unknown").
 isA("bob", "Unknown").
 isA("factory", "Factory").
-value("alice", "ref", "factory").
-value("bob", "ref", "factory").
+field("alice", "ref", "factory").
+field("bob", "ref", "factory").
 
 hasVar("Unknown", "ref").
 
 
+hasInvocation("alice", "alice(start)").
+hasInvocation("bob", "bob(start)").
+
 
 /* Aggregation */
 
-aggregateInvocations("alice", "factory", "factory(alice)").
-aggregateInvocations("newTasks(alice)", "factory", "factory(alice)").
-aggregateInvocations("bob", "factory", "factory(bob)").
-aggregateInvocations("newTasks(bob)", "factory", "factory(bob)").
+defaultInvocationObject("newTasksForAlice", "newTasksForAlice(any)").
+defaultInvocationObject("newTasksForBob", "newTasksForBob(any)").
+defaultInvocationObject("newTasks", "newTasks(any)").
+defaultInvocationObject("factory", "factory(any)").
 
-/* aggregateInvocations("newTasks", "factory", "factory(bob)"). */
-aggregatedChild("factory", "Task", "newTasks").
+invocationObject("alice(start)", "factory", "factory(alice)").
+invocationObject("newTasksForAlice(any)", "factory", "factory(alice)").
 
-aggregatedChild("factory(alice)", "Task", "newTasks(alice)").
-aggregatedChild("factory(bob)", "Task", "newTasks(bob)").
+invocationObject("bob(start)", "factory", "factory(bob)").
+invocationObject("newTasksForBob(any)", "factory", "factory(bob)").
+
+newObject("factory(alice)", "Task", "newTasksForAlice").
+newObject("factory(bob)", "Task", "newTasksForBob").
+newObject("factory(any)", "Task", "newTasks").
 
 
 
 /* Graphing */
 
 /*
-graphObjects(?Caller, ?Object) :- value(?Caller, ?Var, ?Object), ?Caller != ?Object.
-graphInvocable(?Caller, ?Invocation) :- value(?Caller, ?Var, ?Object), invocationObject(?Caller, ?Object, ?Invocation), ?Caller != ?Invocation.
+graphObjects(?Object, ?Target) :- isObject(?Object), field(?Object, ?Var, ?Target), ?Object != ?Target.
+graphObjects(?Object, ?Target) :- isInvocation(?Caller), hasInvocation(?Object, ?Caller), local(?Caller, ?Var, ?Target), ?Object != ?Target.
+graphObjects(?Invocation, ?Object) :- hasInvocation(?Object, ?Invocation).
+graphInvocable(?Caller, ?TargetInvocation) :- didCall(?Caller, ?TargetInvocation, ?Arg, ?Result).
 */
 
-graphObjects(?Caller, ?Object) :- isObject(?Caller), value(?Caller, ?Var, ?Object), ?Caller != ?Object.
+graphObjects(?Object, ?Target) :- isObject(?Object), field(?Object, ?Var, ?Target), ?Object != ?Target.
+graphObjects(?Object, ?Target) :- isInvocation(?Caller), hasInvocation(?Object, ?Caller), local(?Caller, ?Var, ?Target), ?Object != ?Target.
 
 
 /* Goals */
 
-error('newTasks(alice) accessible to Bob!', 1) :- value('bob', ?Var, 'newTasks(alice)').
+error('newTasksForAlice accessible to Bob!', 1) :- value('bob', ?Var, 'newTasksForAlice').
 
 
 ?- isA(?X, ?Y).
-?- invocationObject(?Caller, ?Object, ?Invocation).

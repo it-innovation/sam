@@ -1,30 +1,65 @@
 /* vim: set syntax=prolog : */
 
+/* predicates
+
+local(?Invocation, ?VarName, ?Value)
+field(?Object, ?VarName, ?Value)
+
+*/
+
+/* aggregation */
+
+realInvocationObject(?Caller, ?Target, ?Invocation) :-
+	invocationObject(?Caller, ?Target, ?Invocation).
+realInvocationObject(?Caller, ?Target, ?Invocation) :-
+	isInvocation(?Caller),
+	defaultInvocationObject(?Target, ?Invocation),
+	!invocationObject(?Caller, ?Target, ?AnyInvocation).
+
+/* static predicates on types */
+
+isType(?Type) :- isA(?AnyObject, ?Type).
+hasLocal(?Type, "this") :- isType(?Type).
+hasVar(?Type, ?VarName) :- hasField(?Type, ?VarName).
+hasVar(?Type, ?VarName) :- hasLocal(?Type, ?VarName).
+hasLocal(?Type, ?ChildVar) :- mayCreate(?Type, ?ChildType, ?ChildVar).
+
+
+/* predicates on objects */
+
 isObject(?X) :- isA(?X, ?Type).
+
+
+/* predicates on invocations */
+
+hasInvocation(?Object, ?Invocation) :- realInvocationObject(?AnyCaller, ?Object, ?Invocation).
 isInvocation(?Invocation) :- hasInvocation(?Object, ?Invocation).
+invocationType(?Invocation, ?Type) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type).
+
+/* If an Invocation has direct access to an object (via a local variable or a field on its object) */
+hasRef(?Invocation, ?Value) :- local(?Invocation, ?AnyVar, ?Value).
+hasRef(?Invocation, ?Value) :- hasInvocation(?Object, ?Invocation), field(?Object, ?AnyVar, ?Value).
 
 /* Every object has a 'this' variable with a reference to itself. */
-hasVar(?X, "this") :- isA(?Object, ?X).
-value(?X, "this", ?X) :- isA(?X, ?Type), hasVar(?Type, "this").
-
-/* All parameters are variables */
-hasVar(?X, ?Var) :- hasParameter(?X, ?Var).
-
-/* If we specified a separate invocation object, use that. Otherwise, use the object itself. */
-invocationObject(?Sender, ?Target, ?Invocation) :- aggregateInvocations(?Sender, ?Target, ?Invocation).
-invocationObject(?Sender, ?Target, ?Target) :- isObject(?Sender), isObject(?Target), !aggregateInvocations(?Sender, ?Target, ?Invocation).
-hasInvocation(?Object, ?Invocation) :- invocationObject(?Sender, ?Object, ?Invocation), didcall(?Someone, ?Invocation, ?SomeArg).
-hasVar(?Invocation, ?Var) :- hasInvocation(?Object, ?Invocation), hasVar(?Object, ?Var).
-/* value(?Invocation, ?Var, ?Value) :- hasInvocation(?Object, ?Invocation), value(?Object, ?Var, ?Value). */
-/* isA(?Invocation, ?Type) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type). */
-
+local(?Invocation, "this", ?Object) :- hasInvocation(?Object, ?Invocation).
 
 isA(?NewObject, ?Type) :- newObject(?Invocation, ?Type, ?NewObject).
 
-newObject(?Invocation, ?ChildType, ?NewObject) :- aggregatedChild(?Invocation, ?ChildType, ?NewObject).
-newObject(?Invocation, ?ChildType, ?Object) :- maycreate(?ParentType, ?ChildType, ?Var), hasInvocation(?Object, ?Invocation), isA(?Object, ?ParentType), !aggregatedChild(?Invocation, ?ChildType, ?NewObject).
+/* Local or field */
+value(?Invocation, ?Var, ?Value) :- local(?Invocation, ?Var, ?Value).
+value(?Invocation, ?Var, ?Value) :- hasInvocation(?Object, ?Invocation), field(?Object, ?Var, ?Value).
 
 
 /* Error checking */
 
 error('Not an object (no type!)', ?Object) :- value(?X, ?Var, ?Object), !isObject(?Object).
+
+error('Unknown mayCall target var', ?Type, ?TargetVar) :- mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar), !hasVar(?Type, ?TargetVar).
+error('Unknown mayCall arg var', ?Type, ?ArgVar) :- mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar), !hasVar(?Type, ?ArgVar).
+error('Unknown mayCall result var', ?Type, ?ResultVar) :- mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar), !hasVar(?Type, ?ResultVar).
+
+error('Unknown mayAccept var', ?Type, ?ArgVar) :- mayAccept(?Type, ?ArgVar), !hasVar(?Type, ?ArgVar).
+
+error('Unknown mayReturn var', ?Type, ?ReturnVar) :- mayReturn(?Type, ?ReturnVar), !hasVar(?Type, ?ReturnVar).
+
+error('Unknown mayCreate local var', ?Type, ?Var) :- mayCreate(?Type, ?ChildType, ?Var), !hasLocal(?Type, ?Var).

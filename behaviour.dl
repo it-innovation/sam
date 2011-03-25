@@ -1,15 +1,26 @@
 /* vim: set syntax=prolog : */
 
+/* Behaviour
 
-/* Behaviour */
+mayCall(type, targetObjectVar, argumentVar, resultVar)  : resultVar = targetVar.do(argumentVar);
+mayAccept(type, varName)				: public Object do(Object varName) { ... }
+mayReturn(type, varName)				: return varName;
 
-maycall("Unknown", ?X, ?Y, ?Z) :- hasVar("Unknown", ?X), hasVar("Unknown", ?Y), hasVar("Unknown", ?Z).
-hasParameter("Unknown", "ref").
-mayreturn("Unknown", ?X) :- hasVar("Unknown", ?X).
+*/
 
-maycreate("Factory", "Task", "task").
-mayreturn("Factory", "task").
 
-isField("Unknown", ?X) :- hasVar("Unknown", ?X).
 
-isA(?X, "Unknown") :- isA(?X, "Task").
+
+/* Unknown */
+hasField("Unknown", "ref").
+mayCall("Unknown", "ref", "ref", "ref").
+mayAccept("Unknown", "ref").
+mayReturn("Unknown", "ref").
+
+/* Factory */
+hasLocal("Factory", "task").
+mayCreate("Factory", "Task", "task").	/* Task task = new Task(); */
+mayReturn("Factory", "task").		/* return task; */
+
+
+isA(?X, "Unknown") :- isA(?X, "Task").	/* class Task extends Unknown {} */

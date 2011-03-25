@@ -2,22 +2,57 @@
 
 
 /* The concrete objects that may be called, based on the behaviour (in terms of variables) and the values of those variables. */
-mayCallObject(?Caller, ?TargetValue, ?ArgValue, ?ReturnVar) :- isA(?Caller, ?Type), maycall(?Type, ?TargetVar, ?ArgVar, ?ReturnVar), value(?Caller, ?TargetVar, ?TargetValue), value(?Caller, ?ArgVar, ?ArgValue).
+mayCallObject(?CallerInvocation, ?TargetValue, ?ArgValue, ?ResultVar) :-
+	invocationType(?CallerInvocation, ?Type),
+	mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar),
+	value(?CallerInvocation, ?TargetVar, ?TargetValue),
+	value(?CallerInvocation, ?ArgVar, ?ArgValue).
 
-/* Caller did a call if caller might do "def _ := targetVar(argVar)" */
-didcall(?Caller, ?TargetInvocation, ?ArgValue) :- mayCallObject(?Caller, ?TargetValue, ?ArgValue, ?ReturnVar), invocationObject(?Caller, ?TargetValue, ?TargetInvocation).
+/* Assume caller did a call if caller might do "Object resultVar = targetObject.do(argValue)" */
+didCall(?CallerInvocation, ?TargetInvocation, ?ArgValue, ?ResultVar) :-
+	mayCallObject(?CallerInvocation, ?TargetObject, ?ArgValue, ?ResultVar),
+	realInvocationObject(?CallerInvocation, ?TargetObject, ?TargetInvocation).
 
 /* If Caller may call target and may accept a return value and target may return a value then Caller's var may now be the returned value. */
-didget(?Caller, ?TargetInvocation, ?ReturnVar, ?ReturnValue) :- mayCallObject(?Caller, ?TargetObject, ?ArgValue, ?ReturnVar), invocationObject(?Caller, ?TargetObject, ?TargetInvocation), isA(?TargetObject, ?TargetType), mayreturn(?TargetType, ?TargetReturnVar), value(?TargetInvocation, ?TargetReturnVar, ?ReturnValue).
+didGet(?CallerInvocation, ?ResultVar, ?ResultValue) :-
+	didCall(?CallerInvocation, ?TargetInvocation, ?ArgValue, ?ResultVar),
+	invocationType(?TargetInvocation, ?TargetType),
+	mayReturn(?TargetType, ?TargetResultVar),
+	value(?TargetInvocation, ?TargetResultVar, ?ResultValue).
 
 /* The caller may store the result of any call. */
-value(?Caller, ?ReturnVar, ?ReturnValue) :- didget(?Caller, ?TargetInvocation, ?ReturnVar, ?ReturnValue).
+local(?CallerInvocation, ?ResultVar, ?ResultValue) :-
+	didGet(?CallerInvocation, ?ResultVar, ?ResultValue),
+	invocationType(?CallerInvocation, ?Type),
+	hasLocal(?Type, ?ResultValue).
+field(?CallerObject, ?ResultVar, ?ResultValue) :-
+	didGet(?CallerInvocation, ?ResultVar, ?ResultValue),
+	hasInvocation(?CallerObject, ?CallerInvocation),
+	isA(?CallerObject, ?Type),
+	hasField(?Type, ?ResultVar).
 
 /* Target's parameter variable may contain ArgValue if someone called it with that value. */
-value(?TargetInvocation, ?ParamVar, ?ArgValue) :- hasInvocation(?Target, ?TargetInvocation), isA(?Target, ?Type), hasParameter(?Type, ?ParamVar), didcall(?Caller, ?TargetInvocation, ?ArgValue).
+local(?TargetInvocation, ?ParamVar, ?ArgValue) :-
+	didCall(?AnyInvocation, ?TargetInvocation, ?ArgValue, ?ResultVar),
+	invocationType(?TargetInvocation, ?TargetType),
+	mayAccept(?TargetType, ?ParamVar).
 
-value(?Invocation, ?Var, ?NewChild) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type), maycreate(?Type, ?ChildType, ?Var), newObject(?Invocation, ?ChildType, ?NewChild).
+didCreate(?Invocation, ?Var, ?ChildType) :-
+	invocationType(?Invocation, ?Type),
+	mayCreate(?Type, ?ChildType, ?Var).
 
-/* Fields are stores on the object, not just the invocation. */
-/* value(?Object, ?Var, ?Value) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type), isField(?Type, ?Var), value(?Invocation, ?Var, ?Value). */
+local(?Invocation, ?Var, ?NewChild) :-
+	didCreate(?Invocation, ?Var, ?ChildType),
+	newObject(?Invocation, ?ChildType, ?NewChild).
 
+
+/* Sanity checking */
+
+
+error("No target invocation for possible call", ?CallerInvocation, ?TargetObject) :-
+	mayCallObject(?CallerInvocation, ?TargetObject, ?ArgValue, ?ResultVar),
+	!realInvocationObject(?CallerInvocation, ?TargetObject, ?TargetInvocation).
+
+error("No child object specified for new", ?Invocation, ?ChildType) :-
+	didCreate(?Invocation, ?Var, ?ChildType),
+	!newObject(?Invocation, ?ChildType, ?NewChild).
