@@ -68,3 +68,26 @@ error('Unknown mayCreate local var', ?Type, ?Var) :- mayCreate(?Type, ?ChildType
 
 error('Live invocation for non-alive object', ?Invocation, ?Object) :-
 	hasInvocation(?Object, ?Invocation), live(?Invocation), !live(?Object).
+
+error('Unknown source object in deny rule', ?A) :- denyAccess(?A, ?B), !isObject(?A).
+error('Unknown target object in deny rule', ?B) :- denyAccess(?A, ?B), !isObject(?B).
+
+haveAccess(?SourceObject, ?TargetObject) :-
+	hasInvocation(?SourceObject, ?Invocation),
+	local(?Invocation, ?Var, ?TargetObject).
+haveAccess(?SourceObject, ?TargetObject) :-
+	field(?SourceObject, ?Var, ?TargetObject).
+
+haveBadAccess(?SourceObject, ?TargetObject) :-
+	denyAccess(?SourceObject, ?TargetObject),
+	haveAccess(?SourceObject, ?TargetObject).
+
+error('unsafe access may be possible', ?SourceObject, ?TargetObject) :-
+	haveBadAccess(?SourceObject, ?TargetObject).
+
+missingGoodAccess(?SourceObject, ?TargetObject) :-
+	requireAccess(?SourceObject, ?TargetObject),
+	!haveAccess(?SourceObject, ?TargetObject).
+
+error('required access is not possible', ?SourceObject, ?TargetObject) :-
+	missingGoodAccess(?SourceObject, ?TargetObject).

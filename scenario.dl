@@ -42,13 +42,23 @@ graphObjects(?Invocation, ?Object) :- hasInvocation(?Object, ?Invocation).
 graphInvocable(?Caller, ?TargetInvocation) :- didCall(?Caller, ?TargetInvocation, ?Arg, ?Result).
 */
 
-graphObjects(?Object, ?Target) :- isObject(?Object), field(?Object, ?Var, ?Target), ?Object != ?Target.
-graphObjects(?Object, ?Target) :- isInvocation(?Caller), hasInvocation(?Object, ?Caller), local(?Caller, ?Var, ?Target), ?Object != ?Target.
+graphField(?Object, ?Target) :- isObject(?Object), field(?Object, ?Var, ?Target), ?Object != ?Target.
+graphLocal(?Object, ?Target) :- isInvocation(?Caller), hasInvocation(?Object, ?Caller), local(?Caller, ?Var, ?Target), ?Object != ?Target, !graphField(?Object, ?Target).
+
+graphEdge(?Object, ?Target, "") :- graphField(?Object, ?Target), !graphField(?Target, ?Object).
+graphEdge(?Object, ?Target, "dir=both") :- graphField(?Object, ?Target), graphField(?Target, ?Object), ?Target > ?Object.
+
+graphEdge(?Object, ?Target, "color=blue") :- graphLocal(?Object, ?Target), !graphLocal(?Target, ?Object).
+graphEdge(?Object, ?Target, "dir=both,color=blue") :- graphLocal(?Object, ?Target), graphLocal(?Target, ?Object), ?Target > ?Object.
+
+graphEdge(?Object, ?Target, "color=red") :- haveBadAccess(?Object, ?Target).
+graphEdge(?Object, ?Target, "color=red") :- missingGoodAccess(?Object, ?Target).
+
 
 
 /* Goals */
 
-error('newTasksForAlice accessible to Bob!', 1) :- value('bob', ?Var, 'newTasksForAlice').
-
+denyAccess('bob', 'newTasksForAlice').
+requireAccess('alice', 'newTasksForAlice').
 
 ?- isA(?X, ?Y).

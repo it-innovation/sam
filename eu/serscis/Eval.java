@@ -44,7 +44,7 @@ public class Eval {
 
 		IKnowledgeBase initialKnowledgeBase = KnowledgeBaseFactory.createKnowledgeBase( facts, rules, configuration );
 		graph(initialKnowledgeBase, new File("initial.dot"));
-		checkForErrors(initialKnowledgeBase);
+		//checkForErrors(initialKnowledgeBase);
 
 		parse(parser, rules, facts, new File("behaviour.dl"));
 		parse(parser, rules, facts, new File("system.dl"));
@@ -86,17 +86,18 @@ public class Eval {
 	static private void graph(IKnowledgeBase knowledgeBase, File outputDotFile) throws Exception {
 		ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
 
-		IPredicate graphObjectsPredicate = BASIC.createPredicate("graphObjects", 2);
-		ILiteral graphObjectsLiteral = BASIC.createLiteral(true, graphObjectsPredicate, xAndY);
-		IQuery graphObjectsQuery = BASIC.createQuery(graphObjectsLiteral);
-		IRelation graphObjectsResults = knowledgeBase.execute(graphObjectsQuery);
+		IPredicate graphNodePredicate = BASIC.createPredicate("graphNode", 2);
+		ILiteral graphNodeLiteral = BASIC.createLiteral(true, graphNodePredicate, xAndY);
+		IQuery graphNodeQuery = BASIC.createQuery(graphNodeLiteral);
+		IRelation graphNodeResults = knowledgeBase.execute(graphNodeQuery);
 
-		IPredicate graphInvocablePredicate = BASIC.createPredicate("graphInvocable", 2);
-		ILiteral graphInvocableLiteral = BASIC.createLiteral(true, graphInvocablePredicate, xAndY);
-		IQuery graphInvocableQuery = BASIC.createQuery(graphInvocableLiteral);
-		IRelation graphInvocableResults = knowledgeBase.execute(graphInvocableQuery);
+		ITuple xAndYandAttr = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"), TERM.createVariable("Attr"));
+		IPredicate graphEdgePredicate = BASIC.createPredicate("graphEdge", 3);
+		ILiteral graphEdgeLiteral = BASIC.createLiteral(true, graphEdgePredicate, xAndYandAttr);
+		IQuery graphEdgeQuery = BASIC.createQuery(graphEdgeLiteral);
+		IRelation graphEdgeResults = knowledgeBase.execute(graphEdgeQuery);
 
-		graph(graphObjectsResults, graphInvocableResults, outputDotFile);
+		graph(graphNodeResults, graphEdgeResults, outputDotFile);
 	}
 
 	static private void checkForErrors(IKnowledgeBase knowledgeBase) throws Exception {
@@ -131,33 +132,27 @@ public class Eval {
 		return "\"" + term.getValue().toString() + "\"";
 	}
 
-	/* (skips self references and uses a single double-headed arrow for two-way relations) */
-	static private void graphRelation(FileWriter writer, IRelation relation) throws Exception {
-		for (int t = 0; t < relation.size(); t++) {
-			ITuple tuple = relation.get(t);
-			ITerm a = tuple.get(0);
-			ITerm b = tuple.get(1);
-			if (relation.contains(BASIC.createTuple(b, a))) {
-				// both ways (or a == b)
-				if (a.toString().compareTo(b.toString()) > 0) {
-					writer.write(format(a) + " -> " + format(b) + " [dir=both];\n");
-				}
-			} else {
-				// one-way
-				writer.write(format(a) + " -> " + format(b) + ";\n");
-			}
-		}
-	}
-
-	static private void graph(IRelation objects, IRelation invocable, File dotFile) throws Exception {
+	static private void graph(IRelation nodes, IRelation edges, File dotFile) throws Exception {
 		FileWriter writer = new FileWriter(dotFile);
 		writer.write("digraph a {\n");
 		//writer.write("  concentrate=true;\n");
+		//writer.write("  rankdir=LR;\n");
 
-		graphRelation(writer, objects);
+		for (int t = 0; t < nodes.size(); t++) {
+			ITuple tuple = nodes.get(t);
+			ITerm nodeId = tuple.get(0);
+			String nodeAttrs = tuple.get(1).getValue().toString();
+			writer.write(format(nodeId) + " [" + nodeAttrs + "];\n");
+		}
 
-		writer.write("  edge [color=green];\n");
-		graphRelation(writer, invocable);
+		for (int t = 0; t < edges.size(); t++) {
+			ITuple tuple = edges.get(t);
+			ITerm a = tuple.get(0);
+			ITerm b = tuple.get(1);
+			String edgeAttrs = tuple.get(2).getValue().toString();
+
+			writer.write(format(a) + " -> " + format(b) + " [" + edgeAttrs + "];\n");
+		}
 
 		writer.write("}\n");
 		writer.close();
