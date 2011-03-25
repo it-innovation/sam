@@ -1,0 +1,47 @@
+/* vim: set syntax=prolog : */
+
+
+/* Config */
+
+isA("alice", "Unknown").
+isA("bob", "Unknown").
+isA("factory", "Factory").
+value("alice", "ref", "factory").
+value("bob", "ref", "factory").
+
+hasVar("Unknown", "ref").
+
+
+
+/* Aggregation */
+
+aggregateInvocations("alice", "factory", "factory(alice)").
+aggregateInvocations("newTasks(alice)", "factory", "factory(alice)").
+aggregateInvocations("bob", "factory", "factory(bob)").
+aggregateInvocations("newTasks(bob)", "factory", "factory(bob)").
+
+/* aggregateInvocations("newTasks", "factory", "factory(bob)"). */
+aggregatedChild("factory", "Task", "newTasks").
+
+aggregatedChild("factory(alice)", "Task", "newTasks(alice)").
+aggregatedChild("factory(bob)", "Task", "newTasks(bob)").
+
+
+
+/* Graphing */
+
+/*
+graphObjects(?Caller, ?Object) :- value(?Caller, ?Var, ?Object), ?Caller != ?Object.
+graphInvocable(?Caller, ?Invocation) :- value(?Caller, ?Var, ?Object), invocationObject(?Caller, ?Object, ?Invocation), ?Caller != ?Invocation.
+*/
+
+graphObjects(?Caller, ?Object) :- isObject(?Caller), value(?Caller, ?Var, ?Object), ?Caller != ?Object.
+
+
+/* Goals */
+
+error('newTasks(alice) accessible to Bob!', 1) :- value('bob', ?Var, 'newTasks(alice)').
+
+
+?- isA(?X, ?Y).
+?- invocationObject(?Caller, ?Object, ?Invocation).

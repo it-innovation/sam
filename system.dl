@@ -1,0 +1,23 @@
+/* vim: set syntax=prolog : */
+
+
+/* The concrete objects that may be called, based on the behaviour (in terms of variables) and the values of those variables. */
+mayCallObject(?Caller, ?TargetValue, ?ArgValue, ?ReturnVar) :- isA(?Caller, ?Type), maycall(?Type, ?TargetVar, ?ArgVar, ?ReturnVar), value(?Caller, ?TargetVar, ?TargetValue), value(?Caller, ?ArgVar, ?ArgValue).
+
+/* Caller did a call if caller might do "def _ := targetVar(argVar)" */
+didcall(?Caller, ?TargetInvocation, ?ArgValue) :- mayCallObject(?Caller, ?TargetValue, ?ArgValue, ?ReturnVar), invocationObject(?Caller, ?TargetValue, ?TargetInvocation).
+
+/* If Caller may call target and may accept a return value and target may return a value then Caller's var may now be the returned value. */
+didget(?Caller, ?TargetInvocation, ?ReturnVar, ?ReturnValue) :- mayCallObject(?Caller, ?TargetObject, ?ArgValue, ?ReturnVar), invocationObject(?Caller, ?TargetObject, ?TargetInvocation), isA(?TargetObject, ?TargetType), mayreturn(?TargetType, ?TargetReturnVar), value(?TargetInvocation, ?TargetReturnVar, ?ReturnValue).
+
+/* The caller may store the result of any call. */
+value(?Caller, ?ReturnVar, ?ReturnValue) :- didget(?Caller, ?TargetInvocation, ?ReturnVar, ?ReturnValue).
+
+/* Target's parameter variable may contain ArgValue if someone called it with that value. */
+value(?TargetInvocation, ?ParamVar, ?ArgValue) :- hasInvocation(?Target, ?TargetInvocation), isA(?Target, ?Type), hasParameter(?Type, ?ParamVar), didcall(?Caller, ?TargetInvocation, ?ArgValue).
+
+value(?Invocation, ?Var, ?NewChild) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type), maycreate(?Type, ?ChildType, ?Var), newObject(?Invocation, ?ChildType, ?NewChild).
+
+/* Fields are stores on the object, not just the invocation. */
+/* value(?Object, ?Var, ?Value) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type), isField(?Type, ?Var), value(?Invocation, ?Var, ?Value). */
+

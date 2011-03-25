@@ -1,0 +1,30 @@
+/* vim: set syntax=prolog : */
+
+isObject(?X) :- isA(?X, ?Type).
+isInvocation(?Invocation) :- hasInvocation(?Object, ?Invocation).
+
+/* Every object has a 'this' variable with a reference to itself. */
+hasVar(?X, "this") :- isA(?Object, ?X).
+value(?X, "this", ?X) :- isA(?X, ?Type), hasVar(?Type, "this").
+
+/* All parameters are variables */
+hasVar(?X, ?Var) :- hasParameter(?X, ?Var).
+
+/* If we specified a separate invocation object, use that. Otherwise, use the object itself. */
+invocationObject(?Sender, ?Target, ?Invocation) :- aggregateInvocations(?Sender, ?Target, ?Invocation).
+invocationObject(?Sender, ?Target, ?Target) :- isObject(?Sender), isObject(?Target), !aggregateInvocations(?Sender, ?Target, ?Invocation).
+hasInvocation(?Object, ?Invocation) :- invocationObject(?Sender, ?Object, ?Invocation), didcall(?Someone, ?Invocation, ?SomeArg).
+hasVar(?Invocation, ?Var) :- hasInvocation(?Object, ?Invocation), hasVar(?Object, ?Var).
+/* value(?Invocation, ?Var, ?Value) :- hasInvocation(?Object, ?Invocation), value(?Object, ?Var, ?Value). */
+/* isA(?Invocation, ?Type) :- hasInvocation(?Object, ?Invocation), isA(?Object, ?Type). */
+
+
+isA(?NewObject, ?Type) :- newObject(?Invocation, ?Type, ?NewObject).
+
+newObject(?Invocation, ?ChildType, ?NewObject) :- aggregatedChild(?Invocation, ?ChildType, ?NewObject).
+newObject(?Invocation, ?ChildType, ?Object) :- maycreate(?ParentType, ?ChildType, ?Var), hasInvocation(?Object, ?Invocation), isA(?Object, ?ParentType), !aggregatedChild(?Invocation, ?ChildType, ?NewObject).
+
+
+/* Error checking */
+
+error('Not an object (no type!)', ?Object) :- value(?X, ?Var, ?Object), !isObject(?Object).

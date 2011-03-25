@@ -1,5 +1,7 @@
 package eu.serscis;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.io.FileWriter;
 import java.io.File;
 import java.util.ArrayList;
@@ -24,40 +26,39 @@ import static org.deri.iris.factory.Factory.*;
 // Based on IRIS Demo code
 
 public class Eval {
-	private static final String loadFile( String filename ) throws IOException {
-		FileReader r = new FileReader( filename );
-
-		StringBuilder builder = new StringBuilder();
-
-		int ch = -1;
-		while( ( ch = r.read() ) >= 0 )
-		{
-			builder.append( (char) ch );
-		}
-		return builder.toString();
-	}
-
 	public static void main(String[] args) throws Exception {
 		if (args.length != 1) {
-			throw new Exception("usage: Eval INPUTFILE.dl");
+			throw new Exception("usage: Eval scenario.dl");
 		}
 		String filename = args[0];
 
 		Configuration configuration = KnowledgeBaseFactory.getDefaultConfiguration();
-		String program = loadFile( filename );
+
+		List<IRule> rules = new LinkedList<IRule>();
+		Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
 
 		Parser parser = new Parser();
-		parser.parse( program );
+		parse(parser, rules, facts, new File("scenario.dl"));
+		List<IQuery> queries = parser.getQueries();
+		parse(parser, rules, facts, new File("base.dl"));
 
-		Map<IPredicate,IRelation> facts = parser.getFacts();
-		List<IRule> rules = parser.getRules();
-		IKnowledgeBase knowledgeBase = KnowledgeBaseFactory.createKnowledgeBase( facts, rules, configuration );
+		IKnowledgeBase initialKnowledgeBase = KnowledgeBaseFactory.createKnowledgeBase( facts, rules, configuration );
+		graph(initialKnowledgeBase, new File("initial.dot"));
+		checkForErrors(initialKnowledgeBase);
 
+		parse(parser, rules, facts, new File("behaviour.dl"));
+		parse(parser, rules, facts, new File("system.dl"));
 
+		IKnowledgeBase finalKnowledgeBase = KnowledgeBaseFactory.createKnowledgeBase( facts, rules, configuration );
+		graph(finalKnowledgeBase, new File("access.dot"));
+		doQueries(finalKnowledgeBase, queries);
+		checkForErrors(finalKnowledgeBase);
+	}
+
+	static private void doQueries(IKnowledgeBase knowledgeBase, List<IQuery> queries) throws Exception {
 		List<IVariable> variableBindings = new ArrayList<IVariable>();
 
-		for( IQuery query : parser.getQueries() )
-		{
+		for (IQuery query : queries) {
 			// Execute the query
 			IRelation results = knowledgeBase.execute( query, variableBindings );
 
@@ -80,7 +81,9 @@ public class Eval {
 				formatResults( results );
 			}
 		}
+	}
 
+	static private void graph(IKnowledgeBase knowledgeBase, File outputDotFile) throws Exception {
 		ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
 
 		IPredicate graphObjectsPredicate = BASIC.createPredicate("graphObjects", 2);
@@ -93,7 +96,11 @@ public class Eval {
 		IQuery graphInvocableQuery = BASIC.createQuery(graphInvocableLiteral);
 		IRelation graphInvocableResults = knowledgeBase.execute(graphInvocableQuery);
 
-		graph(graphObjectsResults, graphInvocableResults, new File("access.dot"));
+		graph(graphObjectsResults, graphInvocableResults, outputDotFile);
+	}
+
+	static private void checkForErrors(IKnowledgeBase knowledgeBase) throws Exception {
+		ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
 
 		IPredicate errorPredicate = BASIC.createPredicate("error", 2);
 		ILiteral errorLiteral = BASIC.createLiteral(true, errorPredicate, xAndY);
@@ -149,5 +156,29 @@ public class Eval {
 
 		writer.write("}\n");
 		writer.close();
+	}
+
+	/* Extend rules and facts with information from source. */
+	static private void parse(Parser parser, List<IRule> rules, Map<IPredicate,IRelation> facts, File source) throws Exception {
+		FileReader reader = new FileReader(source);
+		try {
+			parser.parse(reader);
+		} finally {
+			reader.close();
+		}
+
+		Map<IPredicate,IRelation> newFacts = parser.getFacts();
+		List<IRule> newRules = parser.getRules();
+
+		rules.addAll(newRules);
+
+		for (Map.Entry<IPredicate,IRelation> entry : newFacts.entrySet()) {
+			IRelation existing = facts.get(entry.getKey());
+			if (existing == null) {
+				facts.put(entry.getKey(), entry.getValue());
+			} else {
+				existing.addAll(entry.getValue());
+			}
+		}
 	}
 }

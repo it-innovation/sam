@@ -1,0 +1,15 @@
+/* vim: set syntax=prolog : */
+
+
+/* Behaviour */
+
+maycall("Unknown", ?X, ?Y, ?Z) :- hasVar("Unknown", ?X), hasVar("Unknown", ?Y), hasVar("Unknown", ?Z).
+hasParameter("Unknown", "ref").
+mayreturn("Unknown", ?X) :- hasVar("Unknown", ?X).
+
+maycreate("Factory", "Task", "task").
+mayreturn("Factory", "task").
+
+isField("Unknown", ?X) :- hasVar("Unknown", ?X).
+
+isA(?X, "Unknown") :- isA(?X, "Task").
