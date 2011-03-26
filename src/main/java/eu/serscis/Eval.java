@@ -78,13 +78,13 @@ public class Eval {
 		IKnowledgeBase initialKnowledgeBase = KnowledgeBaseFactory.createKnowledgeBase(facts, rules, configuration);
 		graph(initialKnowledgeBase, new File("initial.dot"));
 
-		checkForErrors(initialKnowledgeBase);
+		checkForErrors(initialKnowledgeBase, "in initial configuration");
 		handleImports("final");
 
 		IKnowledgeBase finalKnowledgeBase = KnowledgeBaseFactory.createKnowledgeBase(facts, rules, configuration);
 		graph(finalKnowledgeBase, new File("access.dot"));
 		doQueries(finalKnowledgeBase, queries);
-		checkForErrors(finalKnowledgeBase);
+		checkForErrors(finalKnowledgeBase, "after applying propagation rules");
 	}
 
 	static private void doQueries(IKnowledgeBase knowledgeBase, List<IQuery> queries) throws Exception {
@@ -132,7 +132,7 @@ public class Eval {
 		graph(graphNodeResults, graphEdgeResults, outputDotFile);
 	}
 
-	static private void checkForErrors(IKnowledgeBase knowledgeBase) throws Exception {
+	static private void checkForErrors(IKnowledgeBase knowledgeBase, String when) throws Exception {
 		List<ITerm> terms = new LinkedList<ITerm>();
 
 		for (int i = 0; i < 5; i++) {
@@ -141,7 +141,7 @@ public class Eval {
 			IQuery errorQuery = BASIC.createQuery(errorLiteral);
 			IRelation errorResults = knowledgeBase.execute(errorQuery);
 			if (errorResults.size() != 0) {
-				System.out.println("\n=== Errors detected ===\n");
+				System.out.println("\n=== Errors detected " + when + " ===\n");
 				formatResults(errorResults);
 				System.exit(1);
 			}
