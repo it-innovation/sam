@@ -1,5 +1,12 @@
 /* vim: set syntax=prolog : */
 
+/* Imports */
+
+import("initial", "sam:base.dl").
+import("initial", "sam:graph.dl").
+import("initial", "this:behaviour.dl").
+import("final", "sam:system.dl").
+
 /* Config */
 
 initialObject("alice", "Unknown").

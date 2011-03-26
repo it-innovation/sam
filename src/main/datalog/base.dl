@@ -88,13 +88,6 @@ haveBadAccess(?SourceObject, ?TargetObject) :-
 error('unsafe access may be possible', ?SourceObject, ?TargetObject) :-
 	haveBadAccess(?SourceObject, ?TargetObject).
 
-missingGoodAccess(?SourceObject, ?TargetObject) :-
-	requireAccess(?SourceObject, ?TargetObject),
-	!haveAccess(?SourceObject, ?TargetObject).
-
-error('required access is not possible', ?SourceObject, ?TargetObject) :-
-	missingGoodAccess(?SourceObject, ?TargetObject).
-
 error('Undeclared field', ?Object, ?Field) :-
 	field(?Field, ?Value),
 	isA(?Object, ?Type),

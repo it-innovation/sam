@@ -35,7 +35,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.FileReader;
+import java.io.Reader;
 import java.io.IOException;
 import org.deri.iris.Configuration;
 import org.deri.iris.KnowledgeBaseFactory;
@@ -52,31 +55,33 @@ import org.deri.iris.storage.IRelation;
 import static org.deri.iris.factory.Factory.*;
 
 public class Eval {
+	private Configuration configuration = KnowledgeBaseFactory.getDefaultConfiguration();
+	private List<IRule> rules = new LinkedList<IRule>();
+	private Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
+	private Parser parser = new Parser();
+
 	public static void main(String[] args) throws Exception {
 		if (args.length != 1) {
 			throw new Exception("usage: Eval scenario.dl");
 		}
-		String filename = args[0];
+		new Eval(new File(args[0]));
+	}
 
-		Configuration configuration = KnowledgeBaseFactory.getDefaultConfiguration();
+	public Eval(File scenario) throws Exception {
+		ClassLoader loader = Eval.class.getClassLoader();
 
-		List<IRule> rules = new LinkedList<IRule>();
-		Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
-
-		Parser parser = new Parser();
-		parse(parser, rules, facts, new File("scenario.dl"));
+		parse(scenario);
 		List<IQuery> queries = parser.getQueries();
-		parse(parser, rules, facts, new File("base.dl"));
-		parse(parser, rules, facts, new File("graph.dl"));
 
-		IKnowledgeBase initialKnowledgeBase = KnowledgeBaseFactory.createKnowledgeBase( facts, rules, configuration );
+		handleImports("initial");
+
+		IKnowledgeBase initialKnowledgeBase = KnowledgeBaseFactory.createKnowledgeBase(facts, rules, configuration);
 		graph(initialKnowledgeBase, new File("initial.dot"));
-		//checkForErrors(initialKnowledgeBase);
 
-		parse(parser, rules, facts, new File("behaviour.dl"));
-		parse(parser, rules, facts, new File("system.dl"));
+		checkForErrors(initialKnowledgeBase);
+		handleImports("final");
 
-		IKnowledgeBase finalKnowledgeBase = KnowledgeBaseFactory.createKnowledgeBase( facts, rules, configuration );
+		IKnowledgeBase finalKnowledgeBase = KnowledgeBaseFactory.createKnowledgeBase(facts, rules, configuration);
 		graph(finalKnowledgeBase, new File("access.dot"));
 		doQueries(finalKnowledgeBase, queries);
 		checkForErrors(finalKnowledgeBase);
@@ -138,7 +143,7 @@ public class Eval {
 			if (errorResults.size() != 0) {
 				System.out.println("\n=== Errors detected ===\n");
 				formatResults(errorResults);
-				//System.exit(1);
+				System.exit(1);
 			}
 
 			ITerm newTerm = TERM.createVariable("t" + i);
@@ -184,16 +189,26 @@ public class Eval {
 
 		writer.write("}\n");
 		writer.close();
+
+		Process proc = Runtime.getRuntime().exec(new String[] {"dot", "-O", "-Tpng", dotFile.getAbsolutePath()});
+		int result = proc.waitFor();
+		if (result != 0) {
+			throw new RuntimeException("dot failed to run: exit status = " + result);
+		}
 	}
 
 	/* Extend rules and facts with information from source. */
-	static private void parse(Parser parser, List<IRule> rules, Map<IPredicate,IRelation> facts, File source) throws Exception {
+	private void parse(File source) throws Exception {
 		FileReader reader = new FileReader(source);
 		try {
-			parser.parse(reader);
+			parse(reader);
 		} finally {
 			reader.close();
 		}
+	}
+
+	private void parse(Reader source) throws Exception {
+		parser.parse(source);
 
 		Map<IPredicate,IRelation> newFacts = parser.getFacts();
 		List<IRule> newRules = parser.getRules();
@@ -206,6 +221,33 @@ public class Eval {
 				facts.put(entry.getKey(), entry.getValue());
 			} else {
 				existing.addAll(entry.getValue());
+			}
+		}
+	}
+
+	private void handleImports(String stage) throws Exception {
+		IKnowledgeBase knowledgeBase = KnowledgeBaseFactory.createKnowledgeBase(facts, rules, configuration);
+
+		ITuple terms = BASIC.createTuple(TERM.createString(stage), TERM.createVariable("Path"));
+		IPredicate importPredicate = BASIC.createPredicate("import", 2);
+		ILiteral importLiteral = BASIC.createLiteral(true, importPredicate, terms);
+		IQuery importQuery = BASIC.createQuery(importLiteral);
+		IRelation importResults = knowledgeBase.execute(importQuery);
+
+		for (int t = 0; t < importResults.size(); t++) {
+			ITuple tuple = importResults.get(t);
+			String path = (String) tuple.get(0).getValue();
+
+			String[] components = path.split(":", 2);
+			if (components[0].equals("this")) {
+				parse(new File(components[1]));
+			} else if (components[0].equals("sam")) {
+				InputStream is = getClass().getClassLoader().getResourceAsStream(components[1]);
+				try {
+					parse(new InputStreamReader(is));
+				} finally {
+					is.close();
+				}
 			}
 		}
 	}

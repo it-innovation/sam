@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<interface xmlns="http://zero-install.sourceforge.net/2004/injector/interface" xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile">
+  <name>serscis-access-modeller</name>
+  <summary>modelling access propagation in capability systems</summary>
+  <description>
+Given a system of communicating objects and bounds on the behaviours of some of
+them, this modeller can be used to prove certain security properties of the
+system. It is similar to the Scollar system, but is better at handling dynamic
+systems (e.g. modelling factories).</description>
+  <category>Development</category>
+  <feed-for interface="http://www.serscis.eu/0install/serscis-access-modeller"/>
+
+  <implementation arch="*-src" compile:binary-main="run" compile:command="make -f ${SRCDIR}/src/Makefile" id="." version="0.1-pre">
+    <requires interface="http://repo.roscidus.com/java/iris" compile:include-binary='true'/>
+  </implementation>
+</interface>

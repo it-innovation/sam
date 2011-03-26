@@ -53,8 +53,8 @@ live(?NewChild) :-
 	didCreate(?Invocation, ?Var, ?ChildType),
 	newObject(?Invocation, ?ChildType, ?NewChild).
 
-/* Sanity checking */
 
+/* Sanity checking */
 
 error("No target invocation for possible call", ?CallerInvocation, ?TargetObject) :-
 	mayCallObject(?CallerInvocation, ?TargetObject, ?ArgValue, ?ResultVar),
@@ -63,3 +63,13 @@ error("No target invocation for possible call", ?CallerInvocation, ?TargetObject
 error("No child object specified for new", ?Invocation, ?ChildType) :-
 	didCreate(?Invocation, ?Var, ?ChildType),
 	!newObject(?Invocation, ?ChildType, ?NewChild).
+
+
+/* Goal checking (here because we only check after applying the system rules) */
+
+missingGoodAccess(?SourceObject, ?TargetObject) :-
+	requireAccess(?SourceObject, ?TargetObject),
+	!haveAccess(?SourceObject, ?TargetObject).
+
+error('required access is not possible', ?SourceObject, ?TargetObject) :-
+	missingGoodAccess(?SourceObject, ?TargetObject).
