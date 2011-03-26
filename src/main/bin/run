@@ -1,3 +1,0 @@
-#!/bin/sh
-mydir=`dirname $0`
-java -cp ${mydir}:${CLASSPATH} eu.serscis.Eval "$@"

@@ -1,7 +1,6 @@
 VPATH = ${SRCDIR}
 
 all: src/main/java/eu/serscis/Eval.class
-	cp ${SRCDIR}/src/main/bin/run ${DISTDIR}/
 	cp ${SRCDIR}/src/main/datalog/*.dl ${DISTDIR}/
 
 %.class: %.java

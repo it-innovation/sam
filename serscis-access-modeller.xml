@@ -10,7 +10,16 @@ systems (e.g. modelling factories).</description>
   <category>Development</category>
   <feed-for interface="http://www.serscis.eu/0install/serscis-access-modeller"/>
 
-  <implementation arch="*-src" compile:binary-main="run" compile:command="make -f ${SRCDIR}/src/Makefile" id="." version="0.1-pre">
+  <implementation arch="*-src" id="." version="0.1-pre" compile:min-version='0.23'>
+    <command name='compile' shell-command='make -f ${SRCDIR}/src/Makefile'>
+      <compile:implementation arch='*-*'>
+	<environment name='CLASSPATH' insert='.'/>
+	<command name='run'>
+	  <runner interface='http://repo.roscidus.com/java/openjdk-6-jre'/>
+	  <arg>eu.serscis.Eval</arg>
+	</command>
+      </compile:implementation>
+    </command>
     <requires interface="http://repo.roscidus.com/java/iris" compile:include-binary='true'/>
   </implementation>
 </interface>
