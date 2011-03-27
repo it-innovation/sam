@@ -134,6 +134,7 @@ public class Eval {
 
 	static private void checkForErrors(IKnowledgeBase knowledgeBase, String when) throws Exception {
 		List<ITerm> terms = new LinkedList<ITerm>();
+		boolean problem = false;
 
 		for (int i = 0; i < 5; i++) {
 			IPredicate errorPredicate = BASIC.createPredicate("error", i);
@@ -141,13 +142,19 @@ public class Eval {
 			IQuery errorQuery = BASIC.createQuery(errorLiteral);
 			IRelation errorResults = knowledgeBase.execute(errorQuery);
 			if (errorResults.size() != 0) {
-				System.out.println("\n=== Errors detected " + when + " ===\n");
+				if (!problem) {
+					System.out.println("\n=== Errors detected " + when + " ===\n");
+					problem = true;
+				}
 				formatResults(errorResults);
-				System.exit(1);
 			}
 
 			ITerm newTerm = TERM.createVariable("t" + i);
 			terms.add(newTerm);
+		}
+
+		if (problem) {
+			System.exit(1);
 		}
 	}
 
