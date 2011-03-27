@@ -1,0 +1,77 @@
+/* vim: set syntax=prolog : */
+
+/* Imports */
+
+import("initial", "sam:base.dl").
+import("initial", "sam:graph.dl").
+import("initial", "this:behaviour.dl").
+import("final", "sam:system.dl").
+
+
+/* Behaviour */
+
+/* Unknown */
+hasField("Unknown", "ref").
+mayCall("Unknown", "ref", "ref", "ref").
+mayAccept("Unknown", "ref").
+mayReturn("Unknown", "ref").
+
+/* Store */
+hasField("Store", "data").
+mayAccept("Store", "data", ?Object) :- isA(?Object, 'Data').
+mayReturn("Store", "data").
+
+/* Diode */
+hasLocal("Diode", "arg").
+hasField("Diode", "ref").
+mayAccept("Diode", "arg", ?Object) :- isA(?Object, 'Data').
+mayCall("Diode", "ref", "arg", "arg").
+
+
+/* Config */
+
+initialObject("bond", "Unknown").
+initialObject("q", "Unknown").
+initialObject("highstore", "Store").
+initialObject("lowstore", "Store").
+
+initialObject("highdata", "Data").
+initialObject("lowdata", "Data").
+
+initialObject("diode", "Diode").
+
+field("bond", "ref", "highstore").
+field("bond", "ref", "highdata").
+field("diode", "ref", "highstore").
+
+field("q", "ref", "diode").
+field("q", "ref", "lowstore").
+field("q", "ref", "lowdata").
+
+
+initialInvocation("bond", "bond(any)").
+initialInvocation("q", "q(any)").
+
+
+/* Aggregation */
+
+defaultInvocationObject("highstore", "highstore(any)").
+defaultInvocationObject("lowstore", "lowstore(any)").
+defaultInvocationObject("highdata", "highdata(any)").
+defaultInvocationObject("lowdata", "lowdata(any)").
+defaultInvocationObject("diode", "diode(any)").
+
+
+/* Graphing */
+
+//showInvocation(?Invocation) :- isInvocation(?Invocation).
+//showInvocation(?Invocation) :- hasInvocation('factory', ?Invocation).
+//showInvocation(?Invocation) :- hasInvocation('alice', ?Invocation).
+
+
+/* Goals */
+
+denyAccess('lowstore', 'highdata').
+requireAccess('highstore', 'lowdata').
+
+?- field(?X, ?Y, ?Z).

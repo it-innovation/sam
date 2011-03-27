@@ -1,5 +1,6 @@
 /* vim: set syntax=prolog : */
 
+mayAccept(?TargetType, ?ParamVar, ?Value) :- mayAccept(?TargetType, ?ParamVar), isObject(?Value).
 
 /* The concrete objects that may be called, based on the behaviour (in terms of variables) and the values of those variables. */
 mayCallObject(?CallerInvocation, ?TargetValue, ?ArgValue, ?ResultVar) :-
@@ -38,7 +39,14 @@ field(?CallerObject, ?ResultVar, ?ResultValue) :-
 local(?TargetInvocation, ?ParamVar, ?ArgValue) :-
 	didCall(?AnyInvocation, ?TargetInvocation, ?ArgValue, ?ResultVar),
 	invocationType(?TargetInvocation, ?TargetType),
-	mayAccept(?TargetType, ?ParamVar).
+	hasLocal(?TargetType, ?ParamVar),
+	mayAccept(?TargetType, ?ParamVar, ?ArgValue).
+field(?TargetObject, ?ParamVar, ?ArgValue) :-
+	didCall(?AnyInvocation, ?TargetInvocation, ?ArgValue, ?ResultVar),
+	hasInvocation(?TargetObject, ?TargetInvocation),
+	invocationType(?TargetInvocation, ?TargetType),
+	hasField(?TargetType, ?ParamVar),
+	mayAccept(?TargetType, ?ParamVar, ?ArgValue).
 
 didCreate(?Invocation, ?Var, ?ChildType) :-
 	live(?Invocation),
