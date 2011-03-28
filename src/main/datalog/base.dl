@@ -101,5 +101,6 @@ error('Undeclared variable', ?Invocation, ?Var) :-
 error('Undeclared local', ?Type, ?Var, ?Value) :- local(?Invocation, ?Var, ?Value), invocationType(?Invocation, ?Type), !hasLocal(?Type, ?Var).
 error('Local on non-invocation', ?Invocation, ?Var, ?Value) :- local(?Invocation, ?Var, ?Value), !isInvocation(?Invocation).
 
-error('Undeclared field', ?Type, ?Var, ?Value) :- field(?Object, ?Var, ?Value), isA(?Object, ?Type), !hasField(?Type, ?Var).
+objectHasField(?Object, ?Field) :- isA(?Object, ?Type), hasField(?Type, ?Field).
+error('Undeclared field', ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !objectHasField(?Object, ?Var).
 error('Field on non-object', ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !isObject(?Object).

@@ -22,5 +22,4 @@ hasLocal("Factory", "task").
 mayCreate("Factory", "Task", "task").	/* Task task = new Task(); */
 mayReturn("Factory", "task").		/* return task; */
 
-
 isA(?X, "Unknown") :- isA(?X, "Task").	/* class Task extends Unknown {} */
