@@ -11,8 +11,8 @@ graphLocal(?Object, ?Target) :- local(?Object, ?Context, ?Var, ?Target), ?Object
 graphEdge(?Object, ?Target, "") :- graphField(?Object, ?Target), !graphField(?Target, ?Object).
 graphEdge(?Object, ?Target, "dir=both") :- graphField(?Object, ?Target), graphField(?Target, ?Object), ?Target > ?Object.
 
-graphEdge(?Object, ?Target, "color=blue") :- graphLocal(?Object, ?Target), !graphLocal(?Target, ?Object).
-graphEdge(?Object, ?Target, "dir=both,color=blue") :- graphLocal(?Object, ?Target), graphLocal(?Target, ?Object), ?Target > ?Object.
+graphEdge(?Object, ?Target, "color=blue,constraint=false") :- graphLocal(?Object, ?Target), !graphLocal(?Target, ?Object).
+graphEdge(?Object, ?Target, "dir=both,color=blue,constraint=false") :- graphLocal(?Object, ?Target), graphLocal(?Target, ?Object), ?Target > ?Object.
 
 graphEdge(?Object, ?Target, "color=red") :- haveBadAccess(?Object, ?Target).
 graphEdge(?Object, ?Target, "color=red,style=dashed") :- missingGoodAccess(?Object, ?Target).

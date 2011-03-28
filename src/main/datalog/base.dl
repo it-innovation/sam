@@ -92,3 +92,11 @@ error('Local on non-invocation', ?Invocation, ?Var, ?Value) :- local(?Object, ?I
 objectHasField(?Object, ?Field) :- isA(?Object, ?Type), hasField(?Type, ?Field).
 error('Undeclared field', ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !objectHasField(?Object, ?Var).
 error('Field on non-object', ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !isObject(?Object).
+
+
+/* Unknown behaviour */
+hasField("Unknown", "ref").
+field(?Object, "ref", ?Object) :- live(?Object), isA(?Object, "Unknown").
+mayCall("Unknown", "ref", "ref", "ref").
+mayAccept("Unknown", "ref").
+mayReturn("Unknown", "ref").
