@@ -49,29 +49,21 @@ field("q", "ref", "lowstore").
 field("q", "ref", "lowdata").
 
 
-initialInvocation("bond", "bond(any)").
-initialInvocation("q", "q(any)").
+initialInvocation("bond", "any").
+initialInvocation("q", "any").
 
 
 /* Aggregation */
 
-defaultInvocationObject("highstore", "highstore(any)").
-defaultInvocationObject("lowstore", "lowstore(any)").
-defaultInvocationObject("highdata", "highdata(any)").
-defaultInvocationObject("lowdata", "lowdata(any)").
-defaultInvocationObject("diode", "diode(any)").
 
 
 /* Graphing */
 
-//showInvocation(?Invocation) :- isInvocation(?Invocation).
-//showInvocation(?Invocation) :- hasInvocation('factory', ?Invocation).
-//showInvocation(?Invocation) :- hasInvocation('alice', ?Invocation).
+//showInvocation(?Object, ?Invocation) :- isObject(?Object), isInvocation(?Invocation).
+//showInvocation('diode', ?Invocation) :- isInvocation(?Invocation).
 
 
 /* Goals */
 
 denyAccess('lowstore', 'highdata').
 requireAccess('highstore', 'lowdata').
-
-?- field(?X, ?Y, ?Z).

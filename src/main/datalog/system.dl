@@ -3,74 +3,73 @@
 mayAccept(?TargetType, ?ParamVar, ?Value) :- mayAccept(?TargetType, ?ParamVar), isObject(?Value).
 
 /* The concrete objects that may be called, based on the behaviour (in terms of variables) and the values of those variables. */
-mayCallObject(?CallerInvocation, ?TargetValue, ?ArgValue, ?ResultVar) :-
-	invocationType(?CallerInvocation, ?Type),
+mayCallObject(?Caller, ?CallerInvocation, ?TargetValue, ?ArgValue, ?ResultVar) :-
+	isA(?Caller, ?Type),
 	mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar),
-	value(?CallerInvocation, ?TargetVar, ?TargetValue),
-	value(?CallerInvocation, ?ArgVar, ?ArgValue).
+	value(?Caller, ?CallerInvocation, ?TargetVar, ?TargetValue),
+	value(?Caller, ?CallerInvocation, ?ArgVar, ?ArgValue).
 
 /* Assume caller did a call if caller might do "Object resultVar = targetObject.do(argValue)" */
-didCall(?CallerInvocation, ?TargetInvocation, ?ArgValue, ?ResultVar) :-
-	live(?CallerInvocation),
-	mayCallObject(?CallerInvocation, ?TargetObject, ?ArgValue, ?ResultVar),
-	realInvocationObject(?CallerInvocation, ?TargetObject, ?TargetInvocation).
+didCall(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation, ?ArgValue, ?ResultVar) :-
+	live(?Caller, ?CallerInvocation),
+	mayCallObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar),
+	realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation).
+error("No target invocation for possible call", ?Caller, ?CallerInvocation, ?Target) :-
+	live(?Caller, ?CallerInvocation),
+	mayCallObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar),
+	!realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation).
 
-live(?TargetInvocation) :- didCall(?Caller, ?TargetInvocation, ?A, ?R).
+live(?Target, ?TargetInvocation) :- didCall(?AnyCaller, ?AnyCallerInvocation, ?Target, ?TargetInvocation, ?A, ?R).
 
 /* If Caller may call target and may accept a return value and target may return a value then Caller's var may now be the returned value. */
-didGet(?CallerInvocation, ?ResultVar, ?ResultValue) :-
-	didCall(?CallerInvocation, ?TargetInvocation, ?ArgValue, ?ResultVar),
-	invocationType(?TargetInvocation, ?TargetType),
+didGet(?Caller, ?CallerInvocation, ?ResultVar, ?ResultValue) :-
+	didCall(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation, ?ArgValue, ?ResultVar),
+	isA(?Target, ?TargetType),
 	mayReturn(?TargetType, ?TargetResultVar),
-	value(?TargetInvocation, ?TargetResultVar, ?ResultValue).
+	value(?Target, ?TargetInvocation, ?TargetResultVar, ?ResultValue).
 
 /* The caller may store the result of any call. */
-local(?CallerInvocation, ?ResultVar, ?ResultValue) :-
-	didGet(?CallerInvocation, ?ResultVar, ?ResultValue),
-	invocationType(?CallerInvocation, ?Type),
+local(?Caller, ?CallerInvocation, ?ResultVar, ?ResultValue) :-
+	didGet(?Caller, ?CallerInvocation, ?ResultVar, ?ResultValue),
+	isA(?Caller, ?Type),
 	hasLocal(?Type, ?ResultVar).
-field(?CallerObject, ?ResultVar, ?ResultValue) :-
-	didGet(?CallerInvocation, ?ResultVar, ?ResultValue),
-	hasInvocation(?CallerObject, ?CallerInvocation),
-	isA(?CallerObject, ?Type),
+field(?Caller, ?ResultVar, ?ResultValue) :-
+	didGet(?Caller, ?AnyInvocation, ?ResultVar, ?ResultValue),
+	isA(?Caller, ?Type),
 	hasField(?Type, ?ResultVar).
 
 /* Target's parameter variable may contain ArgValue if someone called it with that value. */
-local(?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	didCall(?AnyInvocation, ?TargetInvocation, ?ArgValue, ?ResultVar),
-	invocationType(?TargetInvocation, ?TargetType),
+local(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
+	didCall(?AnyCaller, ?AnyInvocation, ?Target, ?TargetInvocation, ?ArgValue, ?ResultVar),
+	isA(?Target, ?TargetType),
 	hasLocal(?TargetType, ?ParamVar),
 	mayAccept(?TargetType, ?ParamVar, ?ArgValue).
-field(?TargetObject, ?ParamVar, ?ArgValue) :-
-	didCall(?AnyInvocation, ?TargetInvocation, ?ArgValue, ?ResultVar),
-	hasInvocation(?TargetObject, ?TargetInvocation),
-	invocationType(?TargetInvocation, ?TargetType),
+field(?Target, ?ParamVar, ?ArgValue) :-
+	didCall(?AnyCaller, ?AnyInvocation, ?Target, ?TargetInvocation, ?ArgValue, ?ResultVar),
+	isA(?Target, ?TargetType),
 	hasField(?TargetType, ?ParamVar),
 	mayAccept(?TargetType, ?ParamVar, ?ArgValue).
 
-didCreate(?Invocation, ?Var, ?ChildType) :-
-	live(?Invocation),
-	invocationType(?Invocation, ?Type),
+didCreate(?Object, ?Invocation, ?Var, ?ChildType) :-
+	live(?Object, ?Invocation),
+	isA(?Object, ?Type),
 	mayCreate(?Type, ?ChildType, ?Var).
 
-local(?Invocation, ?Var, ?NewChild) :-
-	didCreate(?Invocation, ?Var, ?ChildType),
-	newObject(?Invocation, ?ChildType, ?NewChild).
+local(?Object, ?Invocation, ?Var, ?NewChild) :-
+	didCreate(?Object, ?Invocation, ?Var, ?ChildType),
+	newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
 
 live(?NewChild) :-
-	didCreate(?Invocation, ?Var, ?ChildType),
-	newObject(?Invocation, ?ChildType, ?NewChild).
+	didCreate(?Object, ?Invocation, ?Var, ?ChildType),
+	newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
 
 
 /* Sanity checking */
 
-error("No target invocation for possible call", ?CallerInvocation, ?TargetObject) :-
-	mayCallObject(?CallerInvocation, ?TargetObject, ?ArgValue, ?ResultVar),
-	!realInvocationObject(?CallerInvocation, ?TargetObject, ?TargetInvocation).
 
-error("No child object specified for new", ?Invocation, ?ChildType) :-
-	didCreate(?Invocation, ?Var, ?ChildType),
-	!newObject(?Invocation, ?ChildType, ?NewChild).
+error("No child object specified for new", ?Object, ?Invocation, ?ChildType) :-
+	didCreate(?Object, ?Invocation, ?Var, ?ChildType),
+	!newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
 
 
 /* Goal checking (here because we only check after applying the system rules) */
