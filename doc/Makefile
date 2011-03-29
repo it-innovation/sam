@@ -1,6 +1,8 @@
 # Makefile for Sphinx documentation
 #
 
+SAM = 0launch ../serscis-access-modeller-any-any/0install/serscis-access-modeller.xml
+
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
@@ -32,7 +34,7 @@ help:
 clean:
 	-rm -rf $(BUILDDIR)/*
 
-html:
+html: examples
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
@@ -89,3 +91,9 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
+
+examples: factory.png factory-showing-invocations.png
+
+%.png: examples/%.dl
+	${SAM} $<
+	mv access.dot.png images/$@
