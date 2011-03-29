@@ -15,13 +15,15 @@ field(?Object, ?VarName, ?Value)
  * of the resulting invocation at Target is the same, unless overridden by
  * invocationObject.
  */
-realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation) :-
-	invocationObject(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation).
-realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?CallerInvocation) :-
-	isObject(?Caller),
+realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?TargetInvocation) :-
+	invocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?TargetInvocation).
+realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?CallerInvocation) :-
+	isA(?Caller, ?CallerType),
 	isObject(?Target),
+	hasVar(?CallerType, ?ResultVar),
+	isObject(?ArgValue),
 	isInvocation(?CallerInvocation),
-	!invocationObject(?Caller, ?CallerInvocation, ?Target, ?AnyTargetInvocation).
+	!invocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?AnyTargetInvocation).
 
 /* static predicates on types */
 
@@ -37,13 +39,14 @@ hasLocal(?Type, ?ChildVar) :- mayCreate(?Type, ?ChildType, ?ChildVar).
 isObject(?X) :- isA(?X, ?Type).
 live(?Object) :- initialObject(?Object, ?Type).
 isA(?Object, ?Type) :- initialObject(?Object, ?Type).
-isA(?NewObject, ?Type) :- newObject(?Object, ?Invocation, ?Type, ?NewObject).
+isA(?NewObject, ?Type) :- realNewObject(?Object, ?Invocation, ?Type, ?NewObject).
 
 
 /* predicates on invocations */
 
 live(?Object, ?Invocation) :- initialInvocation(?Object, ?Invocation).
 isInvocation(?Invocation) :- initialInvocation(?Object, ?Invocation).
+isInvocation(?Invocation) :- invocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?Invocation).
 
 /* If an Invocation has direct access to an object (via a local variable or a field on its object) */
 hasRef(?Object, ?Invocation, ?Value) :- value(?Object, ?Invocation, ?AnyVar, ?Value).
@@ -72,9 +75,6 @@ error('Unknown mayCreate local var', ?Type, ?Var) :- mayCreate(?Type, ?ChildType
 
 error('Live invocation for non-alive object', ?Invocation, ?Object) :-
 	live(?Object, ?Invocation), !live(?Object).
-
-error('Unknown source object in deny rule', ?A) :- denyAccess(?A, ?B), !isObject(?A).
-error('Unknown target object in deny rule', ?B) :- denyAccess(?A, ?B), !isObject(?B).
 
 haveAccess(?SourceObject, ?TargetObject) :-
 	hasRef(?SourceObject, ?AnyInvocation, ?TargetObject).

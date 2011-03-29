@@ -4,6 +4,7 @@ mayAccept(?TargetType, ?ParamVar, ?Value) :- mayAccept(?TargetType, ?ParamVar), 
 
 /* The concrete objects that may be called, based on the behaviour (in terms of variables) and the values of those variables. */
 mayCallObject(?Caller, ?CallerInvocation, ?TargetValue, ?ArgValue, ?ResultVar) :-
+	live(?Caller, ?CallerInvocation),
 	isA(?Caller, ?Type),
 	mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar),
 	value(?Caller, ?CallerInvocation, ?TargetVar, ?TargetValue),
@@ -11,13 +12,11 @@ mayCallObject(?Caller, ?CallerInvocation, ?TargetValue, ?ArgValue, ?ResultVar) :
 
 /* Assume caller did a call if caller might do "Object resultVar = targetObject.do(argValue)" */
 didCall(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation, ?ArgValue, ?ResultVar) :-
-	live(?Caller, ?CallerInvocation),
 	mayCallObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar),
-	realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation).
+	realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?TargetInvocation).
 error("No target invocation for possible call", ?Caller, ?CallerInvocation, ?Target) :-
-	live(?Caller, ?CallerInvocation),
 	mayCallObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar),
-	!realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation).
+	!realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?TargetInvocation).
 
 live(?Target, ?TargetInvocation) :- didCall(?AnyCaller, ?AnyCallerInvocation, ?Target, ?TargetInvocation, ?A, ?R).
 
@@ -57,19 +56,27 @@ didCreate(?Object, ?Invocation, ?Var, ?ChildType) :-
 
 local(?Object, ?Invocation, ?Var, ?NewChild) :-
 	didCreate(?Object, ?Invocation, ?Var, ?ChildType),
-	newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
+	realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild).
 
 live(?NewChild) :-
 	didCreate(?Object, ?Invocation, ?Var, ?ChildType),
-	newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
+	realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild).
 
+
+/* Default aggregation for child objects */
+
+realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild) :- newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
+realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild) :-
+	isA(?Object, ?Type),
+	mayCreate(?Type, ?ChildType, ?Var),
+	isInvocation(?Invocation),
+	!newObject(?Object, ?Invocation, ?ChildType, ?AnyChild),
+	STRING_CONCAT(?ChildType, ?Invocation, ?NewChild).
 
 /* Sanity checking */
 
-
-error("No child object specified for new", ?Object, ?Invocation, ?ChildType) :-
-	didCreate(?Object, ?Invocation, ?Var, ?ChildType),
-	!newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
+error('Unknown source object in deny rule', ?A) :- denyAccess(?A, ?B), !isObject(?A).
+error('Unknown target object in deny rule', ?B) :- denyAccess(?A, ?B), !isObject(?B).
 
 
 /* Goal checking (here because we only check after applying the system rules) */

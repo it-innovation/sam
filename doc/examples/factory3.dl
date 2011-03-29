@@ -1,0 +1,43 @@
+/* vim: set syntax=prolog : */
+
+/* Imports */
+
+import("initial", "sam:base.dl").
+import("initial", "sam:graph.dl").
+import("final", "sam:system.dl").
+
+/* Behaviour */
+hasLocal("Factory", "task").
+mayCreate("Factory", "Task", "task").
+mayReturn("Factory", "task").
+
+isA(?Object, "Unknown") :- isA(?Object, "Task").
+
+hasField("ClientA", "factory").
+hasField("ClientA", "myTask").
+hasField("ClientA", "ref").
+
+// myTask = myTask.invoke(myTask)
+mayCall("ClientA", "factory", "ref", "myTask").
+
+
+/* Config */
+
+initialObject("clientA", "ClientA").
+initialObject("otherClients", "Unknown").
+initialObject("factory", "Factory").
+
+field("clientA", "factory", "factory").
+field("otherClients", "ref", "factory").
+
+initialInvocation("clientA", "A").
+initialInvocation("otherClients", "Other").
+
+initialObject("internet", "Unknown").
+field("clientA", "ref", "internet").
+field("otherClients", "ref", "internet").
+
+/* Goals */
+
+denyAccess('otherClients', 'TaskA').
+requireAccess('clientA', 'TaskA').

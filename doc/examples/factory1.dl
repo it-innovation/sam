@@ -1,0 +1,28 @@
+/* vim: set syntax=prolog : */
+
+/* Imports */
+
+import("initial", "sam:base.dl").
+import("initial", "sam:graph.dl").
+import("final", "sam:system.dl").
+
+/* Behaviour */
+hasLocal("Factory", "task").
+mayCreate("Factory", "Task", "task").
+mayReturn("Factory", "task").
+
+isA(?Object, "Unknown") :- isA(?Object, "Task").
+
+isA(?Object, "Unknown") :- isA(?Object, "Client").
+
+/* Config */
+
+initialObject("clientA", "Unknown").
+initialObject("otherClients", "Unknown").
+initialObject("factory", "Factory").
+
+field("clientA", "ref", "factory").
+field("otherClients", "ref", "factory").
+
+initialInvocation("clientA", "A").
+initialInvocation("otherClients", "Other").

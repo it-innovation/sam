@@ -14,6 +14,7 @@ Contents:
    introduction
    concepts
    tutorial
+   configuration
    base
    behaviour
    invocations

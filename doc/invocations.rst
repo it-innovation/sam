@@ -23,15 +23,16 @@ Aggregation
      newObject("factory", "clientA", "Proxy", "newProxiesForA").
      newObject("factory", "otherClients", "Proxy", "newProxiesForOthers").
 
-.. function:: invocationObject(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation)
+.. function:: invocationObject(?Caller, ?CallerInvocation, ?Target, ?Arg, ?VarName, ?TargetInvocation)
 
    Whenever the object `Caller` invokes a method on `Target` in the context
-   `CallerInvocation`, all the resulting invocations should be aggregated
-   into the `TargetInvocation` context. If not specified, the default is
-   to use `CallerInvocation` for `TargetInvocation`.
+   `CallerInvocation`, passing ?Arg and storing the result in ?VarName, all the
+   resulting invocations should be aggregated into the `TargetInvocation`
+   context. If not specified, the default is to use `CallerInvocation` for
+   `TargetInvocation`.
    
-   For example, to group all invocations of "target" from the object "proxy" into
-   a single "forProxy" invocation on target::
+   For example, to group all invocations by clientA's "Other" context of
+   `myTask = factory(arg)` into the "A" group::
 
-     invocationObject("proxy", ?Invocation, "target", "forProxy") :- isInvocation(?Invocation).
+     invocationObject("clientA", "Other", "factory", ?Arg, "myTask", "A") :- isObject(?Arg).
 

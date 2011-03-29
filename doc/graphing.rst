@@ -1,3 +1,5 @@
+.. _Graphing:
+
 Graphing
 ========
 
@@ -26,3 +28,32 @@ imports have also been processed.
    use::
 
      showInvocation(?Object, ?Invocation) :- live(?Object, ?Invocation).
+
+Notation
+--------
+
+.. graphviz::
+   digraph notation {
+     node [shape=plaintext];
+     A -> B [label="field"];
+     C [label="C\n(unknown behaviour)",fontcolor=red];
+
+     A -> D [color=red,fontcolor=red,label="safety violation"];
+     B -> A [color=red,fontcolor=red,style=dotted,label="liveness violation"];
+
+     node [color=green,fontcolor=green];
+     invocationOfA -> invocationOfB [label="calls",fontcolor=green,color=green];
+     invocationOfA -> A [color=blue,style=bold,label="this",fontcolor=blue];
+     invocationOfB -> B [color=blue,style=bold,label="this",fontcolor=blue];
+     invocationOfB -> C [color=blue,label="local",fontcolor=blue];
+   }
+
+This diagram shows:
+
+* Object `A` has a reference to `B` (stored in a field of `A`).
+* During invocation of a method on `A`, the code might call `B`. Such calls are aggregated as `invocationB`.
+* Each invocation has a local variable called `this` to its parent object.
+* Some of the calls aggregated as `invocationB` may get a reference to an object `C` with unknown
+  behaviour.
+* `A` has access to `D`, but shouldn't.
+* `B` should be able to get access to `A`, but can't.

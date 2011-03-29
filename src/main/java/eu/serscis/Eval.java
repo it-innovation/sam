@@ -52,6 +52,8 @@ import org.deri.iris.api.terms.IVariable;
 import org.deri.iris.api.terms.ITerm;
 import org.deri.iris.compiler.Parser;
 import org.deri.iris.storage.IRelation;
+import org.deri.iris.rules.IRuleSafetyProcessor;
+import org.deri.iris.RuleUnsafeException;
 import static org.deri.iris.factory.Factory.*;
 
 public class Eval {
@@ -69,6 +71,21 @@ public class Eval {
 
 	public Eval(File scenario) throws Exception {
 		ClassLoader loader = Eval.class.getClassLoader();
+
+		/* IRIS bug? It thinks that STRING_CONCAT is unsafe.
+		 * Workaround this by skipping the rules that need it.
+		 */
+		final IRuleSafetyProcessor oldProcessor = configuration.ruleSafetyProcessor;
+		configuration.ruleSafetyProcessor = new IRuleSafetyProcessor() {
+			public IRule process(IRule rule) throws RuleUnsafeException {
+				String p = rule.getHead().get(0).getAtom().getPredicate().getPredicateSymbol();
+				if (p.equals("realNewObject")) {
+					return rule;
+				}
+
+				return oldProcessor.process(rule);
+			}
+		};
 
 		parse(scenario);
 		List<IQuery> queries = parser.getQueries();
