@@ -105,7 +105,7 @@ For example, consider a factory with some clients ("clientA" and "otherClients")
 We want to prove that the other clients (aggregated into a single "otherClients" object)
 cannot get access to the new objects created by "clientA":
 
-  .. image:: images/factory.png
+  .. image:: _images/factory.png
 
 .. note::
    These diagrams use the SAM colour scheme:
@@ -127,7 +127,7 @@ and all invocations from otherClients in another. Like all aggregations, this is
 over-approximation of the actual behaviour. Here is the same diagram but with the invocations
 of the factory shown in green, rather than aggregated with the factory object as before:
 
-  .. image:: images/factory-showing-invocations.png
+  .. image:: _images/factory-showing-invocations.png
 
 .. tip:: Use :func:`showInvocation` to control which invocations are shown explicitly in the graph.
 
