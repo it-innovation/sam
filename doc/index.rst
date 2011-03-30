@@ -6,7 +6,8 @@
 SERSCIS Access Modeller
 =======================
 
-Contents:
+User Guide
+----------
 
 .. toctree::
    :maxdepth: 2
@@ -14,15 +15,19 @@ Contents:
    introduction
    concepts
    tutorial
+
+Reference
+---------
+
+.. toctree::
+   :maxdepth: 2
+
    configuration
    base
    behaviour
    invocations
    goals
    graphing
-
-Indices and tables
-==================
 
 * :ref:`genindex`
 * :ref:`search`
