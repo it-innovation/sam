@@ -1,0 +1,58 @@
+/* vim: set syntax=prolog : */
+
+/* Imports */
+
+import("initial", "sam:base.dl").
+import("initial", "sam:graph.dl").
+import("final", "sam:system.dl").
+
+/* Behaviour */
+hasLocal("Factory", "task").
+mayCreate("Factory", "Task", "task").
+mayReturn("Factory", "task").
+
+isA(?Object, "Unknown") :- isA(?Object, "Task").
+
+hasField("ClientA", "factory").
+hasField("ClientA", "myTask").
+hasField("ClientA", "ref").
+
+// myTask = myTask.invoke(myTask)
+mayCall("ClientA", "factory", "ref", "myTask").
+
+// ref = ref(ref)
+mayCall("ClientA", "ref", "ref", "ref").
+
+// ref = myTask.invoke(ref)
+mayCall("ClientA", "myTask", "ref", "ref").
+
+/* Config */
+
+initialObject("clientA", "ClientA").
+initialObject("otherClients", "Unknown").
+initialObject("factory", "Factory").
+
+field("clientA", "factory", "factory").
+field("otherClients", "ref", "factory").
+
+initialInvocation("clientA", "Other").
+initialInvocation("otherClients", "Other").
+
+initialObject("internet", "Unknown").
+field("clientA", "ref", "internet").
+field("otherClients", "ref", "internet").
+
+invocationObject("clientA", "Other", "factory", ?Arg, "myTask", "A") :- isObject(?Arg).
+
+/* Goals */
+
+denyAccess('otherClients', 'TaskA').
+requireAccess('clientA', 'TaskA').
+
+error("otherClient may access some clientA.myTask") :-
+	getsAccess('otherClients', ?Value),
+	field('clientA', 'myTask', ?Value).
+
+/* Debugging */
+
+debug :- getsAccess('otherClients', 'TaskA').

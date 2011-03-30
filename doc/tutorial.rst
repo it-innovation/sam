@@ -232,3 +232,22 @@ We use :func:`getsAccess` to get all the values that any invocation of otherClie
 ever access, and check that there is no value that can also be clientA's myTask. This is
 necessary because clientA can now get access to TaskOther (via the Internet); it's only
 those tasks clientA may refer to as `myTask` that must be kept private.
+
+
+The debugger
+------------
+When a model isn't safe you will often find that the resulting graph becomes highly connected, and it's
+difficult to see where the original problem was. To diagnose such problems, you can use :func:`debug` feature.
+
+If `debug` is true, SAM will find the shallowest inference tree that caused it to be true. For example,
+let's see what happens if clientA is allowed to do `ref = myTask.invoke(ref)`::
+
+  mayCall("ClientA", "myTask", "ref", "ref").
+
+.. image:: _images/factory6.png
+
+We can see that `otherClients` gets access to `TaskA`, but how did it get this access? Did `internet` send
+`TaskA` to `otherClients`? Did `TaskOther` return it to `otherClients`? The graph shows that both of these
+things are possible, but what was the original cause? We can find out using :func:`debug`::
+
+  debug :- getsAccess('otherClients', 'TaskA').
