@@ -6,11 +6,12 @@ SBUILDDIR      = ${DISTDIR}/doc
 ALLSPHINXOPTS   = -d $(SBUILDDIR)/doctrees
 all: htmldoc
 
-code: src/main/java/eu/serscis/Eval.class
-	cp ${SRCDIR}/src/main/datalog/*.dl ${DISTDIR}/
+JAVA_SOURCES = ${SRCDIR}/src/main/java/eu/serscis/Eval.java \
+	       ${SRCDIR}/src/main/java/eu/serscis/Debugger.java
 
-%.class: %.java
-	javac -d ${DISTDIR} -cp ${CLASSPATH} $<
+code:
+	cp ${SRCDIR}/src/main/datalog/*.dl ${DISTDIR}/
+	javac -d ${DISTDIR} -cp ${CLASSPATH} ${JAVA_SOURCES}
 
 htmldoc: code examples
 	sphinx-build -b html ${ALLSPHINXOPTS} ${SRCDIR}/doc ${SBUILDDIR}

@@ -149,7 +149,7 @@ public class Eval {
 		graph(graphNodeResults, graphEdgeResults, outputDotFile);
 	}
 
-	static private void checkForErrors(IKnowledgeBase knowledgeBase, String when) throws Exception {
+	private void checkForErrors(IKnowledgeBase knowledgeBase, String when) throws Exception {
 		List<ITerm> terms = new LinkedList<ITerm>();
 		boolean problem = false;
 
@@ -168,6 +168,15 @@ public class Eval {
 
 			ITerm newTerm = TERM.createVariable("t" + i);
 			terms.add(newTerm);
+		}
+
+		ILiteral debugL = BASIC.createLiteral(true, BASIC.createPredicate("debug", 0), BASIC.createTuple());
+		IQuery debugQ = BASIC.createQuery(debugL);
+		IRelation debugResults = knowledgeBase.execute(debugQ);
+		if (debugResults.size() != 0) {
+			System.out.println("Starting debugger...");
+			Debugger debugger = new Debugger(rules, knowledgeBase);
+			debugger.debug(debugL);
 		}
 
 		if (problem) {
