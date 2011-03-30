@@ -59,6 +59,7 @@ import static org.deri.iris.factory.Factory.*;
 public class Eval {
 	private Configuration configuration = KnowledgeBaseFactory.getDefaultConfiguration();
 	private List<IRule> rules = new LinkedList<IRule>();
+	private Map<IPredicate,IRelation> initialFacts = new HashMap<IPredicate,IRelation>();
 	private Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
 	private Parser parser = new Parser();
 
@@ -91,6 +92,13 @@ public class Eval {
 		List<IQuery> queries = parser.getQueries();
 
 		handleImports("initial");
+
+		/* Store a copy of the initial facts, for the debugger. */
+		for (Map.Entry<IPredicate,IRelation> entry: facts.entrySet()) {
+			IRelation copy = configuration.relationFactory.createRelation();
+			copy.addAll(entry.getValue());
+			initialFacts.put(entry.getKey(), copy);
+		}
 
 		IKnowledgeBase initialKnowledgeBase = KnowledgeBaseFactory.createKnowledgeBase(facts, rules, configuration);
 		graph(initialKnowledgeBase, new File("initial.dot"));
@@ -175,7 +183,7 @@ public class Eval {
 		IRelation debugResults = knowledgeBase.execute(debugQ);
 		if (debugResults.size() != 0) {
 			System.out.println("Starting debugger...");
-			Debugger debugger = new Debugger(rules, knowledgeBase);
+			Debugger debugger = new Debugger(rules, initialFacts, knowledgeBase);
 			debugger.debug(debugL);
 		}
 

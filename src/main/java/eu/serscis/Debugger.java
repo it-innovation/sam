@@ -62,29 +62,35 @@ import static org.deri.iris.factory.Factory.*;
 
 public class Debugger {
 	private List<IRule> rules = new LinkedList<IRule>();
-	private Set<ILiteral> seen = new HashSet<ILiteral>();
+	private Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
+	private Map<ILiteral,ResultTree> seen = new HashMap<ILiteral,ResultTree>();
 	private IKnowledgeBase knowledgeBase;
 
-	public Debugger(List<IRule> rules, IKnowledgeBase knowledgeBase) throws Exception {
+	public Debugger(List<IRule> rules, Map<IPredicate,IRelation> initialFacts, IKnowledgeBase knowledgeBase) throws Exception {
 		this.rules = rules;
 		this.knowledgeBase = knowledgeBase;
+		this.facts = initialFacts;
 	}
 
 	/* Why was this true? */
 	public void debug(ILiteral problem) throws Exception {
-		debug(problem, "");
+		ResultTree result = findShortestReason(problem);
+		result.dump();
 	}
 
-	public void debug(ILiteral problem, String indent) throws Exception {
-		if (seen.contains(problem)) {
-			return;
+	public ResultTree findShortestReason(ILiteral problem) throws Exception {
+		ResultTree resultTree = seen.get(problem);
+		if (resultTree != null) {
+			return resultTree;
 		}
-		seen.add(problem);
-		System.out.println(indent + problem);
+		resultTree = new ResultTree(problem);
+		seen.put(problem, resultTree);
+
+		//System.out.println(indent + problem);
 		
 		if (!problem.isPositive()) {
-			System.out.println(indent + "(stopping at negative)");
-			return;
+			resultTree.msg = "(stopping at negative)";
+			return resultTree;
 		}
 
 		IAtom problemAtom = problem.getAtom();
@@ -96,6 +102,16 @@ public class Debugger {
 		ITuple problemTuple = problemAtom.getTuple();
 
 		IPredicate p = problemAtom.getPredicate();
+
+		IRelation initialFacts = facts.get(p);
+		if (initialFacts != null) {
+			if (initialFacts.contains(problemTuple)) {
+				//resultTree.msg = "(initial fact)";
+				resultTree.depth = 0;
+				resultTree.complete = true;
+				return resultTree;
+			}
+		}
 
 		// find all rules which could assert this
 		for (IRule rule : rules) {
@@ -111,70 +127,78 @@ public class Debugger {
 
 			Map<IVariable,ITerm> varMap = new HashMap<IVariable,ITerm>();
 			if (TermMatchingAndSubstitution.unify(problemTuple, head.getAtom().getTuple(), varMap)) {
+				// rule head matches
+				List<ILiteral> negatives = new LinkedList<ILiteral>();
 				List<ILiteral> newLiterals = new LinkedList<ILiteral>();
 				for (ILiteral tail : rule.getBody()) {
-					if (!tail.isPositive()) {
-						System.out.println(indent + "ignoring negative: " + tail);
-					}
 					ITuple result = TermMatchingAndSubstitution.substituteVariablesInToTuple(tail.getAtom().getTuple(), varMap);
 					IAtom newAtom = BASIC.createAtom(tail.getAtom().getPredicate(), result);
-					newLiterals.add(BASIC.createLiteral(true, newAtom));
+					ILiteral newLiteral = BASIC.createLiteral(tail.isPositive(), newAtom);
+					if (tail.isPositive()) {
+						newLiterals.add(newLiteral);
+					} else {
+						//System.out.println(indent + "ignoring negative: " + tail);
+						negatives.add(newLiteral);
+						continue;
+					}
 					//System.out.println(indent + "->" + newAtom);
 					//debug(tail, indent + "  ");
-
 				}
 				IQuery query = BASIC.createQuery(newLiterals);
-				if (debugQuery(query, indent + "   ")) {
-					break;	// no need to find any further reasons for this to be true
-				}
 
+				debugQuery(query, resultTree);
+
+				resultTree.negatives = negatives;
 			} else {
-				//System.out.println(indent + "(can't unify)");
+				//System.out.println("can't unify: " + problemTuple + " with " + head);
 			}
 		}
+
+		if (resultTree.depth == -1) {
+			//resultTree.depth = 0;
+			//resultTree.msg = "(no depth?)";
+			throw new RuntimeException("no depth for " + problem);
+		}
+
+		resultTree.complete = true;
+		return resultTree;
 	}
 
 	/* query should return no results. Otherwise, explore their causes.
-	 * True iff query is true.
+	 * If the found solution is better than the one in 'result', update it with the new one.
 	 */
-	public boolean debugQuery(IQuery query, String indent) throws Exception {
+	public void debugQuery(IQuery query, ResultTree resultTree) throws Exception {
 		List<IVariable> queryVars = new LinkedList<IVariable>();
 		IRelation debugResults = knowledgeBase.execute(query, queryVars);
 		if (debugResults.size() == 0) {
 			//System.out.println(indent + "(no results)");
-			return false;
+			return;
 		}
 
+		/*
 		for (ILiteral literal : query.getLiterals()) {
 			Map<IVariable,ITerm> thisVarMap = new HashMap<IVariable,ITerm>();
 			if (literal.getAtom().isGround()) {
-				debug(literal, indent);
+				findShortestReason(literal, indent);
 			}
 		}
+		*/
 
 		//System.out.println(indent + query);
 
 		for (int i = 0; i < debugResults.size(); i++) {
 			ITuple resultTuple = debugResults.get(i);
-			if (resultTuple.size() == 0) {
-				break;
-			}
 
 			//System.out.println(indent + resultTuple.toString());
 
 			List<ILiteral> newLiterals = new LinkedList<ILiteral>();
 
 			for (ILiteral literal : query.getLiterals()) {
-				Map<IVariable,ITerm> thisVarMap = new HashMap<IVariable,ITerm>();
-				if (literal.getAtom().isGround()) {
-					// handled above
-				} else {
-					Map<IVariable,ITerm> varMap = getVarMap(queryVars, resultTuple);
-					ITuple result = TermMatchingAndSubstitution.substituteVariablesInToTuple(literal.getAtom().getTuple(), varMap);
-					IAtom newAtom = BASIC.createAtom(literal.getAtom().getPredicate(), result);
-					//System.out.println(indent + newAtom);
-					newLiterals.add(BASIC.createLiteral(true, newAtom));
-				}
+				Map<IVariable,ITerm> varMap = getVarMap(queryVars, resultTuple);
+				ITuple result = TermMatchingAndSubstitution.substituteVariablesInToTuple(literal.getAtom().getTuple(), varMap);
+				IAtom newAtom = BASIC.createAtom(literal.getAtom().getPredicate(), result);
+				//System.out.println(indent + newAtom);
+				newLiterals.add(BASIC.createLiteral(true, newAtom));
 			}
 
 			/*
@@ -183,14 +207,23 @@ public class Debugger {
 			} // else we're going to print the single literal next anyway
 			*/
 
+			ResultTree[] subResult = new ResultTree[newLiterals.size()];
+			int maxDepth = -1;
+			int r = 0;
+
 			for (ILiteral literal : newLiterals) {
-				debug(literal, indent);
+				subResult[r] = findShortestReason(literal);
+				if (subResult[r].complete && subResult[r].depth > maxDepth) {
+					maxDepth = subResult[r].depth;
+				}
+				r += 1;
 			}
 
-			break;		// (we only need one example)
+			maxDepth += 1;
+			if (resultTree.depth == -1 || maxDepth < resultTree.depth) {
+				resultTree.setDepth(maxDepth, subResult);
+			}
 		}
-
-		return true;
 	}
 
 	private static Map<IVariable,ITerm> getVarMap(List<IVariable> names, ITuple values) {
@@ -199,5 +232,60 @@ public class Debugger {
 			map.put(names.get(i), values.get(i));
 		}
 		return map;
+	}
+
+	private static class ResultTree {
+		private int depth = -1;
+		private ILiteral problem;
+		private String msg;
+		private ResultTree[] children;
+		private List<ILiteral> negatives;
+		private boolean complete = false;
+
+		public ResultTree(ILiteral problem) {
+			this.problem = problem;
+		}
+
+		public void dump() {
+			HashSet<ResultTree> seen = new HashSet<ResultTree>();
+			dump(seen, "");
+		}
+
+		private void dump(HashSet<ResultTree> seen, String indent) {
+			System.out.println(indent + problem);
+
+			if (seen.contains(this)) {
+				return;
+			}
+			seen.add(this);
+
+			if (msg != null) {
+				System.out.println(indent + msg);
+			}
+			if (children != null) {
+				for (ResultTree child : children) {
+					child.dump(seen, indent + "   ");
+				}
+			}
+			if (negatives != null) {
+				for (ILiteral lit : negatives) {
+					System.out.println(indent + "   " + lit);
+				}
+			}
+		}
+
+		private void setDepth(int newDepth, ResultTree[] subResult) {
+			if (depth != -1 && newDepth >= depth) {
+				throw new RuntimeException("new depth is greater than current depth!");
+			}
+			if (newDepth < 0) {
+				throw new RuntimeException("new depth < 0!");
+			}
+			if (complete) {
+				throw new RuntimeException("setting new depth after complete!");
+			}
+			depth = newDepth;
+			children = subResult;
+		}
 	}
 }
