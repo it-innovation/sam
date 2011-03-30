@@ -83,7 +83,7 @@ error('Unknown target object in deny rule', ?B) :- denyAccess(?A, ?B), !isObject
 
 missingGoodAccess(?SourceObject, ?TargetObject) :-
 	requireAccess(?SourceObject, ?TargetObject),
-	!haveAccess(?SourceObject, ?TargetObject).
+	!getsAccess(?SourceObject, ?TargetObject).
 
 error('required access is not possible', ?SourceObject, ?TargetObject) :-
 	missingGoodAccess(?SourceObject, ?TargetObject).

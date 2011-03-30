@@ -46,6 +46,10 @@ invocationObject("clientA", "Other", "factory", ?Arg, "myTask", "A") :- isObject
 denyAccess('otherClients', 'TaskA').
 requireAccess('clientA', 'TaskA').
 
+error("otherClient may access some clientA.myTask") :-
+	getsAccess('otherClients', ?Value),
+	field('clientA', 'myTask', ?Value).
+
 /* Graphing */
 
 showInvocation('factory', ?Invocation) :- isInvocation(?Invocation).

@@ -62,3 +62,10 @@ Invocations
    `VarName` has value `Value`. It may be either a local variable or a field
    on `Object`.
 
+Results
+-------
+
+.. function:: getsAccess(?Object, ?Value)
+
+   After applying the propagation rules, some invocation of `Object` may have access to `Value`
+   (through a field or local variable).

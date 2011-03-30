@@ -219,3 +219,16 @@ With this division, the desired propery can be proved. clientA can now get acces
 by other parties, but others still can't get access to the tasks by clientA.
 
 .. image:: _images/factory5.png
+
+We can state this check more explicitly by saying that otherClients must not get access to any
+value that clientA may store in `myTask`::
+
+  error("otherClient may access some clientA.myTask") :-
+        getsAccess('otherClients', ?Value),
+        field('clientA', 'myTask', ?Value).
+
+If :func:`error` is true for any message then SAM prints the message and fails the model.
+We use :func:`getsAccess` to get all the values that any invocation of otherClients may
+ever access, and check that there is no value that can also be clientA's myTask. This is
+necessary because clientA can now get access to TaskOther (via the Internet); it's only
+those tasks clientA may refer to as `myTask` that must be kept private.
