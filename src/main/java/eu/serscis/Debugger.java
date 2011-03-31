@@ -28,6 +28,20 @@
 
 package eu.serscis;
 
+import org.deri.iris.rules.RuleHeadEquality;
+import org.deri.iris.rules.compiler.RuleCompiler;
+import org.deri.iris.evaluation.stratifiedbottomup.EvaluationUtilities;
+import org.deri.iris.facts.FiniteUniverseFacts;
+import org.deri.iris.rules.safety.AugmentingRuleSafetyProcessor;
+import org.deri.iris.utils.equivalence.IEquivalentTerms;
+import org.deri.iris.evaluation.IEvaluationStrategy;
+import org.deri.iris.evaluation.IEvaluationStrategyFactory;
+import org.deri.iris.evaluation.stratifiedbottomup.IRuleEvaluatorFactory;
+import org.deri.iris.evaluation.stratifiedbottomup.StratifiedBottomUpEvaluationStrategyFactory;
+import org.deri.iris.EvaluationException;
+import org.deri.iris.facts.IFacts;
+import org.deri.iris.rules.compiler.ICompiledRule;
+import org.deri.iris.evaluation.stratifiedbottomup.IRuleEvaluator;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -65,180 +79,326 @@ import static org.deri.iris.factory.Factory.*;
 
 public class Debugger {
 	private List<IRule> rules = new LinkedList<IRule>();
-	private Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
-	private Map<ILiteral,ResultTree> seen = new HashMap<ILiteral,ResultTree>();
+	private Map<IPredicate,IRelation> facts;
 	private IKnowledgeBase knowledgeBase;
-	private BuiltinRegister builtinRegister;
+	private Map<IPredicate,DebugRelation> debugRelations = new HashMap<IPredicate,DebugRelation>();
+	private Map<ICompiledRule,IRule> sourceRules = new HashMap<ICompiledRule,IRule>();
+	private int counter = 0;
+	private IPredicate didCall = BASIC.createPredicate("didCall", 6);
+	private IPredicate didGet = BASIC.createPredicate("didGet", 4);
+	private IPredicate didCreate = BASIC.createPredicate("didCreate", 4);
 
-	public Debugger(List<IRule> rules, Map<IPredicate,IRelation> initialFacts, IKnowledgeBase knowledgeBase, BuiltinRegister builtinRegister) throws Exception {
+	public Debugger(List<IRule> rules, Map<IPredicate,IRelation> initialFacts) throws Exception {
+		Configuration configuration = Eval.createDefaultConfiguration();
+
 		this.rules = rules;
-		this.knowledgeBase = knowledgeBase;
 		this.facts = initialFacts;
-		this.builtinRegister = builtinRegister;
+
+		configuration.evaluationStrategyFactory = new IEvaluationStrategyFactory() {
+			public IEvaluationStrategy createEvaluator(IFacts facts, List<IRule> rules, Configuration configuration) throws EvaluationException {
+				return new DebugStragegy(facts, rules, configuration);
+			}
+		};
+
+		for (Map.Entry<IPredicate,IRelation> entry : facts.entrySet()) {
+			getDebugRelation(entry.getKey()).addInitialFacts(entry.getValue());
+		}
+
+		knowledgeBase = KnowledgeBaseFactory.createKnowledgeBase(facts, rules, configuration);
 	}
 
 	/* Why was this true? */
 	public void debug(ILiteral problem) throws Exception {
-		ResultTree result = findShortestReason(problem);
-		result.dump();
+		knowledgeBase.execute(BASIC.createQuery(problem));
+		List<String> steps = new LinkedList<String>();
+		showGraph(problem, "", new HashSet<ILiteral>(), steps); 
+
+		System.out.println("\nSteps:");
+		int i = 1;
+		for (String step : steps) {
+			System.out.println("" + i + ". " + step);
+			i++;
+		}
 	}
 
-	public ResultTree findShortestReason(ILiteral problem) throws Exception {
-		ResultTree resultTree = seen.get(problem);
-		if (resultTree != null) {
-			return resultTree;
+	private IQuery unify(IRule rule, ILiteral problem) throws Exception {
+		Map<IVariable,ITerm> varMap = new HashMap<IVariable,ITerm>();
+
+		List<ILiteral> heads = rule.getHead();
+		if (heads.size() != 1) {
+			throw new RuntimeException("Multiple heads!");
 		}
-		resultTree = new ResultTree(problem);
-		seen.put(problem, resultTree);
+		ILiteral head = heads.get(0);
 
-		findShortestReason(problem, resultTree);
-
-		if (resultTree.depth == -1) {
-			resultTree.depth = 0;
-			resultTree.msg = "(no depth?)";
-			throw new RuntimeException("no depth for " + problem);
+		if (!TermMatchingAndSubstitution.unify(problem.getAtom().getTuple(), head.getAtom().getTuple(), varMap)) {
+			throw new RuntimeException("Failed to unify: " + problem);
 		}
 
-		resultTree.complete = true;
-		return resultTree;
+		List<ILiteral> newLiterals = new LinkedList<ILiteral>();
+		for (ILiteral tail : rule.getBody()) {
+			IAtom oldAtom = tail.getAtom();
+
+			ITuple result = TermMatchingAndSubstitution.substituteVariablesInToTuple(oldAtom.getTuple(), varMap);
+
+			IAtom newAtom = updateAtom(oldAtom, result);
+			ILiteral newLiteral = BASIC.createLiteral(tail.isPositive(), newAtom);
+
+			newLiterals.add(newLiteral);
+		}
+		return BASIC.createQuery(newLiterals);
 	}
 
-	private void findShortestReason(ILiteral problem, ResultTree resultTree) throws Exception {
-		IAtom problemAtom = problem.getAtom();
-		//System.out.println(indent + problem);
-		
-		if (!problem.isPositive()) {
-			resultTree.msg = "(stopping at negative)";
-			resultTree.depth = 0;
+	private void showGraph(ILiteral problem, String indent, Set<ILiteral> seen, List<String> steps) throws Exception {
+		if (seen.contains(problem)) {
 			return;
 		}
+		seen.add(problem);
+		System.out.println(indent + problem);
 
-		if (problemAtom.isBuiltin()) {
-			//resultTree.msg = "(builtin)";
-			resultTree.depth = 0;
-			return;
+		DebugRelation debugRelation = debugRelations.get(problem.getAtom().getPredicate());
+		IRule rule = debugRelation.getReason(problem.getAtom().getTuple());
+
+		if (rule == null) {
+			return;		// initial fact
 		}
 
-		if (!problemAtom.isGround()) {
-			throw new RuntimeException("Not ground!");
-		}
+		IQuery ruleQ = unify(rule, problem);
+		System.out.println(indent + ruleQ);
 
-		ITuple problemTuple = problemAtom.getTuple();
+		/* Check internal variable assignments that make this rule true, and select the
+		 * one that was true first.
+		 */
 
-		IPredicate p = problemAtom.getPredicate();
-
-		IRelation initialFacts = facts.get(p);
-		if (initialFacts != null) {
-			if (initialFacts.contains(problemTuple)) {
-				//resultTree.msg = "(initial fact)";
-				resultTree.depth = 0;
-				return;
-			}
-		}
-
-		// find all rules which could assert this
-		for (IRule rule : rules) {
-			List<ILiteral> heads = rule.getHead();
-			if (heads.size() != 1) {
-				throw new RuntimeException("multiple heads in " + rule + "!");
-			}
-			ILiteral head = heads.get(0);
-			if (!head.getAtom().getPredicate().equals(p)) {
-				continue;
-			}
-			//System.out.println("Consider: " + rule);
-
-			Map<IVariable,ITerm> varMap = new HashMap<IVariable,ITerm>();
-			if (TermMatchingAndSubstitution.unify(problemTuple, head.getAtom().getTuple(), varMap)) {
-				// rule head matches
-				List<ILiteral> newLiterals = new LinkedList<ILiteral>();
-				for (ILiteral tail : rule.getBody()) {
-					IAtom oldAtom = tail.getAtom();
-
-					ITuple result = TermMatchingAndSubstitution.substituteVariablesInToTuple(oldAtom.getTuple(), varMap);
-
-					IAtom newAtom = updateAtom(oldAtom, result);
-					ILiteral newLiteral = BASIC.createLiteral(tail.isPositive(), newAtom);
-
-					newLiterals.add(newLiteral);
-				}
-				IQuery query = BASIC.createQuery(newLiterals);
-
-				debugQuery(query, resultTree);
-			} else {
-				//System.out.println("can't unify: " + problemTuple + " with " + head);
-			}
-		}
-	}
-
-	/* query should return no results. Otherwise, explore their causes.
-	 * If the found solution is better than the one in 'result', update it with the new one.
-	 */
-	public void debugQuery(IQuery query, ResultTree resultTree) throws Exception {
-		//System.out.println(query);
 		List<IVariable> queryVars = new LinkedList<IVariable>();
-		IRelation debugResults = knowledgeBase.execute(query, queryVars);
-		if (debugResults.size() == 0) {
-			//System.out.println("(no results)");
-			return;
-		}
+		IRelation internalAssignments = knowledgeBase.execute(ruleQ, queryVars);
 
-		/*
-		for (ILiteral literal : query.getLiterals()) {
-			Map<IVariable,ITerm> thisVarMap = new HashMap<IVariable,ITerm>();
-			if (literal.getAtom().isGround()) {
-				findShortestReason(literal, indent);
-			}
-		}
-		*/
+		long bestTrue = -1;
+		List<ILiteral> bestLiterals = null;
 
-		//System.out.println(indent + query);
-
-		for (int i = 0; i < debugResults.size(); i++) {
-			ITuple resultTuple = debugResults.get(i);
-
-			//System.out.println(resultTuple.toString());
+		for (int t = 0; t < internalAssignments.size(); ++t ) {
+			ITuple resultTuple = internalAssignments.get(t);
 
 			List<ILiteral> newLiterals = new LinkedList<ILiteral>();
 			List<ILiteral> negatives = new LinkedList<ILiteral>();
 
-			for (ILiteral literal : query.getLiterals()) {
+			long lastTrue = -1;
+
+			for (ILiteral literal : ruleQ.getLiterals()) {
 				Map<IVariable,ITerm> varMap = getVarMap(queryVars, resultTuple);
 				ITuple result = TermMatchingAndSubstitution.substituteVariablesInToTuple(literal.getAtom().getTuple(), varMap);
 				IAtom newAtom = updateAtom(literal.getAtom(), result);
-				//System.out.println(indent + newAtom);
 
 				ILiteral newLiteral = BASIC.createLiteral(literal.isPositive(), newAtom);
 
 				if (newLiteral.isPositive()) {
-					newLiterals.add(newLiteral);
+					long whenTrue;
+					if (newLiteral.getAtom().isBuiltin()) {
+						whenTrue = 0;
+					} else {
+						DebugRelation rel = debugRelations.get(literal.getAtom().getPredicate());
+						whenTrue = rel.getFirstTrue(newLiteral.getAtom().getTuple());
+					}
+					if (whenTrue > lastTrue) {
+						lastTrue = whenTrue;
+					}
+					if (whenTrue != 0) {
+						newLiterals.add(newLiteral);
+					}
 				} else {
 					negatives.add(newLiteral);
 				}
+ 			}
+
+			//System.out.println(indent + newLiterals + " first true at " + lastTrue);
+
+			// this result was first true at "lastTrue"
+
+			if (bestTrue == -1 || lastTrue < bestTrue) {
+				bestTrue = lastTrue;
+				bestLiterals = newLiterals;
 			}
+		}
 
-			/*
-			if (newLiterals.size() > 1) {
-				System.out.println(indent + BASIC.createQuery(newLiterals).toString().substring(3));
-			} // else we're going to print the single literal next anyway
-			*/
+		//System.out.println(indent + "best true: " + bestLiterals + " at " + bestTrue);
 
-			ResultTree[] subResult = new ResultTree[newLiterals.size()];
-			int maxDepth = -1;
-			int r = 0;
+		indent += "   ";
+		for (ILiteral lit : bestLiterals) {
+			showGraph(lit, indent, seen, steps);
+		}
 
-			for (ILiteral literal : newLiterals) {
-				subResult[r] = findShortestReason(literal);
-				if (subResult[r].complete && subResult[r].depth > maxDepth) {
-					maxDepth = subResult[r].depth;
+		noteSteps(problem, steps);
+	}
+
+	private void noteSteps(ILiteral literal, List<String> results) {
+		ITuple tuple = literal.getAtom().getTuple();
+		IPredicate p = literal.getAtom().getPredicate();
+		if (p.equals(didCall)) {
+			String caller = tuple.get(0).getValue().toString();
+			String target = tuple.get(2).getValue().toString();
+			String arg = tuple.get(4).getValue().toString();
+			String result = tuple.get(5).getValue().toString();
+			results.add(caller + ": " + result + " = " + target + "(" + arg + ")");
+		} else if (p.equals(didGet)) {
+			String caller = tuple.get(0).getValue().toString();
+			String resultVar = tuple.get(2).getValue().toString();
+			String result = tuple.get(3).getValue().toString();
+			results.add(caller + ": (" + resultVar + " = " + result + ")");
+		} else if (p.equals(didCreate)) {
+			String actor = tuple.get(0).getValue().toString();
+			String resultVar = tuple.get(2).getValue().toString();
+			String type = tuple.get(3).getValue().toString();
+			results.add(actor + ": " + resultVar + " = new " + type + "()");
+		}
+	}
+
+	private DebugRelation getDebugRelation(IPredicate predicate) {
+		DebugRelation relation = debugRelations.get(predicate);
+		if (relation == null) {
+			relation = new DebugRelation();
+			debugRelations.put(predicate, relation);
+		}
+		return relation;
+	}
+
+	/* Based on StratifiedBottomUpEvaluationStrategy; we just want access to optimisedRules! */
+	private class DebugStragegy implements IEvaluationStrategy {
+		DebugStragegy(IFacts facts, List<IRule> rules,
+				Configuration configuration) throws EvaluationException {
+			mConfiguration = configuration;
+			mFacts = facts;
+			mEquivalentTerms = mConfiguration.equivalentTermsFactory
+				.createEquivalentTerms();
+
+			List<IRule> allRules = mConfiguration.ruleHeadEqualityPreProcessor
+				.process(rules, facts);
+
+			if (mConfiguration.ruleSafetyProcessor instanceof AugmentingRuleSafetyProcessor)
+				facts = new FiniteUniverseFacts(facts, allRules);
+
+			EvaluationUtilities utils = new EvaluationUtilities(mConfiguration);
+
+			// Rule safety processing
+			List<IRule> safeRules = utils.applyRuleSafetyProcessor(allRules);
+
+			// Stratify
+			List<List<IRule>> stratifiedRules = utils.stratify(safeRules);
+
+			RuleCompiler rc = new RuleCompiler(facts, mEquivalentTerms,
+					mConfiguration);
+
+			int stratumNumber = 0;
+			for (List<IRule> stratum : stratifiedRules) {
+				// Re-order stratum
+				List<IRule> reorderedRules = utils.reOrderRules(stratum);
+
+				// Rule optimisation
+				List<IRule> optimisedRules = utils
+					.applyRuleOptimisers(reorderedRules);
+
+				List<ICompiledRule> compiledRules = new ArrayList<ICompiledRule>();
+
+				for (IRule rule : optimisedRules) {
+					ICompiledRule cRule = rc.compile(rule);
+					compiledRules.add(cRule);
+					sourceRules.put(cRule, rule);
 				}
-				r += 1;
-			}
 
-			maxDepth += 1;
-			if (resultTree.depth == -1 || maxDepth < resultTree.depth) {
-				resultTree.setDepth(maxDepth, subResult, negatives);
+				// TODO Enable rule head equality support for semi-naive evaluation.
+				// Choose the correct evaluation technique for the specified rules and stratum.
+				IRuleEvaluator evaluator = new DebugEvaluator();
+
+				evaluator.evaluateRules(compiledRules, facts, configuration);
+
+				stratumNumber++;
 			}
+		}
+
+		public IRelation evaluateQuery(IQuery query, List<IVariable> outputVariables)
+			throws EvaluationException {
+			if (query == null)
+				throw new IllegalArgumentException(
+						"StratifiedBottomUpEvaluationStrategy.evaluateQuery() - query must not be null.");
+
+			if (outputVariables == null)
+				throw new IllegalArgumentException(
+						"StratifiedBottomUpEvaluationStrategy.evaluateQuery() - outputVariables must not be null.");
+
+			RuleCompiler compiler = new RuleCompiler(mFacts, mEquivalentTerms,
+					mConfiguration);
+
+			ICompiledRule compiledQuery = compiler.compile(query);
+
+			IRelation result = compiledQuery.evaluate();
+
+			outputVariables.clear();
+			outputVariables.addAll(compiledQuery.getVariablesBindings());
+
+			return result;
+		}
+
+		protected IEquivalentTerms mEquivalentTerms;
+
+		protected final Configuration mConfiguration;
+
+		protected final IFacts mFacts;
+	}
+
+	// (based on NaiveEvaluator example)
+	private class DebugEvaluator implements IRuleEvaluator {
+		public void evaluateRules(List<ICompiledRule> rules, IFacts facts, Configuration configuration) throws EvaluationException {
+			boolean cont = true;
+			while (cont) {
+				cont = false;
+				
+				// For each rule in the collection (stratum)
+				for (final ICompiledRule rule : rules ) {
+					IRelation delta = rule.evaluate();
+
+					if (delta != null && delta.size() > 0) {
+						IPredicate predicate = rule.headPredicate();
+
+						if (facts.get(predicate).addAll(delta)) {
+							getDebugRelation(predicate).addAll(delta, rule);
+							cont = true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private class DebugRelation {
+		/* The first rule that caused this tuple to be asserted. */
+		private Map<ITuple,IRule> reason = new HashMap<ITuple,IRule>();
+		private Map<ITuple,Long> firstTrue = new HashMap<ITuple,Long>();
+
+		public void addAll(IRelation tuples, ICompiledRule cRule) {
+			IRule rule = cRule == null ? null : sourceRules.get(cRule);
+			for (int i = tuples.size() - 1; i >= 0; i--) {
+				ITuple tuple = tuples.get(i);
+				if (!reason.containsKey(tuple)) {
+					//System.out.println("" + rule + ", " + tuple + " at " + counter);
+					reason.put(tuple, rule);
+					firstTrue.put(tuple, Long.valueOf(counter));
+				}
+			}
+			counter += 1;
+		}
+
+		public IRule getReason(ITuple tuple) {
+			return reason.get(tuple);
+		}
+
+		public void addInitialFacts(IRelation tuples) {
+			addAll(tuples, null);
+		}
+
+		public long getFirstTrue(ITuple tuple) {
+			Long when = firstTrue.get(tuple);
+			if (when == null) {
+				throw new RuntimeException("fact " + tuple + " was never true");
+			}
+			return when;
 		}
 	}
 
@@ -248,62 +408,6 @@ public class Debugger {
 			map.put(names.get(i), values.get(i));
 		}
 		return map;
-	}
-
-	private static class ResultTree {
-		private int depth = -1;
-		private ILiteral problem;
-		private String msg;
-		private ResultTree[] children;
-		private List<ILiteral> negatives;
-		private boolean complete = false;
-
-		public ResultTree(ILiteral problem) {
-			this.problem = problem;
-		}
-
-		public void dump() {
-			HashSet<ResultTree> seen = new HashSet<ResultTree>();
-			dump(seen, "");
-		}
-
-		private void dump(HashSet<ResultTree> seen, String indent) {
-			System.out.println(indent + problem);
-
-			if (seen.contains(this)) {
-				return;
-			}
-			seen.add(this);
-
-			if (msg != null) {
-				System.out.println(indent + msg);
-			}
-			if (children != null) {
-				for (ResultTree child : children) {
-					child.dump(seen, indent + "   ");
-				}
-			}
-			if (negatives != null) {
-				for (ILiteral lit : negatives) {
-					System.out.println(indent + "   " + lit);
-				}
-			}
-		}
-
-		private void setDepth(int newDepth, ResultTree[] subResult, List<ILiteral> negatives) {
-			if (depth != -1 && newDepth >= depth) {
-				throw new RuntimeException("new depth is greater than current depth!");
-			}
-			if (newDepth < 0) {
-				throw new RuntimeException("new depth < 0!");
-			}
-			if (complete) {
-				throw new RuntimeException("setting new depth after complete!");
-			}
-			depth = newDepth;
-			children = subResult;
-			this.negatives = negatives;
-		}
 	}
 
 	/* Create a new atom "predicate(tuple)" with the same predicate as oldAtom. */
@@ -316,6 +420,6 @@ public class Debugger {
 			return newAtom;
 		} else {
 			return BASIC.createAtom(oldAtom.getPredicate(), tuple);
-		}
-	}
+ 		}
+ 	}
 }

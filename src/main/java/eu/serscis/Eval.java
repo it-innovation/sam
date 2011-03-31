@@ -58,7 +58,7 @@ import org.deri.iris.compiler.BuiltinRegister;
 import static org.deri.iris.factory.Factory.*;
 
 public class Eval {
-	private Configuration configuration = KnowledgeBaseFactory.getDefaultConfiguration();
+	private Configuration configuration = createDefaultConfiguration();
 	private List<IRule> rules = new LinkedList<IRule>();
 	private Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
 	private Parser parser = new Parser();
@@ -70,14 +70,14 @@ public class Eval {
 		new Eval(new File(args[0]));
 	}
 
-	public Eval(File scenario) throws Exception {
-		ClassLoader loader = Eval.class.getClassLoader();
+	public static Configuration createDefaultConfiguration() {
+		Configuration config = KnowledgeBaseFactory.getDefaultConfiguration();
 
 		/* IRIS bug? It thinks that STRING_CONCAT is unsafe.
 		 * Workaround this by skipping the rules that need it.
 		 */
-		final IRuleSafetyProcessor oldProcessor = configuration.ruleSafetyProcessor;
-		configuration.ruleSafetyProcessor = new IRuleSafetyProcessor() {
+		final IRuleSafetyProcessor oldProcessor = config.ruleSafetyProcessor;
+		config.ruleSafetyProcessor = new IRuleSafetyProcessor() {
 			public IRule process(IRule rule) throws RuleUnsafeException {
 				String p = rule.getHead().get(0).getAtom().getPredicate().getPredicateSymbol();
 				if (p.equals("realNewObject")) {
@@ -87,6 +87,12 @@ public class Eval {
 				return oldProcessor.process(rule);
 			}
 		};
+
+		return config;
+	}
+
+	public Eval(File scenario) throws Exception {
+		ClassLoader loader = Eval.class.getClassLoader();
 
 		parse(scenario);
 		List<IQuery> queries = parser.getQueries();
@@ -189,7 +195,7 @@ public class Eval {
 		IRelation debugResults = knowledgeBase.execute(debugQ);
 		if (debugResults.size() != 0) {
 			System.out.println("Starting debugger...");
-			Debugger debugger = new Debugger(rules, facts, knowledgeBase, parser.getBuiltinRegister());
+			Debugger debugger = new Debugger(rules, facts);
 			debugger.debug(debugL);
 		}
 
