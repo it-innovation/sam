@@ -28,6 +28,7 @@
 
 package eu.serscis;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.io.FileWriter;
@@ -58,6 +59,8 @@ import org.deri.iris.storage.IRelation;
 import org.deri.iris.rules.IRuleSafetyProcessor;
 import org.deri.iris.RuleUnsafeException;
 import org.deri.iris.utils.TermMatchingAndSubstitution;
+import org.deri.iris.compiler.BuiltinRegister;
+import org.deri.iris.api.builtins.IBuiltinAtom;
 import static org.deri.iris.factory.Factory.*;
 
 public class Debugger {
@@ -65,11 +68,13 @@ public class Debugger {
 	private Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
 	private Map<ILiteral,ResultTree> seen = new HashMap<ILiteral,ResultTree>();
 	private IKnowledgeBase knowledgeBase;
+	private BuiltinRegister builtinRegister;
 
-	public Debugger(List<IRule> rules, Map<IPredicate,IRelation> initialFacts, IKnowledgeBase knowledgeBase) throws Exception {
+	public Debugger(List<IRule> rules, Map<IPredicate,IRelation> initialFacts, IKnowledgeBase knowledgeBase, BuiltinRegister builtinRegister) throws Exception {
 		this.rules = rules;
 		this.knowledgeBase = knowledgeBase;
 		this.facts = initialFacts;
+		this.builtinRegister = builtinRegister;
 	}
 
 	/* Why was this true? */
@@ -86,14 +91,33 @@ public class Debugger {
 		resultTree = new ResultTree(problem);
 		seen.put(problem, resultTree);
 
+		findShortestReason(problem, resultTree);
+
+		if (resultTree.depth == -1) {
+			resultTree.depth = 0;
+			resultTree.msg = "(no depth?)";
+			throw new RuntimeException("no depth for " + problem);
+		}
+
+		resultTree.complete = true;
+		return resultTree;
+	}
+
+	private void findShortestReason(ILiteral problem, ResultTree resultTree) throws Exception {
+		IAtom problemAtom = problem.getAtom();
 		//System.out.println(indent + problem);
 		
 		if (!problem.isPositive()) {
 			resultTree.msg = "(stopping at negative)";
-			return resultTree;
+			resultTree.depth = 0;
+			return;
 		}
 
-		IAtom problemAtom = problem.getAtom();
+		if (problemAtom.isBuiltin()) {
+			//resultTree.msg = "(builtin)";
+			resultTree.depth = 0;
+			return;
+		}
 
 		if (!problemAtom.isGround()) {
 			throw new RuntimeException("Not ground!");
@@ -108,8 +132,7 @@ public class Debugger {
 			if (initialFacts.contains(problemTuple)) {
 				//resultTree.msg = "(initial fact)";
 				resultTree.depth = 0;
-				resultTree.complete = true;
-				return resultTree;
+				return;
 			}
 		}
 
@@ -123,55 +146,40 @@ public class Debugger {
 			if (!head.getAtom().getPredicate().equals(p)) {
 				continue;
 			}
-			//System.out.println(indent + rule);
+			//System.out.println("Consider: " + rule);
 
 			Map<IVariable,ITerm> varMap = new HashMap<IVariable,ITerm>();
 			if (TermMatchingAndSubstitution.unify(problemTuple, head.getAtom().getTuple(), varMap)) {
 				// rule head matches
-				List<ILiteral> negatives = new LinkedList<ILiteral>();
 				List<ILiteral> newLiterals = new LinkedList<ILiteral>();
 				for (ILiteral tail : rule.getBody()) {
-					ITuple result = TermMatchingAndSubstitution.substituteVariablesInToTuple(tail.getAtom().getTuple(), varMap);
-					IAtom newAtom = BASIC.createAtom(tail.getAtom().getPredicate(), result);
+					IAtom oldAtom = tail.getAtom();
+
+					ITuple result = TermMatchingAndSubstitution.substituteVariablesInToTuple(oldAtom.getTuple(), varMap);
+
+					IAtom newAtom = updateAtom(oldAtom, result);
 					ILiteral newLiteral = BASIC.createLiteral(tail.isPositive(), newAtom);
-					if (tail.isPositive()) {
-						newLiterals.add(newLiteral);
-					} else {
-						//System.out.println(indent + "ignoring negative: " + tail);
-						negatives.add(newLiteral);
-						continue;
-					}
-					//System.out.println(indent + "->" + newAtom);
-					//debug(tail, indent + "  ");
+
+					newLiterals.add(newLiteral);
 				}
 				IQuery query = BASIC.createQuery(newLiterals);
 
 				debugQuery(query, resultTree);
-
-				resultTree.negatives = negatives;
 			} else {
 				//System.out.println("can't unify: " + problemTuple + " with " + head);
 			}
 		}
-
-		if (resultTree.depth == -1) {
-			//resultTree.depth = 0;
-			//resultTree.msg = "(no depth?)";
-			throw new RuntimeException("no depth for " + problem);
-		}
-
-		resultTree.complete = true;
-		return resultTree;
 	}
 
 	/* query should return no results. Otherwise, explore their causes.
 	 * If the found solution is better than the one in 'result', update it with the new one.
 	 */
 	public void debugQuery(IQuery query, ResultTree resultTree) throws Exception {
+		//System.out.println(query);
 		List<IVariable> queryVars = new LinkedList<IVariable>();
 		IRelation debugResults = knowledgeBase.execute(query, queryVars);
 		if (debugResults.size() == 0) {
-			//System.out.println(indent + "(no results)");
+			//System.out.println("(no results)");
 			return;
 		}
 
@@ -189,16 +197,24 @@ public class Debugger {
 		for (int i = 0; i < debugResults.size(); i++) {
 			ITuple resultTuple = debugResults.get(i);
 
-			//System.out.println(indent + resultTuple.toString());
+			//System.out.println(resultTuple.toString());
 
 			List<ILiteral> newLiterals = new LinkedList<ILiteral>();
+			List<ILiteral> negatives = new LinkedList<ILiteral>();
 
 			for (ILiteral literal : query.getLiterals()) {
 				Map<IVariable,ITerm> varMap = getVarMap(queryVars, resultTuple);
 				ITuple result = TermMatchingAndSubstitution.substituteVariablesInToTuple(literal.getAtom().getTuple(), varMap);
-				IAtom newAtom = BASIC.createAtom(literal.getAtom().getPredicate(), result);
+				IAtom newAtom = updateAtom(literal.getAtom(), result);
 				//System.out.println(indent + newAtom);
-				newLiterals.add(BASIC.createLiteral(true, newAtom));
+
+				ILiteral newLiteral = BASIC.createLiteral(literal.isPositive(), newAtom);
+
+				if (newLiteral.isPositive()) {
+					newLiterals.add(newLiteral);
+				} else {
+					negatives.add(newLiteral);
+				}
 			}
 
 			/*
@@ -221,7 +237,7 @@ public class Debugger {
 
 			maxDepth += 1;
 			if (resultTree.depth == -1 || maxDepth < resultTree.depth) {
-				resultTree.setDepth(maxDepth, subResult);
+				resultTree.setDepth(maxDepth, subResult, negatives);
 			}
 		}
 	}
@@ -274,7 +290,7 @@ public class Debugger {
 			}
 		}
 
-		private void setDepth(int newDepth, ResultTree[] subResult) {
+		private void setDepth(int newDepth, ResultTree[] subResult, List<ILiteral> negatives) {
 			if (depth != -1 && newDepth >= depth) {
 				throw new RuntimeException("new depth is greater than current depth!");
 			}
@@ -286,6 +302,20 @@ public class Debugger {
 			}
 			depth = newDepth;
 			children = subResult;
+			this.negatives = negatives;
+		}
+	}
+
+	/* Create a new atom "predicate(tuple)" with the same predicate as oldAtom. */
+	private static IAtom updateAtom(IAtom oldAtom, ITuple tuple) throws Exception {
+		if (oldAtom.isBuiltin()) {
+			ITerm[] newTerms = tuple.toArray(new ITerm[tuple.size()]);
+			Constructor<IBuiltinAtom> constructor = (Constructor<IBuiltinAtom>) oldAtom.getClass().getConstructor(newTerms.getClass());
+			IAtom newAtom = (IAtom) constructor.newInstance((Object) newTerms);
+			//System.out.println("created " + newAtom + ", " + newAtom.isBuiltin());
+			return newAtom;
+		} else {
+			return BASIC.createAtom(oldAtom.getPredicate(), tuple);
 		}
 	}
 }

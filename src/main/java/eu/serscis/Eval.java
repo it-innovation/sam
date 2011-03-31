@@ -54,12 +54,12 @@ import org.deri.iris.compiler.Parser;
 import org.deri.iris.storage.IRelation;
 import org.deri.iris.rules.IRuleSafetyProcessor;
 import org.deri.iris.RuleUnsafeException;
+import org.deri.iris.compiler.BuiltinRegister;
 import static org.deri.iris.factory.Factory.*;
 
 public class Eval {
 	private Configuration configuration = KnowledgeBaseFactory.getDefaultConfiguration();
 	private List<IRule> rules = new LinkedList<IRule>();
-	private Map<IPredicate,IRelation> initialFacts = new HashMap<IPredicate,IRelation>();
 	private Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
 	private Parser parser = new Parser();
 
@@ -93,23 +93,29 @@ public class Eval {
 
 		handleImports("initial");
 
-		/* Store a copy of the initial facts, for the debugger. */
-		for (Map.Entry<IPredicate,IRelation> entry: facts.entrySet()) {
-			IRelation copy = configuration.relationFactory.createRelation();
-			copy.addAll(entry.getValue());
-			initialFacts.put(entry.getKey(), copy);
-		}
-
-		IKnowledgeBase initialKnowledgeBase = KnowledgeBaseFactory.createKnowledgeBase(facts, rules, configuration);
+		IKnowledgeBase initialKnowledgeBase = createKnowledgeBase();
 		graph(initialKnowledgeBase, new File("initial.dot"));
 
 		checkForErrors(initialKnowledgeBase, "in initial configuration");
 		handleImports("final");
 
-		IKnowledgeBase finalKnowledgeBase = KnowledgeBaseFactory.createKnowledgeBase(facts, rules, configuration);
+		IKnowledgeBase finalKnowledgeBase = createKnowledgeBase();
 		graph(finalKnowledgeBase, new File("access.dot"));
 		doQueries(finalKnowledgeBase, queries);
 		checkForErrors(finalKnowledgeBase, "after applying propagation rules");
+	}
+
+	private IKnowledgeBase createKnowledgeBase() throws Exception {
+		Map<IPredicate,IRelation> workingFacts = new HashMap<IPredicate,IRelation>();
+
+		/* Make a copy of the initial facts (otherwise the debugger doesn't work). */
+		for (Map.Entry<IPredicate,IRelation> entry: facts.entrySet()) {
+			IRelation copy = configuration.relationFactory.createRelation();
+			copy.addAll(entry.getValue());
+			workingFacts.put(entry.getKey(), copy);
+		}
+
+		return KnowledgeBaseFactory.createKnowledgeBase(workingFacts, rules, configuration);
 	}
 
 	static private void doQueries(IKnowledgeBase knowledgeBase, List<IQuery> queries) throws Exception {
@@ -183,7 +189,7 @@ public class Eval {
 		IRelation debugResults = knowledgeBase.execute(debugQ);
 		if (debugResults.size() != 0) {
 			System.out.println("Starting debugger...");
-			Debugger debugger = new Debugger(rules, initialFacts, knowledgeBase);
+			Debugger debugger = new Debugger(rules, facts, knowledgeBase, parser.getBuiltinRegister());
 			debugger.debug(debugL);
 		}
 
@@ -267,7 +273,7 @@ public class Eval {
 	}
 
 	private void handleImports(String stage) throws Exception {
-		IKnowledgeBase knowledgeBase = KnowledgeBaseFactory.createKnowledgeBase(facts, rules, configuration);
+		IKnowledgeBase knowledgeBase = createKnowledgeBase();
 
 		ITuple terms = BASIC.createTuple(TERM.createString(stage), TERM.createVariable("Path"));
 		IPredicate importPredicate = BASIC.createPredicate("import", 2);
