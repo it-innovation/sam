@@ -14,7 +14,7 @@ Behaviour predicates indicate what objects of the given type are willing to do.
    Objects of this type accept these argument values and store them in the
    variable namd ParamVar.
 
-.. function:: mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar)
+.. function:: mayCall(?Type, ?TargetVar, [?Method], ?ArgVar, ?ResultVar)
 
    These objects may invoke the object in TargetVar, passing ArgVar as an argument and
    storing any result in ResultVar.

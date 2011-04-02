@@ -21,7 +21,7 @@ A "factory" object creates new objects of type "Task", corresponding to the foll
 code::
 
   class Factory {
-    public Task create() {
+    public Task newInstance() {
       Task task = new Task();
       return task;
     }
@@ -34,6 +34,7 @@ code::
 Therefore the *behaviour* part of the model can be written as::
 
   hasLocal("Factory", "task").
+  hasMethod("Factory", "newInstance").
   mayCreate("Factory", "Task", "task").
   mayReturn("Factory", "task").
 
@@ -86,6 +87,7 @@ Adding a few standard imports to the top gives this complete model file (factory
   
   /* Behaviour */
   hasLocal("Factory", "task").
+  hasMethod("Factory", "newInstance").
   mayCreate("Factory", "Task", "task").
   mayReturn("Factory", "task").
   
@@ -159,11 +161,11 @@ When we model this, SAM will detect that our safety goal is not met, and prints 
 of a sequence of steps that will cause the problem::
 
   Steps:
-  1. clientA: ref = internet(factory)
-  2. otherClients: ref = internet(otherClients)
-  3. internet: ref = otherClients(internet)
-  4. otherClients: ref = factory(factory)
-  5. clientA: ref = factory(factory)
+  1. clientA: ref = internet.invoke(factory)
+  2. otherClients: ref = internet.invoke(otherClients)
+  3. internet: ref = otherClients.invoke(internet)
+  4. otherClients: ref = factory.newInstance(factory)
+  5. clientA: ref = factory.newInstance(factory)
      factory: task = new Task()
      otherClients: (ref = TaskA)
 
@@ -214,11 +216,11 @@ Turning on display of invocations shows the reason:
 The example reported is::
 
   Steps:
-  1. clientA: ref = internet(internet)
-  2. otherClients: ref = internet(otherClients)
-  3. internet: ref = otherClients(internet)
-  4. otherClients: ref = factory(factory)
-  5. clientA: myTask = factory(internet)
+  1. clientA: ref = internet.invoke(internet)
+  2. otherClients: ref = internet.invoke(otherClients)
+  3. internet: ref = otherClients.invoke(internet)
+  4. otherClients: ref = factory.newInstance(factory)
+  5. clientA: myTask = factory.newInstance(internet)
      factory: task = new Task()
      otherClients: (ref = TaskA)
 

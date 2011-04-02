@@ -28,6 +28,7 @@ Reference
    invocations
    goals
    graphing
+   access
 
 * :ref:`genindex`
 * :ref:`search`

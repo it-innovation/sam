@@ -84,7 +84,7 @@ public class Debugger {
 	private Map<IPredicate,DebugRelation> debugRelations = new HashMap<IPredicate,DebugRelation>();
 	private Map<ICompiledRule,IRule> sourceRules = new HashMap<ICompiledRule,IRule>();
 	private int counter = 0;
-	private IPredicate didCall = BASIC.createPredicate("didCall", 6);
+	private IPredicate didCall = BASIC.createPredicate("didCall", 7);
 	private IPredicate didGet = BASIC.createPredicate("didGet", 4);
 	private IPredicate didCreate = BASIC.createPredicate("didCreate", 4);
 
@@ -126,9 +126,10 @@ public class Debugger {
 				if (p.equals(didCall)) {
 					String caller = tuple.get(0).getValue().toString();
 					String target = tuple.get(2).getValue().toString();
-					String arg = tuple.get(4).getValue().toString();
-					String result = tuple.get(5).getValue().toString();
-					steps.add(prefix + caller + ": " + result + " = " + target + "(" + arg + ")");
+					String method = tuple.get(4).getValue().toString();
+					String arg = tuple.get(5).getValue().toString();
+					String result = tuple.get(6).getValue().toString();
+					steps.add(prefix + caller + ": " + result + " = " + target + "." + method + "(" + arg + ")");
 					edges.add(BASIC.createTuple(tuple.get(0),
 								    tuple.get(1),
 								    tuple.get(2),

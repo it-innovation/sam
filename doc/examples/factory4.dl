@@ -8,6 +8,7 @@ import("final", "sam:system.dl").
 
 /* Behaviour */
 hasLocal("Factory", "task").
+hasMethod("Factory", "newInstance").
 mayCreate("Factory", "Task", "task").
 mayReturn("Factory", "task").
 

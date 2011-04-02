@@ -1,28 +1,39 @@
 /* vim: set syntax=prolog : */
 
+/* Refinements */
 mayAccept(?TargetType, ?ParamVar, ?Value) :- mayAccept(?TargetType, ?ParamVar), isObject(?Value).
+mayCall(?Type, ?TargetVar, ?Method, ?ArgVar, ?ResultVar) :- mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar), isMethod(?Method).
+
+/* Access control */
+
+accessAllowed(?Caller, ?Target, ?Method) :-
+	!accessControlOn,
+	isObject(?Caller),
+	isA(?Target, ?TargetType),
+	hasMethod(?TargetType, ?Method).
 
 /* The concrete objects that may be called, based on the behaviour (in terms of variables) and the values of those variables. */
-mayCallObject(?Caller, ?CallerInvocation, ?TargetValue, ?ArgValue, ?ResultVar) :-
+mayCallObject(?Caller, ?CallerInvocation, ?TargetValue, ?Method, ?ArgValue, ?ResultVar) :-
 	live(?Caller, ?CallerInvocation),
 	isA(?Caller, ?Type),
-	mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar),
+	mayCall(?Type, ?TargetVar, ?Method, ?ArgVar, ?ResultVar),
+	accessAllowed(?Caller, ?TargetValue, ?Method),
 	value(?Caller, ?CallerInvocation, ?TargetVar, ?TargetValue),
 	value(?Caller, ?CallerInvocation, ?ArgVar, ?ArgValue).
 
 /* Assume caller did a call if caller might do "Object resultVar = targetObject.do(argValue)" */
-didCall(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation, ?ArgValue, ?ResultVar) :-
-	mayCallObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar),
+didCall(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation, ?Method, ?ArgValue, ?ResultVar) :-
+	mayCallObject(?Caller, ?CallerInvocation, ?Target, ?Method, ?ArgValue, ?ResultVar),
 	realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?TargetInvocation).
 error("No target invocation for possible call", ?Caller, ?CallerInvocation, ?Target) :-
-	mayCallObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar),
+	mayCallObject(?Caller, ?CallerInvocation, ?Target, ?Method, ?ArgValue, ?ResultVar),
 	!realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?TargetInvocation).
 
-live(?Target, ?TargetInvocation) :- didCall(?AnyCaller, ?AnyCallerInvocation, ?Target, ?TargetInvocation, ?A, ?R).
+live(?Target, ?TargetInvocation) :- didCall(?AnyCaller, ?AnyCallerInvocation, ?Target, ?TargetInvocation, ?M, ?A, ?R).
 
 /* If Caller may call target and may accept a return value and target may return a value then Caller's var may now be the returned value. */
 didGet(?Caller, ?CallerInvocation, ?ResultVar, ?ResultValue) :-
-	didCall(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation, ?ArgValue, ?ResultVar),
+	didCall(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation, ?M, ?ArgValue, ?ResultVar),
 	isA(?Target, ?TargetType),
 	mayReturn(?TargetType, ?TargetResultVar),
 	value(?Target, ?TargetInvocation, ?TargetResultVar, ?ResultValue).
@@ -39,12 +50,12 @@ field(?Caller, ?ResultVar, ?ResultValue) :-
 
 /* Target's parameter variable may contain ArgValue if someone called it with that value. */
 local(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	didCall(?AnyCaller, ?AnyInvocation, ?Target, ?TargetInvocation, ?ArgValue, ?ResultVar),
+	didCall(?AnyCaller, ?AnyInvocation, ?Target, ?TargetInvocation, ?M, ?ArgValue, ?ResultVar),
 	isA(?Target, ?TargetType),
 	hasLocal(?TargetType, ?ParamVar),
 	mayAccept(?TargetType, ?ParamVar, ?ArgValue).
 field(?Target, ?ParamVar, ?ArgValue) :-
-	didCall(?AnyCaller, ?AnyInvocation, ?Target, ?TargetInvocation, ?ArgValue, ?ResultVar),
+	didCall(?AnyCaller, ?AnyInvocation, ?Target, ?TargetInvocation, ?M, ?ArgValue, ?ResultVar),
 	isA(?Target, ?TargetType),
 	hasField(?TargetType, ?ParamVar),
 	mayAccept(?TargetType, ?ParamVar, ?ArgValue).

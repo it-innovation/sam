@@ -9,6 +9,7 @@ import("final", "sam:system.dl").
 
 /* Factory behaviour */
 hasLocal("Factory", "task").
+hasMethod("Factory", "newInstance").
 mayCreate("Factory", "Task", "task").   /* Task task = new Task(); */
 mayReturn("Factory", "task").           /* return task; */
 

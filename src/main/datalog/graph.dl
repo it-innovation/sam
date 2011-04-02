@@ -34,7 +34,7 @@ graphInvocation(?Object, ?Invocation, ?Object) :- live(?Object, ?Invocation), !s
 
 graphInvocationEdge(?GraphSourceNode, ?GraphTargetNode) :-
 	shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation),
-	didCall(?Source, ?SourceInvocation, ?Target, ?TargetInvocation, ?A, ?R),
+	didCall(?Source, ?SourceInvocation, ?Target, ?TargetInvocation, ?M, ?A, ?R),
 	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
 	graphInvocation(?Target, ?TargetInvocation, ?GraphTargetNode),
 	?GraphSourceNode != ?GraphTargetNode.
