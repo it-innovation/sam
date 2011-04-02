@@ -21,6 +21,7 @@ systems (e.g. modelling factories).</description>
 	</command>
       </compile:implementation>
     </command>
+    <requires interface="http://repo.roscidus.com/python/sphinx"/>
     <requires interface="http://repo.roscidus.com/java/iris" compile:include-binary='true'/>
     <requires interface="http://repo.roscidus.com/java/openjdk-6-jdk">
       <environment name='PATH' insert='bin'/>
