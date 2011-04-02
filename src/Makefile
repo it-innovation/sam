@@ -16,7 +16,7 @@ code:
 htmldoc: code examples
 	sphinx-build -b html ${ALLSPHINXOPTS} ${SRCDIR}/doc ${SBUILDDIR}
 
-examples: factory.png factory-showing-invocations.png factory1.png factory2.png factory3.png factory4.png factory5.png factory6.png
+examples: factory.png factory-showing-invocations.png factory1.png factory2.png factory3.png factory4.png factory5.png
 
 %.png: doc/examples/%.dl
 	mkdir -p ${DISTDIR}/doc/_images

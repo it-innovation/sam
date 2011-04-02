@@ -155,7 +155,17 @@ that they have access to the Internet too::
   field("clientA", "ref", "internet").
   field("otherClients", "ref", "internet").
 
-When we model this, SAM will detect that our safety goal is not met::
+When we model this, SAM will detect that our safety goal is not met, and prints an example
+of a sequence of steps that will cause the problem::
+
+  Steps:
+  1. clientA: ref = internet(factory)
+  2. otherClients: ref = internet(otherClients)
+  3. internet: ref = otherClients(internet)
+  4. otherClients: ref = factory(factory)
+  5. clientA: ref = factory(factory)
+     factory: task = new Task()
+     otherClients: (ref = TaskA)
 
   === Errors detected after applying propagation rules ===
 
@@ -201,53 +211,60 @@ Turning on display of invocations shows the reason:
 
 .. image:: _images/factory4.png
 
-When clientA invokes an object on the Internet and the Internet invokes the factory, the
-Internet's invocation is aggregated under "A" calls to the factory, and the task
-created is aggregated into "TaskA".
+The example reported is::
+
+  Steps:
+  1. clientA: ref = internet(internet)
+  2. otherClients: ref = internet(otherClients)
+  3. internet: ref = otherClients(internet)
+  4. otherClients: ref = factory(factory)
+  5. clientA: myTask = factory(internet)
+     factory: task = new Task()
+     otherClients: (ref = TaskA)
+
+1. `clientA` calls `internet` (causing an invocation of it in context "A")
+2. `otherClients` calls `internet`, passing a reference to itself.
+3. `internet` calls `otherClients` (causing an invocation in context "A")
+4. `otherClients` calls `factory` (creating a Task that is aggregated into `TaskA`)
+5. (`clientA` calls `factory`). `otherClients` gets `TaskA` back from `factory` from step 4.
+
+.. note::
+  `clientA`'s call in step 5 isn't necessary to the proof (SAM doesn't always find the
+  simplest example). In the verbose debug output, you can see that it used this call to prove
+  that `factory` could be invoked in context "A"; something it could equally have deduced from
+  `otherClients`'s call.
+
+The problem here is that the default aggregation strategy groups all calls resulting from
+actions by `clientA` under the "A" context. Because `clientA` invoked `internet`, tasks
+created directly by `clientA` are grouped with tasks created via `internet`. Often this is
+what you want (for example, if `internet` was instead some kind of proxy), but in this case
+we want to treat them separately.
 
 In fact, clientA may end up with references to two different groups of Tasks: those
-clientA created directly using the factory, and those received from other calls to
+`clientA` created directly using the factory, and those received from calls to
 the Internet.
 
-We will therefore put clientA's initial invocation into the "Other" group, and
+We will therefore put `clientA`'s initial invocation into the "Other" group, and
 tell SAM to put only the `myTask = factory.invoke()` invocation under "A"::
 
   initialInvocation("clientA", "Other").
   invocationObject("clientA", "Other", "factory", ?Arg, "myTask", "A") :- isObject(?Arg).
 
-With this division, the desired propery can be proved. clientA can now get access to tasks created
-by other parties, but others still can't get access to the tasks by clientA.
+With this division, the desired propery can be proved. `clientA` can now get access to tasks created
+by other parties, but others still can't get access to the tasks by `clientA`.
 
 .. image:: _images/factory5.png
 
-We can state this check more explicitly by saying that otherClients must not get access to any
-value that clientA may store in `myTask`::
+We need to be careful here, however. While playing around with aggregation
+strategies always leads to a correct over-approximation of the behaviour of the
+system, note that our goal refers to `TaskA`. We have proved that `otherClients` never
+gets access to `TaskA`, but which tasks are in `TaskA` now, and which are in `TaskOther`?
 
-  error("otherClient may access some clientA.myTask") :-
-        getsAccess('otherClients', ?Value),
+We can state our goal more explicitly by saying that `otherClients` must not get access to any
+reference that `clientA` may store in `myTask`::
+
+  denyAccess('otherClients', ?Value) :-
         field('clientA', 'myTask', ?Value).
 
-If :func:`error` is true for any message then SAM prints the message and fails the model.
-We use :func:`getsAccess` to get all the values that any invocation of otherClients may
-ever access, and check that there is no value that can also be clientA's myTask. This is
-necessary because clientA can now get access to TaskOther (via the Internet); it's only
-those tasks clientA may refer to as `myTask` that must be kept private.
-
-
-The debugger
-------------
-When a model isn't safe you will often find that the resulting graph becomes highly connected, and it's
-difficult to see where the original problem was. To diagnose such problems, you can use :func:`debug` feature.
-
-If `debug` is true, SAM will find the shallowest inference tree that caused it to be true. For example,
-let's see what happens if clientA is allowed to do `ref = myTask.invoke(ref)`::
-
-  mayCall("ClientA", "myTask", "ref", "ref").
-
-.. image:: _images/factory6.png
-
-We can see that `otherClients` gets access to `TaskA`, but how did it get this access? Did `internet` send
-`TaskA` to `otherClients`? Did `TaskOther` return it to `otherClients`? The graph shows that both of these
-things are possible, but what was the original cause? We can find out using :func:`debug`::
-
-  debug :- getsAccess('otherClients', 'TaskA').
+This means that if there is some way that `clientA` could create a new task, aggregated under
+`TaskOther`, and store it in `myTask` then we would still detect the problem.
