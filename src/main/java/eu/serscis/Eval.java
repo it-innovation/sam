@@ -106,6 +106,7 @@ public class Eval {
 		handleImports("final");
 
 		IKnowledgeBase finalKnowledgeBase = createKnowledgeBase();
+		finalKnowledgeBase = doDebugging(finalKnowledgeBase);
 		graph(finalKnowledgeBase, new File("access.dot"));
 		doQueries(finalKnowledgeBase, queries);
 		checkForErrors(finalKnowledgeBase, "after applying propagation rules");
@@ -166,7 +167,14 @@ public class Eval {
 		IQuery graphEdgeQuery = BASIC.createQuery(graphEdgeLiteral);
 		IRelation graphEdgeResults = knowledgeBase.execute(graphEdgeQuery);
 
-		graph(graphNodeResults, graphEdgeResults, outputDotFile);
+		ITuple xAndYandAttrAndLabel = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"),
+								TERM.createVariable("Attr"), TERM.createVariable("Label"));
+		IPredicate graphEdgeLabelPredicate = BASIC.createPredicate("graphEdge", 4);
+		ILiteral graphEdgeLabelLiteral = BASIC.createLiteral(true, graphEdgeLabelPredicate, xAndYandAttrAndLabel);
+		IQuery graphEdgeLabelQuery = BASIC.createQuery(graphEdgeLabelLiteral);
+		IRelation graphEdgeLabelResults = knowledgeBase.execute(graphEdgeLabelQuery);
+
+		graph(graphNodeResults, graphEdgeResults, graphEdgeLabelResults, outputDotFile);
 	}
 
 	private void checkForErrors(IKnowledgeBase knowledgeBase, String when) throws Exception {
@@ -190,18 +198,31 @@ public class Eval {
 			terms.add(newTerm);
 		}
 
-		ILiteral debugL = BASIC.createLiteral(true, BASIC.createPredicate("debug", 0), BASIC.createTuple());
-		IQuery debugQ = BASIC.createQuery(debugL);
-		IRelation debugResults = knowledgeBase.execute(debugQ);
-		if (debugResults.size() != 0) {
-			System.out.println("Starting debugger...");
-			Debugger debugger = new Debugger(rules, facts);
-			debugger.debug(debugL);
-		}
-
 		if (problem) {
 			System.exit(1);
 		}
+	}
+
+	private IKnowledgeBase doDebugging(IKnowledgeBase knowledgeBase) throws Exception {
+		ILiteral debugL = BASIC.createLiteral(true, BASIC.createPredicate("debug", 0), BASIC.createTuple());
+		IQuery debugQ = BASIC.createQuery(debugL);
+		IRelation debugResults = knowledgeBase.execute(debugQ);
+		if (debugResults.size() == 0) {
+			return knowledgeBase;
+		}
+
+		IRelation debugEdges = configuration.relationFactory.createRelation();
+		System.out.println("Starting debugger...");
+		Debugger debugger = new Debugger(rules, facts);
+		debugger.debug(debugL, debugEdges);
+
+		IPredicate debugEdgeP = BASIC.createPredicate("debugEdge", 5);
+		if (facts.containsKey(debugEdgeP)) {
+			throw new RuntimeException("facts already contains " + debugEdgeP);
+		}
+		facts.put(debugEdgeP, debugEdges);
+
+		return createKnowledgeBase();
 	}
 
 	static private void formatResults(IRelation m )
@@ -217,7 +238,7 @@ public class Eval {
 		return "\"" + term.getValue().toString() + "\"";
 	}
 
-	static private void graph(IRelation nodes, IRelation edges, File dotFile) throws Exception {
+	static private void graph(IRelation nodes, IRelation edges, IRelation labelledEdges, File dotFile) throws Exception {
 		FileWriter writer = new FileWriter(dotFile);
 		writer.write("digraph a {\n");
 		//writer.write("  concentrate=true;\n");
@@ -236,6 +257,21 @@ public class Eval {
 			ITerm a = tuple.get(0);
 			ITerm b = tuple.get(1);
 			String edgeAttrs = tuple.get(2).getValue().toString();
+
+			writer.write(format(a) + " -> " + format(b) + " [" + edgeAttrs + "];\n");
+		}
+
+		for (int t = 0; t < labelledEdges.size(); t++) {
+			ITuple tuple = labelledEdges.get(t);
+			ITerm a = tuple.get(0);
+			ITerm b = tuple.get(1);
+			String edgeAttrs = tuple.get(2).getValue().toString();
+			String labelAttr = "label=" + format(tuple.get(3));
+			if (edgeAttrs.equals("")) {
+				edgeAttrs = labelAttr;
+			} else {
+				edgeAttrs += "," + labelAttr;
+			}
 
 			writer.write(format(a) + " -> " + format(b) + " [" + edgeAttrs + "];\n");
 		}

@@ -52,3 +52,8 @@ graphEdge(?InvocationNode, ?TargetObject, "color=blue,style=bold,weight=40") :-
 	showInvocation(?SourceObject, ?Invocation),
 	local(?SourceObject, ?Invocation, ?AnyVar, ?TargetObject),
 	?SourceObject = ?TargetObject.
+
+graphEdge(?SourceNode, ?TargetNode, "color=orange,fontcolor=orange", ?Label) :-
+	debugEdge(?Source, ?SourceInvocation, ?Target, ?TargetInvocation, ?Label),
+	graphInvocation(?Source, ?SourceInvocation, ?SourceNode),
+	graphInvocation(?Target, ?TargetInvocation, ?TargetNode).

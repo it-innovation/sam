@@ -87,3 +87,5 @@ missingGoodAccess(?SourceObject, ?TargetObject) :-
 
 error('required access is not possible', ?SourceObject, ?TargetObject) :-
 	missingGoodAccess(?SourceObject, ?TargetObject).
+
+debug :- haveBadAccess(?Source, ?Target).

@@ -107,17 +107,51 @@ public class Debugger {
 		knowledgeBase = KnowledgeBaseFactory.createKnowledgeBase(facts, rules, configuration);
 	}
 
-	/* Why was this true? */
-	public void debug(ILiteral problem) throws Exception {
+	/* Why was this true? Find a simple example which would cause it and
+	 * print the explanation to the console. Also, add graph edges to 'edges' to
+	 * explain it visually.
+	 */
+	public void debug(ILiteral problem, final IRelation edges) throws Exception {
 		knowledgeBase.execute(BASIC.createQuery(problem));
-		List<String> steps = new LinkedList<String>();
-		showGraph(problem, "", new HashSet<ILiteral>(), steps); 
+		final List<String> steps = new LinkedList<String>();
+
+		showGraph(problem, "", new HashSet<ILiteral>(), new Reporter() {
+			private int stepNumber = 1;
+
+			public void noteStep(ILiteral literal) {
+				String prefix = "" + stepNumber + ". ";
+
+				ITuple tuple = literal.getAtom().getTuple();
+				IPredicate p = literal.getAtom().getPredicate();
+				if (p.equals(didCall)) {
+					String caller = tuple.get(0).getValue().toString();
+					String target = tuple.get(2).getValue().toString();
+					String arg = tuple.get(4).getValue().toString();
+					String result = tuple.get(5).getValue().toString();
+					steps.add(prefix + caller + ": " + result + " = " + target + "(" + arg + ")");
+					edges.add(BASIC.createTuple(tuple.get(0),
+								    tuple.get(1),
+								    tuple.get(2),
+								    tuple.get(3),
+								    TERM.createString("" + stepNumber)));
+					stepNumber++;
+				} else if (p.equals(didGet)) {
+					String caller = tuple.get(0).getValue().toString();
+					String resultVar = tuple.get(2).getValue().toString();
+					String result = tuple.get(3).getValue().toString();
+					steps.add("   " + caller + ": (" + resultVar + " = " + result + ")");
+				} else if (p.equals(didCreate)) {
+					String actor = tuple.get(0).getValue().toString();
+					String resultVar = tuple.get(2).getValue().toString();
+					String type = tuple.get(3).getValue().toString();
+					steps.add("   " + actor + ": " + resultVar + " = new " + type + "()");
+				}
+			}
+		});
 
 		System.out.println("\nSteps:");
-		int i = 1;
 		for (String step : steps) {
-			System.out.println("" + i + ". " + step);
-			i++;
+			System.out.println(step);
 		}
 	}
 
@@ -148,7 +182,7 @@ public class Debugger {
 		return BASIC.createQuery(newLiterals);
 	}
 
-	private void showGraph(ILiteral problem, String indent, Set<ILiteral> seen, List<String> steps) throws Exception {
+	private void showGraph(ILiteral problem, String indent, Set<ILiteral> seen, Reporter reporter) throws Exception {
 		if (seen.contains(problem)) {
 			return;
 		}
@@ -223,32 +257,10 @@ public class Debugger {
 
 		indent += "   ";
 		for (ILiteral lit : bestLiterals) {
-			showGraph(lit, indent, seen, steps);
+			showGraph(lit, indent, seen, reporter);
 		}
 
-		noteSteps(problem, steps);
-	}
-
-	private void noteSteps(ILiteral literal, List<String> results) {
-		ITuple tuple = literal.getAtom().getTuple();
-		IPredicate p = literal.getAtom().getPredicate();
-		if (p.equals(didCall)) {
-			String caller = tuple.get(0).getValue().toString();
-			String target = tuple.get(2).getValue().toString();
-			String arg = tuple.get(4).getValue().toString();
-			String result = tuple.get(5).getValue().toString();
-			results.add(caller + ": " + result + " = " + target + "(" + arg + ")");
-		} else if (p.equals(didGet)) {
-			String caller = tuple.get(0).getValue().toString();
-			String resultVar = tuple.get(2).getValue().toString();
-			String result = tuple.get(3).getValue().toString();
-			results.add(caller + ": (" + resultVar + " = " + result + ")");
-		} else if (p.equals(didCreate)) {
-			String actor = tuple.get(0).getValue().toString();
-			String resultVar = tuple.get(2).getValue().toString();
-			String type = tuple.get(3).getValue().toString();
-			results.add(actor + ": " + resultVar + " = new " + type + "()");
-		}
+		reporter.noteStep(problem);
 	}
 
 	private DebugRelation getDebugRelation(IPredicate predicate) {
@@ -422,4 +434,8 @@ public class Debugger {
 			return BASIC.createAtom(oldAtom.getPredicate(), tuple);
  		}
  	}
+
+	private interface Reporter {
+		void noteStep(ILiteral literal);
+	}
 }
