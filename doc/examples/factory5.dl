@@ -36,9 +36,7 @@ field("otherClients", "ref", "factory").
 initialInvocation("clientA", "Other").
 initialInvocation("otherClients", "Other").
 
-initialObject("internet", "Unknown").
-field("clientA", "ref", "internet").
-field("otherClients", "ref", "internet").
+field("clientA", "ref", "otherClients").
 
 invocationObject("clientA", "Other", "factory", ?Arg, "myTask", "A") :- isObject(?Arg).
 

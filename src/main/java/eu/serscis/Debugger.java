@@ -107,6 +107,12 @@ public class Debugger {
 		knowledgeBase = KnowledgeBaseFactory.createKnowledgeBase(facts, rules, configuration);
 	}
 
+	private static String getInvocation(ITuple tuple, int i) {
+		String object = tuple.get(i).getValue().toString();
+		String context = tuple.get(i + 1).getValue().toString();
+		return object + "(" + context + ")";
+	}
+
 	/* Why was this true? Find a simple example which would cause it and
 	 * print the explanation to the console. Also, add graph edges to 'edges' to
 	 * explain it visually.
@@ -124,7 +130,7 @@ public class Debugger {
 				ITuple tuple = literal.getAtom().getTuple();
 				IPredicate p = literal.getAtom().getPredicate();
 				if (p.equals(didCall)) {
-					String caller = tuple.get(0).getValue().toString();
+					String caller = getInvocation(tuple, 0);
 					String target = tuple.get(2).getValue().toString();
 					String method = tuple.get(4).getValue().toString();
 					String arg = tuple.get(5).getValue().toString();
@@ -137,12 +143,12 @@ public class Debugger {
 								    TERM.createString("" + stepNumber)));
 					stepNumber++;
 				} else if (p.equals(didGet)) {
-					String caller = tuple.get(0).getValue().toString();
+					String caller = getInvocation(tuple, 0);
 					String resultVar = tuple.get(2).getValue().toString();
 					String result = tuple.get(3).getValue().toString();
 					steps.add("   " + caller + ": (" + resultVar + " = " + result + ")");
 				} else if (p.equals(didCreate)) {
-					String actor = tuple.get(0).getValue().toString();
+					String actor = getInvocation(tuple, 0);
 					String resultVar = tuple.get(2).getValue().toString();
 					String type = tuple.get(3).getValue().toString();
 					steps.add("   " + actor + ": " + resultVar + " = new " + type + "()");
