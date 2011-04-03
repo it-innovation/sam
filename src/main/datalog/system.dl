@@ -2,63 +2,70 @@
 
 /* Refinements */
 mayAccept(?TargetType, ?ParamVar, ?Value) :- mayAccept(?TargetType, ?ParamVar), isObject(?Value).
-mayCall(?Type, ?TargetVar, ?Method, ?ArgVar, ?ResultVar) :- mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar), isMethod(?Method).
+
+//mayCall(?Type, ?TargetVar, ?Method, ?ArgVar, ?ResultVar) :- mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar), isMethod(?Method).
 
 /* Access control */
 
-accessAllowed(?Caller, ?Target, ?Method) :-
+accessAllowed(?Caller, ?Target, ?CallSite) :-
 	!accessControlOn,
-	isObject(?Caller),
-	isA(?Target, ?TargetType),
-	hasMethod(?TargetType, ?Method).
+	isA(?Caller, ?CallerType),
+	isObject(?Target),
+	hasCallSite(?CallerType, ?CallSite).
 
 /* The concrete objects that may be called, based on the behaviour (in terms of variables) and the values of those variables. */
-mayCallObject(?Caller, ?CallerInvocation, ?TargetValue, ?Method, ?ArgValue, ?ResultVar) :-
+mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target) :-
 	live(?Caller, ?CallerInvocation),
 	isA(?Caller, ?Type),
-	mayCall(?Type, ?TargetVar, ?Method, ?ArgVar, ?ResultVar),
-	accessAllowed(?Caller, ?TargetValue, ?Method),
-	value(?Caller, ?CallerInvocation, ?TargetVar, ?TargetValue),
-	value(?Caller, ?CallerInvocation, ?ArgVar, ?ArgValue).
+	hasCallSite(?Type, ?CallSite),
+	mayCall(?CallSite, ?TargetVar),
+	accessAllowed(?Caller, ?Target, ?CallSite),
+	value(?Caller, ?CallerInvocation, ?TargetVar, ?Target).
 
 /* Assume caller did a call if caller might do "Object resultVar = targetObject.do(argValue)" */
-didCall(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation, ?Method, ?ArgValue, ?ResultVar) :-
-	mayCallObject(?Caller, ?CallerInvocation, ?Target, ?Method, ?ArgValue, ?ResultVar),
-	realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?TargetInvocation).
-error("No target invocation for possible call", ?Caller, ?CallerInvocation, ?Target) :-
-	mayCallObject(?Caller, ?CallerInvocation, ?Target, ?Method, ?ArgValue, ?ResultVar),
-	!realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?TargetInvocation).
+didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation) :-
+	mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target),
+	realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
+error("No target invocation for possible call", ?Caller, ?CallerInvocation, ?CallSite, ?Target) :-
+	mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target),
+	!realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
 
-live(?Target, ?TargetInvocation) :- didCall(?AnyCaller, ?AnyCallerInvocation, ?Target, ?TargetInvocation, ?M, ?A, ?R).
+live(?Target, ?TargetInvocation) :-
+	didCall(?AnyCaller, ?AnyCallerInvocation, ?AnyCallSite, ?Target, ?TargetInvocation).
 
 /* If Caller may call target and may accept a return value and target may return a value then Caller's var may now be the returned value. */
-didGet(?Caller, ?CallerInvocation, ?ResultVar, ?ResultValue) :-
-	didCall(?Caller, ?CallerInvocation, ?Target, ?TargetInvocation, ?M, ?ArgValue, ?ResultVar),
+didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue) :-
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation),
 	isA(?Target, ?TargetType),
 	mayReturn(?TargetType, ?TargetResultVar),
 	value(?Target, ?TargetInvocation, ?TargetResultVar, ?ResultValue).
 
 /* The caller may store the result of any call. */
 local(?Caller, ?CallerInvocation, ?ResultVar, ?ResultValue) :-
-	didGet(?Caller, ?CallerInvocation, ?ResultVar, ?ResultValue),
+	didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue),
+	mayStore(?CallSite, ?ResultVar),
 	isA(?Caller, ?Type),
 	hasLocal(?Type, ?ResultVar).
 field(?Caller, ?ResultVar, ?ResultValue) :-
-	didGet(?Caller, ?AnyInvocation, ?ResultVar, ?ResultValue),
+	didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue),
+	mayStore(?CallSite, ?ResultVar),
 	isA(?Caller, ?Type),
 	hasField(?Type, ?ResultVar).
 
+didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
+	didCall(?Caller, ?Invocation, ?CallSite, ?Target, ?TargetInvocation),
+	mayPass(?CallSite, ?VarName),
+	value(?Caller, ?Invocation, ?VarName, ?ArgValue),
+	isA(?Target, ?TargetType),
+	mayAccept(?TargetType, ?ParamVar, ?ArgValue).
+
 /* Target's parameter variable may contain ArgValue if someone called it with that value. */
 local(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	didCall(?AnyCaller, ?AnyInvocation, ?Target, ?TargetInvocation, ?M, ?ArgValue, ?ResultVar),
-	isA(?Target, ?TargetType),
-	hasLocal(?TargetType, ?ParamVar),
-	mayAccept(?TargetType, ?ParamVar, ?ArgValue).
+	didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue),
+	hasLocal(?TargetType, ?ParamVar).
 field(?Target, ?ParamVar, ?ArgValue) :-
-	didCall(?AnyCaller, ?AnyInvocation, ?Target, ?TargetInvocation, ?M, ?ArgValue, ?ResultVar),
-	isA(?Target, ?TargetType),
-	hasField(?TargetType, ?ParamVar),
-	mayAccept(?TargetType, ?ParamVar, ?ArgValue).
+	didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue),
+	hasField(?TargetType, ?ParamVar).
 
 didCreate(?Object, ?Invocation, ?Var, ?ChildType) :-
 	live(?Object, ?Invocation),

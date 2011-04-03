@@ -84,7 +84,10 @@ public class Debugger {
 	private Map<IPredicate,DebugRelation> debugRelations = new HashMap<IPredicate,DebugRelation>();
 	private Map<ICompiledRule,IRule> sourceRules = new HashMap<ICompiledRule,IRule>();
 	private int counter = 0;
-	private IPredicate didCall = BASIC.createPredicate("didCall", 7);
+	private IPredicate mayCall = BASIC.createPredicate("mayCall", 2);
+	private IPredicate mayPass = BASIC.createPredicate("mayPass", 2);
+	private IPredicate mayStore = BASIC.createPredicate("mayStore", 2);
+	private IPredicate didCall = BASIC.createPredicate("didCall", 5);
 	private IPredicate didGet = BASIC.createPredicate("didGet", 4);
 	private IPredicate didCreate = BASIC.createPredicate("didCreate", 4);
 
@@ -110,7 +113,7 @@ public class Debugger {
 	private static String getInvocation(ITuple tuple, int i) {
 		String object = tuple.get(i).getValue().toString();
 		String context = tuple.get(i + 1).getValue().toString();
-		return object + "(" + context + ")";
+		return object + ":" + context;
 	}
 
 	/* Why was this true? Find a simple example which would cause it and
@@ -129,24 +132,38 @@ public class Debugger {
 
 				ITuple tuple = literal.getAtom().getTuple();
 				IPredicate p = literal.getAtom().getPredicate();
-				if (p.equals(didCall)) {
+				if (p.equals(mayCall)) {
+					String callSite = tuple.get(0).getValue().toString();
+					String target = tuple.get(1).getValue().toString();
+					steps.add("   (" + callSite + " may call " + target + ")");
+				} else if (p.equals(mayPass)) {
+					String callSite = tuple.get(0).getValue().toString();
+					String arg = tuple.get(1).getValue().toString();
+					steps.add("   (" + callSite + " may pass " + arg + ")");
+				} else if (p.equals(mayStore)) {
+					String callSite = tuple.get(0).getValue().toString();
+					String target = tuple.get(1).getValue().toString();
+					steps.add("   (" + callSite + " may store result in " + target + ")");
+				} else if (p.equals(didCall)) {
 					String caller = getInvocation(tuple, 0);
-					String target = tuple.get(2).getValue().toString();
-					String method = tuple.get(4).getValue().toString();
-					String arg = tuple.get(5).getValue().toString();
-					String result = tuple.get(6).getValue().toString();
-					steps.add(prefix + caller + ": " + result + " = " + target + "." + method + "(" + arg + ")");
+					String callSite = tuple.get(2).getValue().toString();
+					String target = getInvocation(tuple, 3);
+					//String method = tuple.get(4).getValue().toString();
+					//String arg = tuple.get(5).getValue().toString();
+					//String result = tuple.get(6).getValue().toString();
+					steps.add(prefix + caller + "@" + callSite + " calls " + target);
 					edges.add(BASIC.createTuple(tuple.get(0),
 								    tuple.get(1),
 								    tuple.get(2),
 								    tuple.get(3),
+								    tuple.get(4),
 								    TERM.createString("" + stepNumber)));
 					stepNumber++;
 				} else if (p.equals(didGet)) {
 					String caller = getInvocation(tuple, 0);
-					String resultVar = tuple.get(2).getValue().toString();
+					String callSite = tuple.get(2).getValue().toString();
 					String result = tuple.get(3).getValue().toString();
-					steps.add("   " + caller + ": (" + resultVar + " = " + result + ")");
+					steps.add("   " + caller + "@" + callSite + ": got " + result);
 				} else if (p.equals(didCreate)) {
 					String actor = getInvocation(tuple, 0);
 					String resultVar = tuple.get(2).getValue().toString();
@@ -200,6 +217,7 @@ public class Debugger {
 		IRule rule = debugRelation.getReason(problem.getAtom().getTuple());
 
 		if (rule == null) {
+			reporter.noteStep(problem);
 			return;		// initial fact
 		}
 

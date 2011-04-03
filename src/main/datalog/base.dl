@@ -15,15 +15,13 @@ field(?Object, ?VarName, ?Value)
  * of the resulting invocation at Target is the same, unless overridden by
  * invocationObject.
  */
-realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?TargetInvocation) :-
-	invocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?TargetInvocation).
-realInvocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?CallerInvocation) :-
+realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation) :-
+	invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
+realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?CallerInvocation) :-
 	isA(?Caller, ?CallerType),
-	isObject(?Target),
-	hasVar(?CallerType, ?ResultVar),
-	isObject(?ArgValue),
+	hasCallSite(?CallerType, ?CallSite),
 	isInvocation(?CallerInvocation),
-	!invocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?AnyTargetInvocation).
+	!invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?AnyTargetInvocation).
 
 /* static predicates on types */
 
@@ -50,7 +48,7 @@ isMethod(?X) :- isType(?Type), hasMethod(?Type, ?X).
 
 live(?Object, ?Invocation) :- initialInvocation(?Object, ?Invocation).
 isInvocation(?Invocation) :- initialInvocation(?Object, ?Invocation).
-isInvocation(?Invocation) :- invocationObject(?Caller, ?CallerInvocation, ?Target, ?ArgValue, ?ResultVar, ?Invocation).
+isInvocation(?Invocation) :- invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?Invocation).
 
 /* If an Invocation has direct access to an object (via a local variable or a field on its object) */
 hasRef(?Object, ?Invocation, ?Value) :- value(?Object, ?Invocation, ?AnyVar, ?Value).
@@ -67,9 +65,9 @@ value(?Object, ?Invocation, ?Var, ?Value) :- field(?Object, ?Var, ?Value), isInv
 
 error('Not an object (no type!)', ?Object) :- hasRef(?AnyObject, ?X, ?Object), !isObject(?Object).
 
-error('Unknown mayCall target var', ?Type, ?TargetVar) :- mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar), !hasVar(?Type, ?TargetVar).
-error('Unknown mayCall arg var', ?Type, ?ArgVar) :- mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar), !hasVar(?Type, ?ArgVar).
-error('Unknown mayCall result var', ?Type, ?ResultVar) :- mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar), !hasVar(?Type, ?ResultVar).
+error('Unknown mayCall target var', ?Type, ?Var) :- hasCallSite(?Type, ?CallSite), mayCall(?CallSite, ?Var), !hasVar(?Type, ?Var).
+error('Unknown mayCall arg var', ?Type, ?Var) :- hasCallSite(?Type, ?CallSite), mayPass(?CallSite, ?Var), !hasVar(?Type, ?Var).
+error('Unknown mayCall result var', ?Type, ?Var) :- hasCallSite(?Type, ?CallSite), mayStore(?CallSite, ?Var), !hasVar(?Type, ?Var).
 
 error('Unknown mayAccept var', ?Type, ?ArgVar) :- mayAccept(?Type, ?ArgVar), !hasVar(?Type, ?ArgVar).
 
@@ -102,7 +100,12 @@ error('Field on non-object', ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Val
 isMethod("invoke").
 hasField("Unknown", "ref").
 field(?Object, "ref", ?Object) :- live(?Object), isA(?Object, "Unknown").
-mayCall("Unknown", "ref", "ref", "ref").
+//mayCall("Unknown", "ref", "ref", "ref").
 mayAccept("Unknown", "ref").
 mayReturn("Unknown", "ref").
 hasMethod("Unknown", ?X) :- isMethod(?X).
+
+hasCallSite("Unknown", "anycallsite").
+mayCall("anycallsite", "ref").
+mayPass("anycallsite", "ref").
+mayStore("anycallsite", "ref").

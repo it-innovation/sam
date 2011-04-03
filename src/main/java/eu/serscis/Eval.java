@@ -181,7 +181,7 @@ public class Eval {
 		List<ITerm> terms = new LinkedList<ITerm>();
 		boolean problem = false;
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 7; i++) {
 			IPredicate errorPredicate = BASIC.createPredicate("error", i);
 			ILiteral errorLiteral = BASIC.createLiteral(true, errorPredicate, BASIC.createTuple(terms));
 			IQuery errorQuery = BASIC.createQuery(errorLiteral);
@@ -216,7 +216,7 @@ public class Eval {
 		Debugger debugger = new Debugger(rules, facts);
 		debugger.debug(debugL, debugEdges);
 
-		IPredicate debugEdgeP = BASIC.createPredicate("debugEdge", 5);
+		IPredicate debugEdgeP = BASIC.createPredicate("debugEdge", 6);
 		if (facts.containsKey(debugEdgeP)) {
 			throw new RuntimeException("facts already contains " + debugEdgeP);
 		}

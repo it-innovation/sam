@@ -14,10 +14,9 @@ Behaviour predicates indicate what objects of the given type are willing to do.
    Objects of this type accept these argument values and store them in the
    variable namd ParamVar.
 
-.. function:: mayCall(?Type, ?TargetVar, [?Method], ?ArgVar, ?ResultVar)
+.. function:: hasCallSite(?Type, ?CallSite)
 
-   These objects may invoke the object in TargetVar, passing ArgVar as an argument and
-   storing any result in ResultVar.
+   These objects may perform the call described in :ref:`CallSite`.
 
 .. function:: mayReturn(?Type, ?TargetResultVar)
 
@@ -27,11 +26,29 @@ Behaviour predicates indicate what objects of the given type are willing to do.
 
    These objects may create new objects of type ChildType and store the new instance in Var.
 
+.. _CallSite:
+
+Call-sites
+----------
+.. function:: mayCall(?CallSite, ?TargetVar)
+
+   This call invokes the object stored in TargetVar.
+
+.. function:: mayPass(?CallSite, ?ArgVar)
+
+   This call passes ArgVar as an argument.
+
+.. function:: mayStore(?CallSite, ?ResultVar)
+
+   This result of this call is stored in ResultVar.
+
+Example
+-------
 For example, a Jave class that does::
 
      class Proxy {
        public Object invoke(Data msg) {
-         Object result = myTarget.invoke(msg);
+         Object result = myTarget.invoke(msg);	// callsite1
          return result;
        }
      }
@@ -48,8 +65,12 @@ could be modelled with::
      hasField("Proxy", "myTarget").
      hasLocal("Proxy", "result").
      mayAccept("Proxy", "msg", msg) :- isData(msg).
-     mayCall("Proxy", "myTarget", "msg", "result").
+     hasCallSite("Proxy", "callsite1").
      mayReturn("Proxy", "result").
+
+     mayCall("callsite1", "myTarget").
+     mayPass("callsite1", "msg").
+     mayStore("callsite1", "result").
 
      hasLocal("ProxyFactory", "proxy").
      mayAccept("ProxyFactory", "target").

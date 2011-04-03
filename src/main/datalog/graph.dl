@@ -34,7 +34,7 @@ graphInvocation(?Object, ?Invocation, ?Object) :- live(?Object, ?Invocation), !s
 
 graphInvocationEdge(?GraphSourceNode, ?GraphTargetNode) :-
 	shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation),
-	didCall(?Source, ?SourceInvocation, ?Target, ?TargetInvocation, ?M, ?A, ?R),
+	didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation),
 	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
 	graphInvocation(?Target, ?TargetInvocation, ?GraphTargetNode),
 	?GraphSourceNode != ?GraphTargetNode.
@@ -54,6 +54,6 @@ graphEdge(?InvocationNode, ?TargetObject, "color=blue,style=bold,weight=40") :-
 	?SourceObject = ?TargetObject.
 
 graphEdge(?SourceNode, ?TargetNode, "color=orange,fontcolor=orange", ?Label) :-
-	debugEdge(?Source, ?SourceInvocation, ?Target, ?TargetInvocation, ?Label),
+	debugEdge(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Label),
 	graphInvocation(?Source, ?SourceInvocation, ?SourceNode),
 	graphInvocation(?Target, ?TargetInvocation, ?TargetNode).
