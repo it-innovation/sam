@@ -28,6 +28,8 @@
 
 package eu.serscis;
 
+import java.util.HashSet;
+import java.util.Set;
 import eu.serscis.sam.node.*;
 import java.io.StringReader;
 import java.io.PushbackReader;
@@ -71,6 +73,7 @@ public class SAMParser {
 	static private IPredicate mayCreateP = BASIC.createPredicate("mayCreate", 3);
 	static private IPredicate mayReturnP = BASIC.createPredicate("mayReturn", 2);
 	static private IPredicate hasFieldP = BASIC.createPredicate("hasField", 2);
+	static private IPredicate hasLocalP = BASIC.createPredicate("hasLocal", 2);
 	private org.deri.iris.compiler.Parser parser = new org.deri.iris.compiler.Parser();
 	public Map<IPredicate,IRelation> facts;
 	public List<IRule> rules;
@@ -161,6 +164,16 @@ public class SAMParser {
 		return Arrays.asList(items);
 	}
 
+	private static void declareLocal(Set<String> locals, AAssign assign) {
+		AType type = (AType) assign.getType();
+		if (type != null) {
+			String name = assign.getName().getText();
+			if (!locals.contains(name)) {
+				locals.add(name);
+			}
+		}
+	}
+
 	private class SAMClass {
 		public String name;
 		private ABehaviour behaviour;
@@ -204,6 +217,9 @@ public class SAMParser {
 				rel.add(BASIC.createTuple(TERM.createString(this.name), TERM.createString(fieldName)));
 			}
 
+			// (move this once we model methods)
+			Set<String> locals = new HashSet<String>();
+
 			List<PMethod> methods = body.getMethod();
 			for (PMethod m : methods) {
 				AMethod method = (AMethod) m;
@@ -224,9 +240,13 @@ public class SAMParser {
 						rel.add(BASIC.createTuple(TERM.createString(name), TERM.createString(callSite)));
 
 						// mayStore(callSite, var)
-						rel = getRelation(facts, mayStoreP);
-						String varName = assign.getName().getText();
-						rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(varName)));
+						if (assign != null) {
+							rel = getRelation(facts, mayStoreP);
+							String varName = assign.getName().getText();
+							rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(varName)));
+
+							declareLocal(locals, assign);
+						}
 
 						// mayCall(callSite, var)
 						rel = getRelation(facts, mayCallP);
@@ -243,6 +263,7 @@ public class SAMParser {
 						ANewStatement s = (ANewStatement) ps;
 
 						AAssign assign = (AAssign) s.getAssign();
+						declareLocal(locals, assign);
 						ANewExpr expr = (ANewExpr) s.getNewExpr();
 						String varName = assign.getName().getText();
 
@@ -265,6 +286,13 @@ public class SAMParser {
 						throw new RuntimeException("Unknown statement type: " + ps);
 					}
 				}
+			}
+
+			IRelation rel = getRelation(facts, hasLocalP);
+			for (String local : locals) {
+				// hasLocal(type, local)
+				rel.add(BASIC.createTuple(TERM.createString(this.name),
+							  TERM.createString(local)));
 			}
 		}
 	}
