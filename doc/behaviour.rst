@@ -4,6 +4,42 @@ Behaviour
 =========
 
 Behaviour predicates indicate what objects of the given type are willing to do.
+Behaviour can be specified using a Java-like syntax (which is translated into Datalog), or
+in Datalog directly.
+
+Java-like syntax
+----------------
+A type may be defined using the "class" keyword. This must occur at the start of a new line, and
+continues until the next line starting with "}" (with no leading spaces). The syntax is::
+
+  class NAME [extends SUPERCLASS] {
+    // Zero or more fields, of the form:
+    private TYPE NAME;
+
+    // Zero or more methods, of the form:
+    public TYPE NAME(PARAMS) {
+      METHOD-BODY
+    }
+  }
+
+Note: fields *must* be "private" and methods *must* be "public". Fields must come before methods.
+
+Types are currently ignored (and treated safely as "Object"). Method names are currently ignored.
+
+`PARAMS` is a comma-separated list of "TYPE NAME" pairs, as in Java.
+
+`METHOD-BODY` is a list of statements, each of which is one of these::
+
+  [TYPE] NAME = new TYPE(ARGS);
+  [TYPE] NAME = NAME(ARGS);
+  return NAME;
+
+Where `NAME` is a variable name, `TYPE` is a class name, and `ARGS` is a comma-separated list of
+variable names.
+
+
+Predicates
+----------
 
 .. function:: mayAccept(?Type, ?ParamVar)
 
@@ -16,7 +52,7 @@ Behaviour predicates indicate what objects of the given type are willing to do.
 
 .. function:: hasCallSite(?Type, ?CallSite)
 
-   These objects may perform the call described in :ref:`CallSite`.
+   These objects may perform the call described in `CallSite` (see :ref:`CallSite`).
 
 .. function:: mayReturn(?Type, ?TargetResultVar)
 
