@@ -7,20 +7,26 @@ import("initial", "sam:graph.dl").
 import("final", "sam:system.dl").
 
 /* Behaviour */
-hasLocal("Factory", "task").
-hasMethod("Factory", "newInstance").
-mayCreate("Factory", "Task", "task").
-mayReturn("Factory", "task").
+class Factory {
+  public Task newInstance() {
+    Task task = new Task();
+    return task;
+  }
+}
 
-isA(?Object, "Unknown") :- isA(?Object, "Task").
+class Task extends Unknown {
+}
 
-hasField("ClientA", "factory").
-hasField("ClientA", "myTask").
-hasField("ClientA", "ref").
+class ClientA {
+  private Object factory;
+  private Object myTask;
+  private Object ref;
 
-// myTask = myTask.invoke(myTask)
-mayCall("ClientA", "factory", "ref", "myTask").
-
+  public void run() {
+    myTask = factory();
+    myTask = myTask(myTask);
+  }
+}
 
 /* Config */
 

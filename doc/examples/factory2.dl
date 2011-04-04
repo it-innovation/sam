@@ -7,14 +7,15 @@ import("initial", "sam:graph.dl").
 import("final", "sam:system.dl").
 
 /* Behaviour */
-hasLocal("Factory", "task").
-hasMethod("Factory", "newInstance").
-mayCreate("Factory", "Task", "task").
-mayReturn("Factory", "task").
+class Factory {
+  public Task newInstance() {
+    Task task = new Task();
+    return task;
+  }
+}
 
-isA(?Object, "Unknown") :- isA(?Object, "Task").
-
-isA(?Object, "Unknown") :- isA(?Object, "Client").
+class Task extends Unknown {
+}
 
 /* Config */
 
@@ -30,7 +31,7 @@ initialInvocation("otherClients", "Other").
 
 field("clientA", "ref", "otherClients").
 
-invocationObject("clientA", "A", "otherClients", ?Arg, "ref", "Other") :- isObject(?Arg).
+invocationObject("otherClients", "A", "anycallsite", "Other").
 
 /* Goals */
 

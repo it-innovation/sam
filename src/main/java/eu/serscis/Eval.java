@@ -61,7 +61,7 @@ public class Eval {
 	private Configuration configuration = createDefaultConfiguration();
 	private List<IRule> rules = new LinkedList<IRule>();
 	private Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
-	private Parser parser = new Parser();
+	private SAMParser parser = new SAMParser(configuration);
 
 	public static void main(String[] args) throws Exception {
 		if (args.length != 1) {
@@ -299,8 +299,8 @@ public class Eval {
 	private void parse(Reader source) throws Exception {
 		parser.parse(source);
 
-		Map<IPredicate,IRelation> newFacts = parser.getFacts();
-		List<IRule> newRules = parser.getRules();
+		Map<IPredicate,IRelation> newFacts = parser.facts;
+		List<IRule> newRules = parser.rules;
 
 		rules.addAll(newRules);
 

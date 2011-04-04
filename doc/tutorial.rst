@@ -27,33 +27,26 @@ code::
     }
   }
 
-  class Task extends Unknown {}
+  class Task extends Unknown {
+  }
 
-  class Client extends Unknown {}
+.. note::
+  SAM uses a small Java-like syntax to define behaviour. The above Java code can be
+  used as-is, but more complex code must be simplified. Note also that the final "}"
+  defining a class must occur on a line of its own, and at the beginning of the line.
 
-Therefore the *behaviour* part of the model can be written as::
+The `Unknown` class is used for code whose behaviour is unknown or untrusted. Making
+`Task` extend `Unknown` here means that the safety properties we verify for the model will
+be true no matter how `Task` is actually imlemented.
 
-  hasLocal("Factory", "task").
-  hasMethod("Factory", "newInstance").
-  mayCreate("Factory", "Task", "task").
-  mayReturn("Factory", "task").
-
-  isA(?Object, "Unknown") :- isA(?Object, "Task").
-
-  isA(?Object, "Unknown") :- isA(?Object, "Client").
-
-Although we're going to use separate types for Task and Client, we actually model them as extending
-the built-in "Unknown" type. The first :func:`isA` rule can be read as: "An
-Object is an instance of Unknown if it is an instance of Task."
-
-See :ref:`Behaviour` for more information about the behaviour predicates.
+See :ref:`Behaviour` for more information about defining behaviour.
 
 Configuration
 -------------
 We can now define the initial configuration. We'll model two client objects: clientA, representing a single arbitrary client, and otherClients, aggregating all the others::
 
-  initialObject("clientA", "Client").
-  initialObject("otherClients", "Client").
+  initialObject("clientA", "Unknown").
+  initialObject("otherClients", "Unknown").
   initialObject("factory", "Factory").
 
   initialInvocation("clientA", "A").
@@ -62,7 +55,7 @@ We can now define the initial configuration. We'll model two client objects: cli
 The :func:`initialObject` lines define the three objects and their types.
 
 The :func:`initialInvocation` lines say that we assume both clients may be active by default (they
-don't wait for someone to invoke them). The second argument is the *context*. By giving them
+don't wait for someone to invoke them). The second argument is the *modelling context*. By giving them
 different contexts we tell the modeller to consider these two cases separately when aggregating
 invocations.
 
@@ -86,15 +79,16 @@ Adding a few standard imports to the top gives this complete model file (factory
   import("final", "sam:system.dl").
   
   /* Behaviour */
-  hasLocal("Factory", "task").
-  hasMethod("Factory", "newInstance").
-  mayCreate("Factory", "Task", "task").
-  mayReturn("Factory", "task").
+  class Factory {
+    public Task newInstance() {
+      Task task = new Task();
+      return task;
+    }
+  }
   
-  isA(?Object, "Unknown") :- isA(?Object, "Task").
+  class Task extends Unknown {
+  }
   
-  isA(?Object, "Unknown") :- isA(?Object, "Client").
-
   /* Config */
   
   initialObject("clientA", "Unknown").
@@ -117,14 +111,11 @@ You should find you now have an output file called "access.dot.png":
 
 This shows that, given the behaviour and initial configuration:
 
-* Some new Task objects will be created in contexts "A" and "Other".
-* clientA may get access to the "A" tasks.
-* otherClients may get access to the "other" tasks.
+* Some new Task objects will be created. SAM aggregates all those that may be created in context "A" as `TaskA` and those created in "Other" as `TaskOther`.
+* clientA may get access to the `TaskA` tasks.
+* otherClients may get access to the `TaskOther` tasks.
 * The factory gets a reference to all tasks but doesn't store the reference (the
   blue arrow indicates a local varibale rather than a field).
-
-Because the behaviour of the clients is unknown, they also pass a references to the
-factory to to themselves to their tasks.
 
 See :ref:`Graphing` for more information about the graphs produced.
 
@@ -189,16 +180,16 @@ behaviour. For example, we can model clientA as having three separate fields:
 "myTask", "ref" and "factory". "myTask" will be the task(s) clientA created explicitly using
 factory, "factory" is the factory, and "ref" will represent all other fields (aggregated)::
 
-  hasField("ClientA", "factory").
-  hasField("ClientA", "myTask").
-  hasField("ClientA", "ref").
-
-  // myTask = myTask.invoke(myTask)
-  mayCall("ClientA", "factory", "ref", "myTask").
-
-  initialObject("clientA", "ClientA").
-  field("clientA", "factory", "factory").
-  field("clientA", "ref", "otherClients").
+  class ClientA {
+    private Object factory;
+    private Object myTask;
+    private Object ref;
+  
+    public void run() {
+      myTask = factory();
+      myTask = myTask(myTask);
+    }
+  }
 
 This model is safe, though it puts rather strict limits on what clientA can do:
 
@@ -213,7 +204,16 @@ Sometimes the default aggregation rules are not sufficient. For example, if we
 try to check whether it's safe for clientA to call `ref = ref.invoke(ref)`,
 we find that the required properties can't be verified::
 
-  mayCall("ClientA", "ref", "ref", "ref").
+  class ClientA {
+    private Object factory;
+    private Object myTask;
+    private Object ref;
+  
+    public void run() {
+      myTask = factory();
+      ref = ref(ref);
+    }
+  }
 
 Turning on display of invocations shows the reason:
 
@@ -252,7 +252,7 @@ We will therefore put `clientA`'s initial invocation into the "Other" group, and
 tell SAM to put only the `myTask = factory.invoke()` invocation under "A"::
 
   initialInvocation("clientA", "Other").
-  invocationObject("clientA", "Other", "factory", ?Arg, "myTask", "A") :- isObject(?Arg).
+  invocationObject("clientA", "Other", ?CallSite, "A") :- mayStore(?CallSite, "myTask").
 
 With this division, the desired propery can be proved. `clientA` can now get access to tasks created
 by other parties, but others still can't get access to the tasks by `clientA`.

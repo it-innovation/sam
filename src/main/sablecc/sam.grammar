@@ -1,0 +1,53 @@
+Package eu.serscis.sam;
+
+Helpers
+  unicode_input_character = [0..0xffff];
+  ht  = 0x0009;
+  lf  = 0x000a;
+  ff  = 0x000c;
+  cr  = 0x000d;
+  sp  = ' ';
+  char = ['a'..'z'] | ['A'..'Z'];
+  digit = ['0'..'9'];
+  line_terminator = lf | cr | cr lf;
+  input_character = [unicode_input_character - [cr + lf]];
+  underscode = '_';
+
+Tokens
+  number = ['0' .. '9']+;
+  l_par = '(';
+  r_par = ')';
+  public_tok = 'public';
+  private_tok = 'private';
+  extends_tok = 'extends';
+  new = 'new';
+  return = 'return';
+  class_tok = 'class';
+  l_brace = '{';
+  r_brace = '}';
+  eq = '=';
+  blank = (' ' | 13 | 9 | 10)+;
+  comment = '//' input_character* line_terminator;
+  comma = ',';
+  goal = 'goal';
+  semi = ';';
+  name = char(char|digit|underscode)*;
+
+Ignored Tokens
+  blank, comment;
+
+Productions
+  behaviour = class_tok name extends? l_brace class_body r_brace;
+  extends = extends_tok name;
+  class_body = field* method*;
+  field = private_tok type name semi;
+  type = name;
+  method = public_tok type name l_par r_par l_brace code r_brace;
+  code = statement*;
+  assign = type? name eq;
+  statement = {new} assign? new_expr semi
+	    | {call} assign? call_expr semi
+	    | {return} return name semi;
+  new_expr = new type l_par r_par;
+  call_expr = name l_par args r_par;
+  args = name*;
