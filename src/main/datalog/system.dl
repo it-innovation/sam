@@ -36,12 +36,11 @@ mayAccept(?Method, ?ParamVar, ?Value) :- mayAccept(?Method, ?ParamVar), isObject
 
 /* Access control */
 
-accessAllowed(?Caller, ?Target, ?CallSite) :-
+accessAllowed(?Caller, ?Target, ?Method) :-
 	!accessControlOn,
-	isA(?Caller, ?CallerType),
-	isObject(?Target),
-	hasMethod(?CallerType, ?Method),
-	hasCallSite(?Method, ?CallSite).
+	isObject(?Caller),
+	isA(?Target, ?TargetType),
+	hasMethod(?TargetType, ?Method).
 
 /* The concrete objects that may be called, based on the behaviour (in terms of variables) and the values of those variables. */
 mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target) :-
@@ -50,7 +49,6 @@ mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target) :-
 	hasMethod(?Type, ?Method),
 	hasCallSite(?Method, ?CallSite),
 	mayCall(?CallSite, ?TargetVar),
-	accessAllowed(?Caller, ?Target, ?CallSite),
 	value(?Caller, ?CallerInvocation, ?TargetVar, ?Target).
 
 /* Which methods may CallSite invoke on Target */
@@ -71,6 +69,7 @@ methodMatches(?CallSite, ?Target, "Unknown.invoke") :-	/* Any call to Unknown ma
 didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method) :-
 	mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target),
 	methodMatches(?CallSite, ?Target, ?Method),
+	accessAllowed(?Caller, ?Target, ?Method),
 	realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
 
 /* Parent calls the child's constructor */
