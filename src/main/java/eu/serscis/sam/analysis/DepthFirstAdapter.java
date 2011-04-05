@@ -217,6 +217,10 @@ public class DepthFirstAdapter extends AnalysisAdapter
         {
             node.getLPar().apply(this);
         }
+        if(node.getParams() != null)
+        {
+            node.getParams().apply(this);
+        }
         if(node.getRPar() != null)
         {
             node.getRPar().apply(this);
@@ -373,6 +377,10 @@ public class DepthFirstAdapter extends AnalysisAdapter
         {
             node.getLPar().apply(this);
         }
+        if(node.getArgs() != null)
+        {
+            node.getArgs().apply(this);
+        }
         if(node.getRPar() != null)
         {
             node.getRPar().apply(this);
@@ -427,13 +435,120 @@ public class DepthFirstAdapter extends AnalysisAdapter
     public void caseAArgs(AArgs node)
     {
         inAArgs(node);
+        if(node.getName() != null)
         {
-            List<TName> copy = new ArrayList<TName>(node.getName());
-            for(TName e : copy)
+            node.getName().apply(this);
+        }
+        {
+            List<PArgsTail> copy = new ArrayList<PArgsTail>(node.getArgsTail());
+            for(PArgsTail e : copy)
             {
                 e.apply(this);
             }
         }
         outAArgs(node);
+    }
+
+    public void inAArgsTail(AArgsTail node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAArgsTail(AArgsTail node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAArgsTail(AArgsTail node)
+    {
+        inAArgsTail(node);
+        if(node.getComma() != null)
+        {
+            node.getComma().apply(this);
+        }
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        outAArgsTail(node);
+    }
+
+    public void inAParam(AParam node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAParam(AParam node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAParam(AParam node)
+    {
+        inAParam(node);
+        if(node.getType() != null)
+        {
+            node.getType().apply(this);
+        }
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        outAParam(node);
+    }
+
+    public void inAParams(AParams node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAParams(AParams node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAParams(AParams node)
+    {
+        inAParams(node);
+        if(node.getParam() != null)
+        {
+            node.getParam().apply(this);
+        }
+        {
+            List<PParamsTail> copy = new ArrayList<PParamsTail>(node.getParamsTail());
+            for(PParamsTail e : copy)
+            {
+                e.apply(this);
+            }
+        }
+        outAParams(node);
+    }
+
+    public void inAParamsTail(AParamsTail node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAParamsTail(AParamsTail node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAParamsTail(AParamsTail node)
+    {
+        inAParamsTail(node);
+        if(node.getComma() != null)
+        {
+            node.getComma().apply(this);
+        }
+        if(node.getParam() != null)
+        {
+            node.getParam().apply(this);
+        }
+        outAParamsTail(node);
     }
 }

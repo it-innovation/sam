@@ -10,6 +10,7 @@ public final class ANewExpr extends PExpr
     private TNew _new_;
     private PType _type_;
     private TLPar _lPar_;
+    private PArgs _args_;
     private TRPar _rPar_;
 
     public ANewExpr()
@@ -21,6 +22,7 @@ public final class ANewExpr extends PExpr
         @SuppressWarnings("hiding") TNew _new_,
         @SuppressWarnings("hiding") PType _type_,
         @SuppressWarnings("hiding") TLPar _lPar_,
+        @SuppressWarnings("hiding") PArgs _args_,
         @SuppressWarnings("hiding") TRPar _rPar_)
     {
         // Constructor
@@ -29,6 +31,8 @@ public final class ANewExpr extends PExpr
         setType(_type_);
 
         setLPar(_lPar_);
+
+        setArgs(_args_);
 
         setRPar(_rPar_);
 
@@ -41,6 +45,7 @@ public final class ANewExpr extends PExpr
             cloneNode(this._new_),
             cloneNode(this._type_),
             cloneNode(this._lPar_),
+            cloneNode(this._args_),
             cloneNode(this._rPar_));
     }
 
@@ -124,6 +129,31 @@ public final class ANewExpr extends PExpr
         this._lPar_ = node;
     }
 
+    public PArgs getArgs()
+    {
+        return this._args_;
+    }
+
+    public void setArgs(PArgs node)
+    {
+        if(this._args_ != null)
+        {
+            this._args_.parent(null);
+        }
+
+        if(node != null)
+        {
+            if(node.parent() != null)
+            {
+                node.parent().removeChild(node);
+            }
+
+            node.parent(this);
+        }
+
+        this._args_ = node;
+    }
+
     public TRPar getRPar()
     {
         return this._rPar_;
@@ -156,6 +186,7 @@ public final class ANewExpr extends PExpr
             + toString(this._new_)
             + toString(this._type_)
             + toString(this._lPar_)
+            + toString(this._args_)
             + toString(this._rPar_);
     }
 
@@ -178,6 +209,12 @@ public final class ANewExpr extends PExpr
         if(this._lPar_ == child)
         {
             this._lPar_ = null;
+            return;
+        }
+
+        if(this._args_ == child)
+        {
+            this._args_ = null;
             return;
         }
 
@@ -209,6 +246,12 @@ public final class ANewExpr extends PExpr
         if(this._lPar_ == oldChild)
         {
             setLPar((TLPar) newChild);
+            return;
+        }
+
+        if(this._args_ == oldChild)
+        {
+            setArgs((PArgs) newChild);
             return;
         }
 

@@ -11,6 +11,7 @@ public final class AMethod extends PMethod
     private PType _type_;
     private TName _name_;
     private TLPar _lPar_;
+    private PParams _params_;
     private TRPar _rPar_;
     private TLBrace _lBrace_;
     private PCode _code_;
@@ -26,6 +27,7 @@ public final class AMethod extends PMethod
         @SuppressWarnings("hiding") PType _type_,
         @SuppressWarnings("hiding") TName _name_,
         @SuppressWarnings("hiding") TLPar _lPar_,
+        @SuppressWarnings("hiding") PParams _params_,
         @SuppressWarnings("hiding") TRPar _rPar_,
         @SuppressWarnings("hiding") TLBrace _lBrace_,
         @SuppressWarnings("hiding") PCode _code_,
@@ -39,6 +41,8 @@ public final class AMethod extends PMethod
         setName(_name_);
 
         setLPar(_lPar_);
+
+        setParams(_params_);
 
         setRPar(_rPar_);
 
@@ -58,6 +62,7 @@ public final class AMethod extends PMethod
             cloneNode(this._type_),
             cloneNode(this._name_),
             cloneNode(this._lPar_),
+            cloneNode(this._params_),
             cloneNode(this._rPar_),
             cloneNode(this._lBrace_),
             cloneNode(this._code_),
@@ -169,6 +174,31 @@ public final class AMethod extends PMethod
         this._lPar_ = node;
     }
 
+    public PParams getParams()
+    {
+        return this._params_;
+    }
+
+    public void setParams(PParams node)
+    {
+        if(this._params_ != null)
+        {
+            this._params_.parent(null);
+        }
+
+        if(node != null)
+        {
+            if(node.parent() != null)
+            {
+                node.parent().removeChild(node);
+            }
+
+            node.parent(this);
+        }
+
+        this._params_ = node;
+    }
+
     public TRPar getRPar()
     {
         return this._rPar_;
@@ -277,6 +307,7 @@ public final class AMethod extends PMethod
             + toString(this._type_)
             + toString(this._name_)
             + toString(this._lPar_)
+            + toString(this._params_)
             + toString(this._rPar_)
             + toString(this._lBrace_)
             + toString(this._code_)
@@ -308,6 +339,12 @@ public final class AMethod extends PMethod
         if(this._lPar_ == child)
         {
             this._lPar_ = null;
+            return;
+        }
+
+        if(this._params_ == child)
+        {
+            this._params_ = null;
             return;
         }
 
@@ -363,6 +400,12 @@ public final class AMethod extends PMethod
         if(this._lPar_ == oldChild)
         {
             setLPar((TLPar) newChild);
+            return;
+        }
+
+        if(this._params_ == oldChild)
+        {
+            setParams((PParams) newChild);
             return;
         }
 

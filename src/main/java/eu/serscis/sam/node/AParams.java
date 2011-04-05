@@ -6,50 +6,50 @@ import java.util.*;
 import eu.serscis.sam.analysis.*;
 
 @SuppressWarnings("nls")
-public final class AArgs extends PArgs
+public final class AParams extends PParams
 {
-    private TName _name_;
-    private final LinkedList<PArgsTail> _argsTail_ = new LinkedList<PArgsTail>();
+    private PParam _param_;
+    private final LinkedList<PParamsTail> _paramsTail_ = new LinkedList<PParamsTail>();
 
-    public AArgs()
+    public AParams()
     {
         // Constructor
     }
 
-    public AArgs(
-        @SuppressWarnings("hiding") TName _name_,
-        @SuppressWarnings("hiding") List<PArgsTail> _argsTail_)
+    public AParams(
+        @SuppressWarnings("hiding") PParam _param_,
+        @SuppressWarnings("hiding") List<PParamsTail> _paramsTail_)
     {
         // Constructor
-        setName(_name_);
+        setParam(_param_);
 
-        setArgsTail(_argsTail_);
+        setParamsTail(_paramsTail_);
 
     }
 
     @Override
     public Object clone()
     {
-        return new AArgs(
-            cloneNode(this._name_),
-            cloneList(this._argsTail_));
+        return new AParams(
+            cloneNode(this._param_),
+            cloneList(this._paramsTail_));
     }
 
     public void apply(Switch sw)
     {
-        ((Analysis) sw).caseAArgs(this);
+        ((Analysis) sw).caseAParams(this);
     }
 
-    public TName getName()
+    public PParam getParam()
     {
-        return this._name_;
+        return this._param_;
     }
 
-    public void setName(TName node)
+    public void setParam(PParam node)
     {
-        if(this._name_ != null)
+        if(this._param_ != null)
         {
-            this._name_.parent(null);
+            this._param_.parent(null);
         }
 
         if(node != null)
@@ -62,19 +62,19 @@ public final class AArgs extends PArgs
             node.parent(this);
         }
 
-        this._name_ = node;
+        this._param_ = node;
     }
 
-    public LinkedList<PArgsTail> getArgsTail()
+    public LinkedList<PParamsTail> getParamsTail()
     {
-        return this._argsTail_;
+        return this._paramsTail_;
     }
 
-    public void setArgsTail(List<PArgsTail> list)
+    public void setParamsTail(List<PParamsTail> list)
     {
-        this._argsTail_.clear();
-        this._argsTail_.addAll(list);
-        for(PArgsTail e : list)
+        this._paramsTail_.clear();
+        this._paramsTail_.addAll(list);
+        for(PParamsTail e : list)
         {
             if(e.parent() != null)
             {
@@ -89,21 +89,21 @@ public final class AArgs extends PArgs
     public String toString()
     {
         return ""
-            + toString(this._name_)
-            + toString(this._argsTail_);
+            + toString(this._param_)
+            + toString(this._paramsTail_);
     }
 
     @Override
     void removeChild(@SuppressWarnings("unused") Node child)
     {
         // Remove child
-        if(this._name_ == child)
+        if(this._param_ == child)
         {
-            this._name_ = null;
+            this._param_ = null;
             return;
         }
 
-        if(this._argsTail_.remove(child))
+        if(this._paramsTail_.remove(child))
         {
             return;
         }
@@ -115,19 +115,19 @@ public final class AArgs extends PArgs
     void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
         // Replace child
-        if(this._name_ == oldChild)
+        if(this._param_ == oldChild)
         {
-            setName((TName) newChild);
+            setParam((PParam) newChild);
             return;
         }
 
-        for(ListIterator<PArgsTail> i = this._argsTail_.listIterator(); i.hasNext();)
+        for(ListIterator<PParamsTail> i = this._paramsTail_.listIterator(); i.hasNext();)
         {
             if(i.next() == oldChild)
             {
                 if(newChild != null)
                 {
-                    i.set((PArgsTail) newChild);
+                    i.set((PParamsTail) newChild);
                     newChild.parent(this);
                     oldChild.parent(null);
                     return;

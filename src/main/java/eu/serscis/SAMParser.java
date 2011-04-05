@@ -72,6 +72,7 @@ public class SAMParser {
 	static private IPredicate mayCallP = BASIC.createPredicate("mayCall", 2);
 	static private IPredicate mayPassP = BASIC.createPredicate("mayPass", 2);
 	static private IPredicate mayCreateP = BASIC.createPredicate("mayCreate", 2);
+	static private IPredicate mayAcceptP = BASIC.createPredicate("mayAccept", 2);
 	static private IPredicate mayReturnP = BASIC.createPredicate("mayReturn", 2);
 	static private IPredicate hasFieldP = BASIC.createPredicate("hasField", 2);
 	static private IPredicate localP = BASIC.createPredicate("local", 4);
@@ -231,6 +232,33 @@ public class SAMParser {
 			rules.add(rule);
 		}
 
+		private void addParam(IRelation acceptRel, Set<String> locals, PParam param) {
+			String name = ((AParam) param).getName().getText();
+			acceptRel.add(BASIC.createTuple(TERM.createString(this.name), TERM.createString(name)));
+
+			if (locals.contains(name)) {
+				throw new RuntimeException("Duplicate definition of local " + name);
+			} else if (fields.contains(name)) {
+				throw new RuntimeException("Local variable shadows field of same name: " + name);
+			} else {
+				locals.add(name);
+			}
+		}
+
+		private void addArgs(IRelation rel, String callSite, AArgs args) {
+			if (args == null) {
+				return;
+			}
+
+			String arg0 = args.getName().getText();
+			rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(arg0)));
+
+			for (PArgsTail tail : args.getArgsTail()) {
+				String arg = ((AArgsTail) tail).getName().getText();
+				rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(arg)));
+			}
+		}
+
 		public void addDatalog(Map<IPredicate,IRelation> facts, List<IRule> rules) {
 			AExtends extend = (AExtends) behaviour.getExtends();
 			if (extend != null) {
@@ -260,8 +288,19 @@ public class SAMParser {
 			for (PMethod m : methods) {
 				AMethod method = (AMethod) m;
 				ACode code = (ACode) method.getCode();
-
 				Set<String> locals = new HashSet<String>();
+
+				// mayAccept(type, param)
+				IRelation acceptRel = getRelation(facts, mayAcceptP);
+				AParams params = (AParams) method.getParams();
+				if (params != null) {
+					addParam(acceptRel, locals, params.getParam());
+
+					for (PParamsTail tail : params.getParamsTail()) {
+						AParam param2 = (AParam) ((AParamsTail) tail).getParam();
+						addParam(acceptRel, locals, param2);
+					}
+				}
 
 				for (PStatement ps : code.getStatement()) {
 					if (ps instanceof AAssignStatement) {
@@ -289,10 +328,7 @@ public class SAMParser {
 
 							// mayPass(callSite, var)
 							rel = getRelation(facts, mayPassP);
-							for (TName arg : ((AArgs) callExpr.getArgs()).getName()) {
-								String argVar = arg.getText();
-								rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(argVar)));
-							}
+							addArgs(rel, callSite, (AArgs) callExpr.getArgs());
 
 							valueP = didGetP;
 						} else if (expr instanceof ANewExpr) {

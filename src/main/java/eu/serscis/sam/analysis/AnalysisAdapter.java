@@ -134,6 +134,26 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseAArgsTail(AArgsTail node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAParam(AParam node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAParams(AParams node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAParamsTail(AParamsTail node)
+    {
+        defaultCase(node);
+    }
+
     public void caseTNumber(TNumber node)
     {
         defaultCase(node);

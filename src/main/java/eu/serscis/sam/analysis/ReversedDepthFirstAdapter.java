@@ -219,6 +219,10 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         {
             node.getRPar().apply(this);
         }
+        if(node.getParams() != null)
+        {
+            node.getParams().apply(this);
+        }
         if(node.getLPar() != null)
         {
             node.getLPar().apply(this);
@@ -368,6 +372,10 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         {
             node.getRPar().apply(this);
         }
+        if(node.getArgs() != null)
+        {
+            node.getArgs().apply(this);
+        }
         if(node.getLPar() != null)
         {
             node.getLPar().apply(this);
@@ -431,13 +439,121 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
     {
         inAArgs(node);
         {
-            List<TName> copy = new ArrayList<TName>(node.getName());
+            List<PArgsTail> copy = new ArrayList<PArgsTail>(node.getArgsTail());
             Collections.reverse(copy);
-            for(TName e : copy)
+            for(PArgsTail e : copy)
             {
                 e.apply(this);
             }
         }
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
         outAArgs(node);
+    }
+
+    public void inAArgsTail(AArgsTail node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAArgsTail(AArgsTail node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAArgsTail(AArgsTail node)
+    {
+        inAArgsTail(node);
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        if(node.getComma() != null)
+        {
+            node.getComma().apply(this);
+        }
+        outAArgsTail(node);
+    }
+
+    public void inAParam(AParam node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAParam(AParam node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAParam(AParam node)
+    {
+        inAParam(node);
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        if(node.getType() != null)
+        {
+            node.getType().apply(this);
+        }
+        outAParam(node);
+    }
+
+    public void inAParams(AParams node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAParams(AParams node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAParams(AParams node)
+    {
+        inAParams(node);
+        {
+            List<PParamsTail> copy = new ArrayList<PParamsTail>(node.getParamsTail());
+            Collections.reverse(copy);
+            for(PParamsTail e : copy)
+            {
+                e.apply(this);
+            }
+        }
+        if(node.getParam() != null)
+        {
+            node.getParam().apply(this);
+        }
+        outAParams(node);
+    }
+
+    public void inAParamsTail(AParamsTail node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAParamsTail(AParamsTail node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAParamsTail(AParamsTail node)
+    {
+        inAParamsTail(node);
+        if(node.getParam() != null)
+        {
+            node.getParam().apply(this);
+        }
+        if(node.getComma() != null)
+        {
+            node.getComma().apply(this);
+        }
+        outAParamsTail(node);
     }
 }

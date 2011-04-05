@@ -25,6 +25,10 @@ public interface Analysis extends Switch
     void caseANewExpr(ANewExpr node);
     void caseACallExpr(ACallExpr node);
     void caseAArgs(AArgs node);
+    void caseAArgsTail(AArgsTail node);
+    void caseAParam(AParam node);
+    void caseAParams(AParams node);
+    void caseAParamsTail(AParamsTail node);
 
     void caseTNumber(TNumber node);
     void caseTLPar(TLPar node);
