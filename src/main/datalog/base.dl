@@ -124,3 +124,4 @@ mayCall("anycallsite", "ref").
 mayPass("anycallsite", "ref").
 
 field(?Object, "ref", ?Value) :- didGet(?Object, ?AnyInvocation, "anycallsite", ?Value).
+field(?Object, "ref", ?Value) :- didAccept(?Object, ?AnyInvocation, "ref", ?Value).

@@ -97,12 +97,8 @@ didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
 	mayAccept(?Method, ?ParamVar, ?ArgValue).
 
 /* Target's parameter variable may contain ArgValue if someone called it with that value. */
-// TODO: parameters are always local, but currently might be a field too
 local(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
 	didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue).
-field(?Target, ?ParamVar, ?ArgValue) :-
-	didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue),
-	hasField(?TargetType, ?ParamVar).
 
 didCreate(?Caller, ?Invocation, ?CallSite, ?Child) :-
 	live(?Caller, ?Invocation),
