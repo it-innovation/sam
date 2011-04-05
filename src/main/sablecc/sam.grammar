@@ -42,7 +42,7 @@ Productions
   class_body = field* method*;
   field = private_tok type name semi;
   type = name;
-  method = public_tok type name l_par params? r_par l_brace code r_brace;
+  method = public_tok type? name l_par params? r_par l_brace code r_brace;
   code = statement*;
   assign = type? name eq;
   statement = {assign} assign? expr semi

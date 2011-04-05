@@ -30,6 +30,10 @@ error("No target invocation for possible call", ?Caller, ?CallerInvocation, ?Cal
 	mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target),
 	!realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
 
+/* Parent calls the child's constructor */
+didCall(?Caller, ?Invocation, ?CallSite, ?NewChild, ?Invocation) :-
+	didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild).
+
 live(?Target, ?TargetInvocation) :-
 	didCall(?AnyCaller, ?AnyCallerInvocation, ?AnyCallSite, ?Target, ?TargetInvocation).
 

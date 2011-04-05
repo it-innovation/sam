@@ -290,6 +290,14 @@ public class SAMParser {
 				ACode code = (ACode) method.getCode();
 				Set<String> locals = new HashSet<String>();
 
+				String methodName = method.getName().getText();
+
+				if (method.getType() == null) {
+					if (!methodName.equals(this.name)) {
+						throw new RuntimeException("Constructor must be named after class (or missing return type): " + methodName + " in " + this.name);
+					}
+				}
+
 				// mayAccept(type, param)
 				IRelation acceptRel = getRelation(facts, mayAcceptP);
 				AParams params = (AParams) method.getParams();
@@ -341,7 +349,10 @@ public class SAMParser {
 							String newType = ((AType) newExpr.getType()).getName().getText();
 							rel.add(BASIC.createTuple(TERM.createString(callSite),
 										  TERM.createString(newType)));
-							//System.out.println(rel);
+
+							// mayPass(callSite, var)
+							rel = getRelation(facts, mayPassP);
+							addArgs(rel, callSite, (AArgs) newExpr.getArgs());
 
 							valueP = didCreateP;
 						} else {
