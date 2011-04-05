@@ -92,18 +92,20 @@ public class Eval {
 	}
 
 	public Eval(File scenario) throws Exception {
+		File baseDir = scenario.getParentFile();
+
 		ClassLoader loader = Eval.class.getClassLoader();
 
 		parse(scenario);
 		List<IQuery> queries = parser.getQueries();
 
-		handleImports("initial");
+		handleImports("initial", baseDir);
 
 		IKnowledgeBase initialKnowledgeBase = createKnowledgeBase();
 		graph(initialKnowledgeBase, new File("initial.dot"));
 
 		checkForErrors(initialKnowledgeBase, "in initial configuration");
-		handleImports("final");
+		handleImports("final", baseDir);
 
 		IKnowledgeBase finalKnowledgeBase = createKnowledgeBase();
 		finalKnowledgeBase = doDebugging(finalKnowledgeBase);
@@ -314,7 +316,7 @@ public class Eval {
 		}
 	}
 
-	private void handleImports(String stage) throws Exception {
+	private void handleImports(String stage, File baseDir) throws Exception {
 		IKnowledgeBase knowledgeBase = createKnowledgeBase();
 
 		ITuple terms = BASIC.createTuple(TERM.createString(stage), TERM.createVariable("Path"));
@@ -329,7 +331,7 @@ public class Eval {
 
 			String[] components = path.split(":", 2);
 			if (components[0].equals("this")) {
-				parse(new File(components[1]));
+				parse(new File(baseDir, components[1]));
 			} else if (components[0].equals("sam")) {
 				InputStream is = getClass().getClassLoader().getResourceAsStream(components[1]);
 				try {
@@ -337,6 +339,8 @@ public class Eval {
 				} finally {
 					is.close();
 				}
+			} else {
+				throw new RuntimeException("Missing prefix on import: " + components[0]);
 			}
 		}
 	}

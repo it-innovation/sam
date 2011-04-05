@@ -1,0 +1,53 @@
+/* vim: set syntax=java : */
+
+/* Behaviour */
+class Sender {
+  private Sealer sealer;
+  private Object precious;
+  private Object precious2;
+  private Object others;
+  private Object others2;
+
+  public void test() {
+    Box box1 = sealer.seal(precious);
+    Box box2 = sealer.seal(precious2);
+    others.accept(box1);
+    others2.accept(box2);
+  }
+}
+
+class Box {
+  private Object precious;
+
+  public Box(Object value) {
+    precious = value;
+  }
+}
+
+class Sealer {
+  public Box seal(Object value) {
+    Box box = new Box(value);
+    return box;
+  }
+}
+
+class Unsealer {
+  public Object unseal(Box box) {
+  }
+}
+mayReturn("Unsealer.unseal", "value").
+local(?Unsealer, ?Invocation, "value", ?Value) :-
+	isA(?Unsealer, "Unsealer"),
+	local(?Unsealer, ?Invocation, "box", ?Box),
+	field(?Box, "precious", ?Value).
+?- local("unsealer", ?TargetInvocation, ?ParamVar, ?ArgValue).
+
+/* Config */
+initialObject("sealer", "Sealer").
+initialObject("unsealer", "Unsealer").
+
+initialObject("sender", "Sender").
+
+field("sender", "sealer", "sealer").
+
+initialInvocation("sender", "A").

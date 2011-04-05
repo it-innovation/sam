@@ -15,6 +15,7 @@ User Guide
    introduction
    concepts
    tutorial
+   sealers
 
 Reference
 ---------

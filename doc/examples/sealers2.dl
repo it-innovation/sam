@@ -1,0 +1,44 @@
+/* vim: set syntax=java : */
+
+/* Imports */
+
+import("initial", "sam:base.dl").
+import("initial", "sam:graph.dl").
+import("final", "sam:system.dl").
+
+import("initial", "this:sealers-common.dl").
+
+/* Config */
+initialObject("precious1", "Unknown").
+initialObject("precious2", "Unknown").
+initialObject("withUnsealer1", "Unknown").
+initialObject("withUnsealer2", "Unknown").
+
+field("sender", "precious", "precious1").
+field("sender", "precious2", "precious2").
+field("sender", "others", "withUnsealer1").
+field("sender", "others2", "withUnsealer2").
+
+field("withUnsealer1", "ref", "unsealer").
+field("withUnsealer2", "ref", "unsealer").
+
+initialInvocation("sender", "A").
+
+showInvocation("unsealer", ?Invocation) :- isInvocation(?Invocation).
+
+invocationObject("sender", "A", ?CallSite, "1") :-
+	mayPass(?CallSite, "precious").
+invocationObject("sender", "A", ?CallSite, "2") :-
+	mayPass(?CallSite, "precious2").
+
+invocationObject("sender", "A", ?CallSite, "1") :-
+	mayCall(?CallSite, "others").
+invocationObject("sender", "A", ?CallSite, "2") :-
+	mayCall(?CallSite, "others2").
+
+/* Goals */
+
+requireAccess("withUnsealer1", "precious1").
+requireAccess("withUnsealer2", "precious2").
+denyAccess("withUnsealer1", "precious2").
+denyAccess("withUnsealer2", "precious1").
