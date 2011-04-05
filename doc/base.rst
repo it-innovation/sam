@@ -8,11 +8,6 @@ Types
 
    True if `Type` is the type of some object.
 
-.. function:: hasField(?Type, ?VarName)
-
-   There is a field on `Type` named `VarName`.
-
-
 Objects
 -------
 

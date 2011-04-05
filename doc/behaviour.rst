@@ -40,6 +40,20 @@ variable names.
 
 Predicates
 ----------
+.. function:: hasField(?Type, ?VarName)
+
+   There is a field on `Type` named `VarName`.
+
+.. function:: hasConstructor(?Type, ?Method)
+
+   `Method` is a constructor for `Type`. Constructors work like other
+   methods, but can only be called on an object if the called might have
+   created it.
+
+.. function:: hasMethod(?Type, ?Method)
+
+   `Method` is a method on `Type`. This is a fully-qualified name,
+   usually "Type.method".
 
 .. function:: mayAccept(?Type, ?ParamVar)
 

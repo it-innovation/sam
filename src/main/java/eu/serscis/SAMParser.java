@@ -236,9 +236,9 @@ public class SAMParser {
 			rules.add(rule);
 		}
 
-		private void addParam(IRelation acceptRel, Set<String> locals, PParam param) {
+		private void addParam(ITerm method, IRelation acceptRel, Set<String> locals, PParam param) {
 			String name = ((AParam) param).getName().getText();
-			acceptRel.add(BASIC.createTuple(TERM.createString(this.name), TERM.createString(name)));
+			acceptRel.add(BASIC.createTuple(method, TERM.createString(name)));
 
 			if (locals.contains(name)) {
 				throw new RuntimeException("Duplicate definition of local " + name);
@@ -326,11 +326,11 @@ public class SAMParser {
 				IRelation acceptRel = getRelation(facts, mayAcceptP);
 				AParams params = (AParams) method.getParams();
 				if (params != null) {
-					addParam(acceptRel, locals, params.getParam());
+					addParam(methodNameFull, acceptRel, locals, params.getParam());
 
 					for (PParamsTail tail : params.getParamsTail()) {
 						AParam param2 = (AParam) ((AParamsTail) tail).getParam();
-						addParam(acceptRel, locals, param2);
+						addParam(methodNameFull, acceptRel, locals, param2);
 					}
 				}
 

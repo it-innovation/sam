@@ -30,7 +30,7 @@
 
 
 /* Refinements */
-mayAccept(?TargetType, ?ParamVar, ?Value) :- mayAccept(?TargetType, ?ParamVar), isObject(?Value).
+mayAccept(?Method, ?ParamVar, ?Value) :- mayAccept(?Method, ?ParamVar), isObject(?Value).
 
 //mayCall(?Type, ?TargetVar, ?Method, ?ArgVar, ?ResultVar) :- mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar), isMethod(?Method).
 
@@ -63,7 +63,7 @@ methodMatches(?CallSite, ?Target, ?Method) :-	/* Call may call any method */
 	callsAnyMethod(?CallSite),
 	isA(?Target, ?TargetType),
 	hasMethod(?TargetType, ?Method).
-methodMatches(?CallSite, ?Target, "invoke") :-	/* Any call to Unknown matches "invoke" */
+methodMatches(?CallSite, ?Target, "Unknown.invoke") :-	/* Any call to Unknown matches "invoke" */
 	hasCallSite(?Method, ?CallSite),
 	isA(?Target, "Unknown").
 
@@ -90,11 +90,11 @@ didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue) :-
 	value(?Target, ?TargetInvocation, ?TargetResultVar, ?ResultValue).
 
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	didCall(?Caller, ?Invocation, ?CallSite, ?Target, ?TargetInvocation, ?AnyMethod),
+	didCall(?Caller, ?Invocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	mayPass(?CallSite, ?VarName),
 	value(?Caller, ?Invocation, ?VarName, ?ArgValue),
 	isA(?Target, ?TargetType),
-	mayAccept(?TargetType, ?ParamVar, ?ArgValue).
+	mayAccept(?Method, ?ParamVar, ?ArgValue).
 
 /* Target's parameter variable may contain ArgValue if someone called it with that value. */
 // TODO: parameters are always local, but currently might be a field too

@@ -66,10 +66,6 @@ isA(?Object, ?Type) :- initialObject(?Object, ?Type).
 isA(?NewObject, ?Type) :- realNewObject(?Object, ?Invocation, ?Type, ?NewObject).
 
 
-/* methods */
-isMethod(?X) :- isType(?Type), hasMethod(?Type, ?X).
-
-
 /* predicates on invocations */
 
 live(?Object, ?Invocation) :- initialInvocation(?Object, ?Invocation).
@@ -112,11 +108,12 @@ error('Field on non-object', ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Val
 
 
 /* Unknown behaviour */
-isMethod("invoke").
 hasField("Unknown", "ref").
 field(?Object, "ref", ?Object) :- live(?Object), isA(?Object, "Unknown").
 //mayCall("Unknown", "ref", "ref", "ref").
-mayAccept("Unknown", "ref").
+hasConstructor("Unknown", "Unknown.<init>").
+mayAccept("Unknown.<init>", "ref").
+mayAccept("Unknown.invoke", "ref").
 mayReturn("Unknown.invoke", "ref").
 
 hasMethod("Unknown", "Unknown.invoke").
