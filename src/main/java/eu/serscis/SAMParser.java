@@ -67,13 +67,15 @@ import eu.serscis.sam.parser.Parser;
 public class SAMParser {
 	static private IPredicate isA = BASIC.createPredicate("isA", 2);
 	static private IPredicate hasCallSiteP = BASIC.createPredicate("hasCallSite", 2);
-	static private IPredicate mayStoreP = BASIC.createPredicate("mayStore", 2);
+	static private IPredicate didGetP = BASIC.createPredicate("didGet", 4);
+	static private IPredicate didCreateP = BASIC.createPredicate("didCreate", 4);
 	static private IPredicate mayCallP = BASIC.createPredicate("mayCall", 2);
 	static private IPredicate mayPassP = BASIC.createPredicate("mayPass", 2);
-	static private IPredicate mayCreateP = BASIC.createPredicate("mayCreate", 3);
+	static private IPredicate mayCreateP = BASIC.createPredicate("mayCreate", 2);
 	static private IPredicate mayReturnP = BASIC.createPredicate("mayReturn", 2);
 	static private IPredicate hasFieldP = BASIC.createPredicate("hasField", 2);
-	static private IPredicate hasLocalP = BASIC.createPredicate("hasLocal", 2);
+	static private IPredicate localP = BASIC.createPredicate("local", 4);
+	static private IPredicate fieldP = BASIC.createPredicate("field", 3);
 	private org.deri.iris.compiler.Parser parser = new org.deri.iris.compiler.Parser();
 	public Map<IPredicate,IRelation> facts;
 	public List<IRule> rules;
@@ -164,19 +166,10 @@ public class SAMParser {
 		return Arrays.asList(items);
 	}
 
-	private static void declareLocal(Set<String> locals, AAssign assign) {
-		AType type = (AType) assign.getType();
-		if (type != null) {
-			String name = assign.getName().getText();
-			if (!locals.contains(name)) {
-				locals.add(name);
-			}
-		}
-	}
-
 	private class SAMClass {
 		public String name;
 		private ABehaviour behaviour;
+		private Set<String> fields = new HashSet<String>();
 
 		public SAMClass(String javaCode) throws Exception {
 			PushbackReader pbr = new PushbackReader(new StringReader(javaCode));
@@ -193,6 +186,51 @@ public class SAMParser {
 			this.name = behaviour.getName().getText();
 		}
 
+		private void declareLocal(Set<String> locals, AAssign assign) {
+			AType type = (AType) assign.getType();
+			if (type != null) {
+				String name = assign.getName().getText();
+				if (locals.contains(name)) {
+					throw new RuntimeException("Duplicate definition of local " + name);
+				} else if (fields.contains(name)) {
+					throw new RuntimeException("Local variable shadows field of same name: " + name);
+				} else {
+					locals.add(name);
+				}
+			}
+		}
+
+		/* Assign a local or field, as appropriate:
+		 *   local(?Caller, ?CallerInvocation, 'var', ?Value) :- body
+		 * or
+		 *   field(?Caller, 'var', ?Value) :- body
+		 */
+		private void assignVar(AAssign assign, Set<String> locals, List<IRule> rules, List<ILiteral> body) {
+			ILiteral head;
+
+			declareLocal(locals, assign);
+
+			String varName = assign.getName().getText();
+			if (locals.contains(varName)) {
+				ITuple tuple = BASIC.createTuple(TERM.createVariable("Caller"),
+								 TERM.createVariable("CallerInvocation"),
+								 TERM.createString(varName),
+								 TERM.createVariable("Value"));
+				head = BASIC.createLiteral(true, BASIC.createAtom(localP, tuple));
+			} else if (fields.contains(varName)) {
+				ITuple tuple = BASIC.createTuple(TERM.createVariable("Caller"),
+								 TERM.createString(varName),
+								 TERM.createVariable("Value"));
+				head = BASIC.createLiteral(true, BASIC.createAtom(fieldP, tuple));
+			} else {
+				throw new RuntimeException("Undeclared variable: " + varName);
+			}
+
+			IRule rule = BASIC.createRule(makeList(head), body);
+			System.out.println(rule);
+			rules.add(rule);
+		}
+
 		public void addDatalog(Map<IPredicate,IRelation> facts, List<IRule> rules) {
 			AExtends extend = (AExtends) behaviour.getExtends();
 			if (extend != null) {
@@ -202,7 +240,7 @@ public class SAMParser {
 				ILiteral head = BASIC.createLiteral(true, isA, objAndSuper);
 				ILiteral body = BASIC.createLiteral(true, isA, objAndName);
 				IRule rule = BASIC.createRule(makeList(head), makeList(body));
-				System.out.println(rule);
+				//System.out.println(rule);
 				rules.add(rule);
 			}
 
@@ -214,23 +252,23 @@ public class SAMParser {
 				// hasField(type, name)
 				IRelation rel = getRelation(facts, hasFieldP);
 				String fieldName = field.getName().getText();
+				fields.add(fieldName);
 				rel.add(BASIC.createTuple(TERM.createString(this.name), TERM.createString(fieldName)));
 			}
-
-			// (move this once we model methods)
-			Set<String> locals = new HashSet<String>();
 
 			List<PMethod> methods = body.getMethod();
 			for (PMethod m : methods) {
 				AMethod method = (AMethod) m;
 				ACode code = (ACode) method.getCode();
 
+				Set<String> locals = new HashSet<String>();
+
 				for (PStatement ps : code.getStatement()) {
-					if (ps instanceof ACallStatement) {
-						ACallStatement s = (ACallStatement) ps;
+					if (ps instanceof AAssignStatement) {
+						AAssignStatement s = (AAssignStatement) ps;
 
 						AAssign assign = (AAssign) s.getAssign();
-						ACallExpr expr = (ACallExpr) s.getCallExpr();
+						PExpr expr = (PExpr) s.getExpr();
 
 						String callSite = "cs" + nextCallSite;
 						nextCallSite++;
@@ -239,41 +277,52 @@ public class SAMParser {
 						IRelation rel = getRelation(facts, hasCallSiteP);
 						rel.add(BASIC.createTuple(TERM.createString(name), TERM.createString(callSite)));
 
-						// mayStore(callSite, var)
-						if (assign != null) {
-							rel = getRelation(facts, mayStoreP);
+						IPredicate valueP;
+
+						if (expr instanceof ACallExpr) {
+							ACallExpr callExpr = (ACallExpr) expr;
+
+							// mayCall(callSite, var)
+							rel = getRelation(facts, mayCallP);
+							String targetVar = callExpr.getName().getText();
+							rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetVar)));
+
+							// mayPass(callSite, var)
+							rel = getRelation(facts, mayPassP);
+							for (TName arg : ((AArgs) callExpr.getArgs()).getName()) {
+								String argVar = arg.getText();
+								rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(argVar)));
+							}
+
+							valueP = didGetP;
+						} else if (expr instanceof ANewExpr) {
+							ANewExpr newExpr = (ANewExpr) expr;
+
 							String varName = assign.getName().getText();
-							rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(varName)));
 
-							declareLocal(locals, assign);
+							// mayCreate(classname, newType, var)
+							rel = getRelation(facts, mayCreateP);
+							String newType = ((AType) newExpr.getType()).getName().getText();
+							rel.add(BASIC.createTuple(TERM.createString(callSite),
+										  TERM.createString(newType)));
+							//System.out.println(rel);
+
+							valueP = didCreateP;
+						} else {
+							throw new RuntimeException("Unknown expr type: " + expr);
 						}
 
-						// mayCall(callSite, var)
-						rel = getRelation(facts, mayCallP);
-						String targetVar = expr.getName().getText();
-						rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetVar)));
+						if (assign != null) {
+							ITuple tuple = BASIC.createTuple(
+									TERM.createVariable("Caller"),
+									TERM.createVariable("CallerInvocation"),
+									TERM.createString(callSite),
+									TERM.createVariable("Value"));
+							ILiteral value = BASIC.createLiteral(true, BASIC.createAtom(valueP, tuple));
 
-						// mayPass(callSite, var)
-						rel = getRelation(facts, mayPassP);
-						for (TName arg : ((AArgs) expr.getArgs()).getName()) {
-							String argVar = arg.getText();
-							rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(argVar)));
+							assignVar(assign, locals, rules, makeList(value));
 						}
-					} else if (ps instanceof ANewStatement) {
-						ANewStatement s = (ANewStatement) ps;
 
-						AAssign assign = (AAssign) s.getAssign();
-						declareLocal(locals, assign);
-						ANewExpr expr = (ANewExpr) s.getNewExpr();
-						String varName = assign.getName().getText();
-
-						// mayCreate(classname, newType, var)
-						IRelation rel = getRelation(facts, mayCreateP);
-						String newType = ((AType) expr.getType()).getName().getText();
-						rel.add(BASIC.createTuple(TERM.createString(this.name),
-									  TERM.createString(newType),
-									  TERM.createString(varName)));
-						System.out.println(rel);
 					} else if (ps instanceof AReturnStatement) {
 						AReturnStatement s = (AReturnStatement) ps;
 
@@ -286,13 +335,6 @@ public class SAMParser {
 						throw new RuntimeException("Unknown statement type: " + ps);
 					}
 				}
-			}
-
-			IRelation rel = getRelation(facts, hasLocalP);
-			for (String local : locals) {
-				// hasLocal(type, local)
-				rel.add(BASIC.createTuple(TERM.createString(this.name),
-							  TERM.createString(local)));
 			}
 		}
 	}

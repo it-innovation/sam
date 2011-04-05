@@ -5,7 +5,7 @@ package eu.serscis.sam.node;
 import eu.serscis.sam.analysis.*;
 
 @SuppressWarnings("nls")
-public final class ACallExpr extends PCallExpr
+public final class ACallExpr extends PExpr
 {
     private TName _name_;
     private TLPar _lPar_;

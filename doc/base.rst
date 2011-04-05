@@ -8,17 +8,9 @@ Types
 
    True if `Type` is the type of some object.
 
-.. function:: hasLocal(?Type, ?VarName)
-
-   There is a method on `Type` which has a local variable named `VarName`.
-
 .. function:: hasField(?Type, ?VarName)
 
    There is a field on `Type` named `VarName`.
-
-.. function:: hasVar(?Type, ?VarName)
-
-   Has a local variable or field of this name.
 
 
 Objects
@@ -64,6 +56,16 @@ Invocations
 
 Results
 -------
+
+.. function:: didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue)
+
+   The code at `CallSite` got `ResultValue` back as the result of a call made
+   by object `Caller` in context `CallerInvocation`.
+
+.. function:: didCreate(?Caller, ?Invocation, ?CallSite, ?Child) :-
+
+   The code at `CallSite` created `Child` as the result of a constructor call made
+   by object `Caller` in context `CallerInvocation`.
 
 .. function:: getsAccess(?Object, ?Value)
 

@@ -292,62 +292,33 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         outAAssign(node);
     }
 
-    public void inANewStatement(ANewStatement node)
+    public void inAAssignStatement(AAssignStatement node)
     {
         defaultIn(node);
     }
 
-    public void outANewStatement(ANewStatement node)
+    public void outAAssignStatement(AAssignStatement node)
     {
         defaultOut(node);
     }
 
     @Override
-    public void caseANewStatement(ANewStatement node)
+    public void caseAAssignStatement(AAssignStatement node)
     {
-        inANewStatement(node);
+        inAAssignStatement(node);
         if(node.getSemi() != null)
         {
             node.getSemi().apply(this);
         }
-        if(node.getNewExpr() != null)
+        if(node.getExpr() != null)
         {
-            node.getNewExpr().apply(this);
+            node.getExpr().apply(this);
         }
         if(node.getAssign() != null)
         {
             node.getAssign().apply(this);
         }
-        outANewStatement(node);
-    }
-
-    public void inACallStatement(ACallStatement node)
-    {
-        defaultIn(node);
-    }
-
-    public void outACallStatement(ACallStatement node)
-    {
-        defaultOut(node);
-    }
-
-    @Override
-    public void caseACallStatement(ACallStatement node)
-    {
-        inACallStatement(node);
-        if(node.getSemi() != null)
-        {
-            node.getSemi().apply(this);
-        }
-        if(node.getCallExpr() != null)
-        {
-            node.getCallExpr().apply(this);
-        }
-        if(node.getAssign() != null)
-        {
-            node.getAssign().apply(this);
-        }
-        outACallStatement(node);
+        outAAssignStatement(node);
     }
 
     public void inAReturnStatement(AReturnStatement node)

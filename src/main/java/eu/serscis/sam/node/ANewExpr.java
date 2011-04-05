@@ -5,7 +5,7 @@ package eu.serscis.sam.node;
 import eu.serscis.sam.analysis.*;
 
 @SuppressWarnings("nls")
-public final class ANewExpr extends PNewExpr
+public final class ANewExpr extends PExpr
 {
     private TNew _new_;
     private PType _type_;

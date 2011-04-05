@@ -2,7 +2,7 @@
 
 package eu.serscis.sam.node;
 
-public abstract class PNewExpr extends Node
+public abstract class PExpr extends Node
 {
     // Empty body
 }

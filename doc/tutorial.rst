@@ -249,10 +249,10 @@ In fact, clientA may end up with references to two different groups of Tasks: th
 objects.
 
 We will therefore put `clientA`'s initial invocation into the "Other" group, and
-tell SAM to put only the `myTask = factory.invoke()` invocation under "A"::
+tell SAM to put only the `factory.invoke()` invocation under "A"::
 
   initialInvocation("clientA", "Other").
-  invocationObject("clientA", "Other", ?CallSite, "A") :- mayStore(?CallSite, "myTask").
+  invocationObject("clientA", "Other", ?CallSite, "A") :- mayCall(?CallSite, "factory").
 
 With this division, the desired propery can be proved. `clientA` can now get access to tasks created
 by other parties, but others still can't get access to the tasks by `clientA`.

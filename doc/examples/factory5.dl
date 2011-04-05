@@ -42,7 +42,7 @@ initialInvocation("otherClients", "Other").
 
 field("clientA", "ref", "otherClients").
 
-invocationObject("clientA", "Other", ?CallSite, "A") :- mayStore(?CallSite, "myTask").
+invocationObject("clientA", "Other", ?CallSite, "A") :- mayCall(?CallSite, "factory").
 
 /* Goals */
 

@@ -58,10 +58,6 @@ Predicates
 
    These objects may return the contents of TargetResultVar to their callers.
 
-.. function:: mayCreate(?Type, ?ChildType, ?Var)
-
-   These objects may create new objects of type ChildType and store the new instance in Var.
-
 .. _CallSite:
 
 Call-sites
@@ -74,9 +70,10 @@ Call-sites
 
    This call passes ArgVar as an argument.
 
-.. function:: mayStore(?CallSite, ?ResultVar)
+.. function:: mayCreate(?Type, ?ChildType)
 
-   This result of this call is stored in ResultVar.
+   This "call" (to the constructor) may create new objects of type ChildType.
+
 
 Example
 -------
@@ -99,19 +96,20 @@ For example, a Jave class that does::
 could be modelled with::
 
      hasField("Proxy", "myTarget").
-     hasLocal("Proxy", "result").
      mayAccept("Proxy", "msg", msg) :- isData(msg).
      hasCallSite("Proxy", "callsite1").
      mayReturn("Proxy", "result").
 
      mayCall("callsite1", "myTarget").
      mayPass("callsite1", "msg").
-     mayStore("callsite1", "result").
+     local(?Caller, ?Invocation, "result", ?Value) :- didGet(?Caller, ?Invocation, "callsite1", ?Value).
 
-     hasLocal("ProxyFactory", "proxy").
      mayAccept("ProxyFactory", "target").
-     mayCreate("ProxyFactory", "Proxy", "proxy").
+     hasCallSite("ProxyFactory", "callsite2").
      mayReturn("ProxyFactory", "proxy").
+
+     mayCreate("ProxyFactory", "Proxy").
+     local(?Caller, ?Invocation, "proxy", ?Value) :- didCreate(?Caller, ?Invocation, "callsite2", ?Value).
 
 The Unknown type
 ----------------

@@ -33,24 +33,12 @@ error("No target invocation for possible call", ?Caller, ?CallerInvocation, ?Cal
 live(?Target, ?TargetInvocation) :-
 	didCall(?AnyCaller, ?AnyCallerInvocation, ?AnyCallSite, ?Target, ?TargetInvocation).
 
-/* If Caller may call target and may accept a return value and target may return a value then Caller's var may now be the returned value. */
+/* Caller might call some target which may return Value. */
 didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation),
 	isA(?Target, ?TargetType),
 	mayReturn(?TargetType, ?TargetResultVar),
 	value(?Target, ?TargetInvocation, ?TargetResultVar, ?ResultValue).
-
-/* The caller may store the result of any call. */
-local(?Caller, ?CallerInvocation, ?ResultVar, ?ResultValue) :-
-	didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue),
-	mayStore(?CallSite, ?ResultVar),
-	isA(?Caller, ?Type),
-	hasLocal(?Type, ?ResultVar).
-field(?Caller, ?ResultVar, ?ResultValue) :-
-	didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue),
-	mayStore(?CallSite, ?ResultVar),
-	isA(?Caller, ?Type),
-	hasField(?Type, ?ResultVar).
 
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
 	didCall(?Caller, ?Invocation, ?CallSite, ?Target, ?TargetInvocation),
@@ -60,25 +48,22 @@ didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
 	mayAccept(?TargetType, ?ParamVar, ?ArgValue).
 
 /* Target's parameter variable may contain ArgValue if someone called it with that value. */
+// TODO: parameters are always local, but currently might be a field too
 local(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue),
-	hasLocal(?TargetType, ?ParamVar).
+	didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue).
 field(?Target, ?ParamVar, ?ArgValue) :-
 	didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue),
 	hasField(?TargetType, ?ParamVar).
 
-didCreate(?Object, ?Invocation, ?Var, ?ChildType) :-
-	live(?Object, ?Invocation),
-	isA(?Object, ?Type),
-	mayCreate(?Type, ?ChildType, ?Var).
-
-local(?Object, ?Invocation, ?Var, ?NewChild) :-
-	didCreate(?Object, ?Invocation, ?Var, ?ChildType),
-	realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild).
+didCreate(?Caller, ?Invocation, ?CallSite, ?Child) :-
+	live(?Caller, ?Invocation),
+	isA(?Caller, ?Type),
+	hasCallSite(?Type, ?CallSite),
+	mayCreate(?CallSite, ?ChildType),
+	realNewObject(?Caller, ?Invocation, ?ChildType, ?Child).
 
 live(?NewChild) :-
-	didCreate(?Object, ?Invocation, ?Var, ?ChildType),
-	realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild).
+	didCreate(?Object, ?Invocation, ?CallSite, ?NewChild).
 
 
 /* Default aggregation for child objects */
@@ -86,7 +71,7 @@ live(?NewChild) :-
 realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild) :- newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
 realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild) :-
 	isA(?Object, ?Type),
-	mayCreate(?Type, ?ChildType, ?Var),
+	mayCreate(?CallSite, ?ChildType),
 	isInvocation(?Invocation),
 	!newObject(?Object, ?Invocation, ?ChildType, ?AnyChild),
 	STRING_CONCAT(?ChildType, ?Invocation, ?NewChild).

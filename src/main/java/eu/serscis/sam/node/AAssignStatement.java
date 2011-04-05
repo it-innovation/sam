@@ -5,26 +5,26 @@ package eu.serscis.sam.node;
 import eu.serscis.sam.analysis.*;
 
 @SuppressWarnings("nls")
-public final class ACallStatement extends PStatement
+public final class AAssignStatement extends PStatement
 {
     private PAssign _assign_;
-    private PCallExpr _callExpr_;
+    private PExpr _expr_;
     private TSemi _semi_;
 
-    public ACallStatement()
+    public AAssignStatement()
     {
         // Constructor
     }
 
-    public ACallStatement(
+    public AAssignStatement(
         @SuppressWarnings("hiding") PAssign _assign_,
-        @SuppressWarnings("hiding") PCallExpr _callExpr_,
+        @SuppressWarnings("hiding") PExpr _expr_,
         @SuppressWarnings("hiding") TSemi _semi_)
     {
         // Constructor
         setAssign(_assign_);
 
-        setCallExpr(_callExpr_);
+        setExpr(_expr_);
 
         setSemi(_semi_);
 
@@ -33,15 +33,15 @@ public final class ACallStatement extends PStatement
     @Override
     public Object clone()
     {
-        return new ACallStatement(
+        return new AAssignStatement(
             cloneNode(this._assign_),
-            cloneNode(this._callExpr_),
+            cloneNode(this._expr_),
             cloneNode(this._semi_));
     }
 
     public void apply(Switch sw)
     {
-        ((Analysis) sw).caseACallStatement(this);
+        ((Analysis) sw).caseAAssignStatement(this);
     }
 
     public PAssign getAssign()
@@ -69,16 +69,16 @@ public final class ACallStatement extends PStatement
         this._assign_ = node;
     }
 
-    public PCallExpr getCallExpr()
+    public PExpr getExpr()
     {
-        return this._callExpr_;
+        return this._expr_;
     }
 
-    public void setCallExpr(PCallExpr node)
+    public void setExpr(PExpr node)
     {
-        if(this._callExpr_ != null)
+        if(this._expr_ != null)
         {
-            this._callExpr_.parent(null);
+            this._expr_.parent(null);
         }
 
         if(node != null)
@@ -91,7 +91,7 @@ public final class ACallStatement extends PStatement
             node.parent(this);
         }
 
-        this._callExpr_ = node;
+        this._expr_ = node;
     }
 
     public TSemi getSemi()
@@ -124,7 +124,7 @@ public final class ACallStatement extends PStatement
     {
         return ""
             + toString(this._assign_)
-            + toString(this._callExpr_)
+            + toString(this._expr_)
             + toString(this._semi_);
     }
 
@@ -138,9 +138,9 @@ public final class ACallStatement extends PStatement
             return;
         }
 
-        if(this._callExpr_ == child)
+        if(this._expr_ == child)
         {
-            this._callExpr_ = null;
+            this._expr_ = null;
             return;
         }
 
@@ -163,9 +163,9 @@ public final class ACallStatement extends PStatement
             return;
         }
 
-        if(this._callExpr_ == oldChild)
+        if(this._expr_ == oldChild)
         {
-            setCallExpr((PCallExpr) newChild);
+            setExpr((PExpr) newChild);
             return;
         }
 

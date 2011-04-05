@@ -26,10 +26,6 @@ realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?CallerInvocation) :
 /* static predicates on types */
 
 isType(?Type) :- isA(?AnyObject, ?Type).
-hasLocal(?Type, "this") :- isType(?Type).
-hasVar(?Type, ?VarName) :- hasField(?Type, ?VarName).
-hasVar(?Type, ?VarName) :- hasLocal(?Type, ?VarName).
-hasLocal(?Type, ?ChildVar) :- mayCreate(?Type, ?ChildType, ?ChildVar).
 
 
 /* predicates on objects */
@@ -65,16 +61,6 @@ value(?Object, ?Invocation, ?Var, ?Value) :- field(?Object, ?Var, ?Value), isInv
 
 error('Not an object (no type!)', ?Object) :- hasRef(?AnyObject, ?X, ?Object), !isObject(?Object).
 
-error('Unknown mayCall target var', ?Type, ?Var) :- hasCallSite(?Type, ?CallSite), mayCall(?CallSite, ?Var), !hasVar(?Type, ?Var).
-error('Unknown mayCall arg var', ?Type, ?Var) :- hasCallSite(?Type, ?CallSite), mayPass(?CallSite, ?Var), !hasVar(?Type, ?Var).
-error('Unknown mayCall result var', ?Type, ?Var) :- hasCallSite(?Type, ?CallSite), mayStore(?CallSite, ?Var), !hasVar(?Type, ?Var).
-
-error('Unknown mayAccept var', ?Type, ?ArgVar) :- mayAccept(?Type, ?ArgVar), !hasVar(?Type, ?ArgVar).
-
-error('Unknown mayReturn var', ?Type, ?ReturnVar) :- mayReturn(?Type, ?ReturnVar), !hasVar(?Type, ?ReturnVar).
-
-error('Unknown mayCreate local var', ?Type, ?Var) :- mayCreate(?Type, ?ChildType, ?Var), !hasLocal(?Type, ?Var).
-
 error('Live invocation for non-alive object', ?Invocation, ?Object) :-
 	live(?Object, ?Invocation), !live(?Object).
 
@@ -88,7 +74,6 @@ haveBadAccess(?SourceObject, ?TargetObject) :-
 error('unsafe access may be possible', ?SourceObject, ?TargetObject) :-
 	haveBadAccess(?SourceObject, ?TargetObject).
 
-error('Undeclared local', ?Type, ?Var, ?Value) :- local(?Object, ?Invocation, ?Var, ?Value), isA(?Object, ?Type), !hasLocal(?Type, ?Var).
 error('Local on non-invocation', ?Invocation, ?Var, ?Value) :- local(?Object, ?Invocation, ?Var, ?Value), !isInvocation(?Invocation).
 
 objectHasField(?Object, ?Field) :- isA(?Object, ?Type), hasField(?Type, ?Field).
@@ -108,4 +93,5 @@ hasMethod("Unknown", ?X) :- isMethod(?X).
 hasCallSite("Unknown", "anycallsite").
 mayCall("anycallsite", "ref").
 mayPass("anycallsite", "ref").
-mayStore("anycallsite", "ref").
+
+field(?Object, "ref", ?Value) :- didGet(?Object, ?AnyInvocation, "anycallsite", ?Value).

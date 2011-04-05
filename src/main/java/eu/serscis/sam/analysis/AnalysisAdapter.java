@@ -109,12 +109,7 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
-    public void caseANewStatement(ANewStatement node)
-    {
-        defaultCase(node);
-    }
-
-    public void caseACallStatement(ACallStatement node)
+    public void caseAAssignStatement(AAssignStatement node)
     {
         defaultCase(node);
     }

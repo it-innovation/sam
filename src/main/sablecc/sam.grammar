@@ -45,9 +45,8 @@ Productions
   method = public_tok type name l_par r_par l_brace code r_brace;
   code = statement*;
   assign = type? name eq;
-  statement = {new} assign? new_expr semi
-	    | {call} assign? call_expr semi
+  statement = {assign} assign? expr semi
 	    | {return} return name semi;
-  new_expr = new type l_par r_par;
-  call_expr = name l_par args r_par;
+  expr = {new} new type l_par r_par
+       | {call} name l_par args r_par;
   args = name*;
