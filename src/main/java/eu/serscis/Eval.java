@@ -80,7 +80,7 @@ public class Eval {
 		config.ruleSafetyProcessor = new IRuleSafetyProcessor() {
 			public IRule process(IRule rule) throws RuleUnsafeException {
 				String p = rule.getHead().get(0).getAtom().getPredicate().getPredicateSymbol();
-				if (p.equals("realNewObject")) {
+				if (p.equals("realNewObject") || p.equals("graphInvocation")) {
 					return rule;
 				}
 
