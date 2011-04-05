@@ -110,10 +110,15 @@ public class SAMParser {
 		String datalog = "";
 
 		while (true) {
-			int i = sam.indexOf("\nclass ");
-			if (i == -1) {
-				datalog += sam;
-				break;
+			int i;
+			if (sam.startsWith("class ")) {
+				i = -1;
+			} else {
+				i = sam.indexOf("\nclass ");
+				if (i == -1) {
+					datalog += sam;
+					break;
+				}
 			}
 			int j = sam.indexOf("\n}", i);
 			if (j == -1) {
