@@ -65,16 +65,20 @@ import eu.serscis.sam.lexer.Lexer;
 import eu.serscis.sam.parser.Parser;
 
 public class SAMParser {
-	static private IPredicate isA = BASIC.createPredicate("isA", 2);
+	static private IPredicate isAP = BASIC.createPredicate("isA", 2);
 	static private IPredicate hasCallSiteP = BASIC.createPredicate("hasCallSite", 2);
 	static private IPredicate didGetP = BASIC.createPredicate("didGet", 4);
 	static private IPredicate didCreateP = BASIC.createPredicate("didCreate", 4);
 	static private IPredicate mayCallP = BASIC.createPredicate("mayCall", 2);
+	static private IPredicate callsMethodP = BASIC.createPredicate("callsMethod", 2);
 	static private IPredicate mayPassP = BASIC.createPredicate("mayPass", 2);
 	static private IPredicate mayCreateP = BASIC.createPredicate("mayCreate", 2);
 	static private IPredicate mayAcceptP = BASIC.createPredicate("mayAccept", 2);
 	static private IPredicate mayReturnP = BASIC.createPredicate("mayReturn", 2);
 	static private IPredicate hasFieldP = BASIC.createPredicate("hasField", 2);
+	static private IPredicate hasConstructorP = BASIC.createPredicate("hasConstructor", 2);
+	static private IPredicate hasMethodP = BASIC.createPredicate("hasMethod", 2);
+	static private IPredicate methodNameP = BASIC.createPredicate("methodName", 2);	/* Class.method -> "method" */
 	static private IPredicate localP = BASIC.createPredicate("local", 4);
 	static private IPredicate fieldP = BASIC.createPredicate("field", 3);
 	private org.deri.iris.compiler.Parser parser = new org.deri.iris.compiler.Parser();
@@ -265,8 +269,8 @@ public class SAMParser {
 				String superclass = extend.getName().getText();
 				ITuple objAndSuper = BASIC.createTuple(TERM.createVariable("X"), TERM.createString(superclass));
 				ITuple objAndName = BASIC.createTuple(TERM.createVariable("X"), TERM.createString(name));
-				ILiteral head = BASIC.createLiteral(true, isA, objAndSuper);
-				ILiteral body = BASIC.createLiteral(true, isA, objAndName);
+				ILiteral head = BASIC.createLiteral(true, isAP, objAndSuper);
+				ILiteral body = BASIC.createLiteral(true, isAP, objAndName);
 				IRule rule = BASIC.createRule(makeList(head), makeList(body));
 				//System.out.println(rule);
 				rules.add(rule);
@@ -284,6 +288,10 @@ public class SAMParser {
 				rel.add(BASIC.createTuple(TERM.createString(this.name), TERM.createString(fieldName)));
 			}
 
+			IRelation hasConstructorRel = getRelation(facts, hasConstructorP);
+			IRelation hasMethodRel = getRelation(facts, hasMethodP);
+			IRelation methodNameRel = getRelation(facts, methodNameP);
+
 			List<PMethod> methods = body.getMethod();
 			for (PMethod m : methods) {
 				AMethod method = (AMethod) m;
@@ -291,11 +299,27 @@ public class SAMParser {
 				Set<String> locals = new HashSet<String>();
 
 				String methodName = method.getName().getText();
+				ITerm methodNameFull;
 
 				if (method.getType() == null) {
 					if (!methodName.equals(this.name)) {
 						throw new RuntimeException("Constructor must be named after class (or missing return type): " + methodName + " in " + this.name);
 					}
+					methodNameFull = TERM.createString(this.name + ".<init>");
+
+					// hasConstructor(type, "class.<init>")
+					hasConstructorRel.add(BASIC.createTuple(TERM.createString(this.name), methodNameFull));
+
+					// methodName("class.method", "method")
+					methodNameRel.add(BASIC.createTuple(methodNameFull, TERM.createString(methodName)));
+				} else {
+					methodNameFull = TERM.createString(this.name + "." + methodName);
+
+					// hasMethod(type, "class.method")
+					hasMethodRel.add(BASIC.createTuple(TERM.createString(this.name), methodNameFull));
+
+					// methodName("class.method", "method")
+					methodNameRel.add(BASIC.createTuple(methodNameFull, TERM.createString(methodName)));
 				}
 
 				// mayAccept(type, param)
@@ -320,11 +344,11 @@ public class SAMParser {
 						String callSite = "cs" + nextCallSite;
 						nextCallSite++;
 
-						// hasCallSite(name, callSite).
+						// hasCallSite(methodFull, callSite).
 						IRelation rel = getRelation(facts, hasCallSiteP);
-						rel.add(BASIC.createTuple(TERM.createString(name), TERM.createString(callSite)));
+						rel.add(BASIC.createTuple(methodNameFull, TERM.createString(callSite)));
 
-						IPredicate valueP;
+						IPredicate valueP = null;
 
 						if (expr instanceof ACallExpr) {
 							ACallExpr callExpr = (ACallExpr) expr;
@@ -337,6 +361,11 @@ public class SAMParser {
 							// mayPass(callSite, var)
 							rel = getRelation(facts, mayPassP);
 							addArgs(rel, callSite, (AArgs) callExpr.getArgs());
+
+							// callsMethod(callSite, method)
+							rel = getRelation(facts, callsMethodP);
+							String targetMethod = callExpr.getMethod().getText();
+							rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetMethod)));
 
 							valueP = didGetP;
 						} else if (expr instanceof ANewExpr) {
@@ -355,11 +384,43 @@ public class SAMParser {
 							addArgs(rel, callSite, (AArgs) newExpr.getArgs());
 
 							valueP = didCreateP;
+						} else if (expr instanceof ACopyExpr) {
+							// a = b
+							ACopyExpr copyExpr = (ACopyExpr) expr;
+
+							if (assign == null) {
+								throw new RuntimeException("Pointless var expression");
+							}
+
+							ILiteral isA = BASIC.createLiteral(true, BASIC.createAtom(isAP,
+										BASIC.createTuple(
+											TERM.createVariable("Caller"),
+											TERM.createString(this.name))));
+
+							String sourceVar = copyExpr.getName().getText();
+							if (locals.contains(sourceVar)) {
+								ITuple tuple = BASIC.createTuple(
+										TERM.createVariable("Caller"),
+										TERM.createVariable("CallerInvocation"),
+										TERM.createString(sourceVar),
+										TERM.createVariable("Value"));
+								ILiteral value = BASIC.createLiteral(true, BASIC.createAtom(localP, tuple));
+								assignVar(assign, locals, rules, makeList(isA, value));
+							} else if (fields.contains(sourceVar)) {
+								ITuple tuple = BASIC.createTuple(
+										TERM.createVariable("Caller"),
+										TERM.createString(sourceVar),
+										TERM.createVariable("Value"));
+								ILiteral value = BASIC.createLiteral(true, BASIC.createAtom(fieldP, tuple));
+								assignVar(assign, locals, rules, makeList(isA, value));
+							} else {
+								throw new RuntimeException("Unknown variable " + sourceVar);
+							}
 						} else {
 							throw new RuntimeException("Unknown expr type: " + expr);
 						}
 
-						if (assign != null) {
+						if (assign != null && valueP != null) {
 							ITuple tuple = BASIC.createTuple(
 									TERM.createVariable("Caller"),
 									TERM.createVariable("CallerInvocation"),
@@ -373,10 +434,10 @@ public class SAMParser {
 					} else if (ps instanceof AReturnStatement) {
 						AReturnStatement s = (AReturnStatement) ps;
 
-						// mayReturn(type, var)
+						// mayReturn(method, var)
 						IRelation rel = getRelation(facts, mayReturnP);
 						String varName = s.getName().getText();
-						rel.add(BASIC.createTuple(TERM.createString(this.name),
+						rel.add(BASIC.createTuple(methodNameFull,
 									  TERM.createString(varName)));
 					} else {
 						throw new RuntimeException("Unknown statement type: " + ps);

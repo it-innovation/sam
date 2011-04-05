@@ -129,6 +129,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseACopyExpr(ACopyExpr node)
+    {
+        defaultCase(node);
+    }
+
     public void caseAArgs(AArgs node)
     {
         defaultCase(node);
@@ -205,6 +210,11 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseTRBrace(TRBrace node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTDot(TDot node)
     {
         defaultCase(node);
     }

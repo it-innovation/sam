@@ -8,6 +8,8 @@ import eu.serscis.sam.analysis.*;
 public final class ACallExpr extends PExpr
 {
     private TName _name_;
+    private TDot _dot_;
+    private TName _method_;
     private TLPar _lPar_;
     private PArgs _args_;
     private TRPar _rPar_;
@@ -19,12 +21,18 @@ public final class ACallExpr extends PExpr
 
     public ACallExpr(
         @SuppressWarnings("hiding") TName _name_,
+        @SuppressWarnings("hiding") TDot _dot_,
+        @SuppressWarnings("hiding") TName _method_,
         @SuppressWarnings("hiding") TLPar _lPar_,
         @SuppressWarnings("hiding") PArgs _args_,
         @SuppressWarnings("hiding") TRPar _rPar_)
     {
         // Constructor
         setName(_name_);
+
+        setDot(_dot_);
+
+        setMethod(_method_);
 
         setLPar(_lPar_);
 
@@ -39,6 +47,8 @@ public final class ACallExpr extends PExpr
     {
         return new ACallExpr(
             cloneNode(this._name_),
+            cloneNode(this._dot_),
+            cloneNode(this._method_),
             cloneNode(this._lPar_),
             cloneNode(this._args_),
             cloneNode(this._rPar_));
@@ -72,6 +82,56 @@ public final class ACallExpr extends PExpr
         }
 
         this._name_ = node;
+    }
+
+    public TDot getDot()
+    {
+        return this._dot_;
+    }
+
+    public void setDot(TDot node)
+    {
+        if(this._dot_ != null)
+        {
+            this._dot_.parent(null);
+        }
+
+        if(node != null)
+        {
+            if(node.parent() != null)
+            {
+                node.parent().removeChild(node);
+            }
+
+            node.parent(this);
+        }
+
+        this._dot_ = node;
+    }
+
+    public TName getMethod()
+    {
+        return this._method_;
+    }
+
+    public void setMethod(TName node)
+    {
+        if(this._method_ != null)
+        {
+            this._method_.parent(null);
+        }
+
+        if(node != null)
+        {
+            if(node.parent() != null)
+            {
+                node.parent().removeChild(node);
+            }
+
+            node.parent(this);
+        }
+
+        this._method_ = node;
     }
 
     public TLPar getLPar()
@@ -154,6 +214,8 @@ public final class ACallExpr extends PExpr
     {
         return ""
             + toString(this._name_)
+            + toString(this._dot_)
+            + toString(this._method_)
             + toString(this._lPar_)
             + toString(this._args_)
             + toString(this._rPar_);
@@ -166,6 +228,18 @@ public final class ACallExpr extends PExpr
         if(this._name_ == child)
         {
             this._name_ = null;
+            return;
+        }
+
+        if(this._dot_ == child)
+        {
+            this._dot_ = null;
+            return;
+        }
+
+        if(this._method_ == child)
+        {
+            this._method_ = null;
             return;
         }
 
@@ -197,6 +271,18 @@ public final class ACallExpr extends PExpr
         if(this._name_ == oldChild)
         {
             setName((TName) newChild);
+            return;
+        }
+
+        if(this._dot_ == oldChild)
+        {
+            setDot((TDot) newChild);
+            return;
+        }
+
+        if(this._method_ == oldChild)
+        {
+            setMethod((TName) newChild);
             return;
         }
 

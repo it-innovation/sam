@@ -406,6 +406,14 @@ public class DepthFirstAdapter extends AnalysisAdapter
         {
             node.getName().apply(this);
         }
+        if(node.getDot() != null)
+        {
+            node.getDot().apply(this);
+        }
+        if(node.getMethod() != null)
+        {
+            node.getMethod().apply(this);
+        }
         if(node.getLPar() != null)
         {
             node.getLPar().apply(this);
@@ -419,6 +427,27 @@ public class DepthFirstAdapter extends AnalysisAdapter
             node.getRPar().apply(this);
         }
         outACallExpr(node);
+    }
+
+    public void inACopyExpr(ACopyExpr node)
+    {
+        defaultIn(node);
+    }
+
+    public void outACopyExpr(ACopyExpr node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseACopyExpr(ACopyExpr node)
+    {
+        inACopyExpr(node);
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        outACopyExpr(node);
     }
 
     public void inAArgs(AArgs node)

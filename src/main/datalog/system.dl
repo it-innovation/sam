@@ -11,41 +11,57 @@ accessAllowed(?Caller, ?Target, ?CallSite) :-
 	!accessControlOn,
 	isA(?Caller, ?CallerType),
 	isObject(?Target),
-	hasCallSite(?CallerType, ?CallSite).
+	hasMethod(?CallerType, ?Method),
+	hasCallSite(?Method, ?CallSite).
 
 /* The concrete objects that may be called, based on the behaviour (in terms of variables) and the values of those variables. */
 mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target) :-
 	live(?Caller, ?CallerInvocation),
 	isA(?Caller, ?Type),
-	hasCallSite(?Type, ?CallSite),
+	hasMethod(?Type, ?Method),
+	hasCallSite(?Method, ?CallSite),
 	mayCall(?CallSite, ?TargetVar),
 	accessAllowed(?Caller, ?Target, ?CallSite),
 	value(?Caller, ?CallerInvocation, ?TargetVar, ?Target).
 
+/* Which methods may CallSite invoke on Target */
+methodMatches(?CallSite, ?Target, ?Method) :-	/* Exact match */
+	callsMethod(?CallSite, ?MethodName),
+	isA(?Target, ?TargetType),
+	hasMethod(?TargetType, ?Method),
+	methodName(?Method, ?MethodName).
+methodMatches(?CallSite, ?Target, ?Method) :-	/* Call may call any method */
+	callsAnyMethod(?CallSite),
+	isA(?Target, ?TargetType),
+	hasMethod(?TargetType, ?Method).
+methodMatches(?CallSite, ?Target, "invoke") :-	/* Any call to Unknown matches "invoke" */
+	hasCallSite(?Method, ?CallSite),
+	isA(?Target, "Unknown").
+
 /* Assume caller did a call if caller might do "Object resultVar = targetObject.do(argValue)" */
-didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation) :-
+didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method) :-
 	mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target),
+	methodMatches(?CallSite, ?Target, ?Method),
 	realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
-error("No target invocation for possible call", ?Caller, ?CallerInvocation, ?CallSite, ?Target) :-
-	mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target),
-	!realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
 
 /* Parent calls the child's constructor */
-didCall(?Caller, ?Invocation, ?CallSite, ?NewChild, ?Invocation) :-
-	didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild).
+didCall(?Caller, ?Invocation, ?CallSite, ?NewChild, ?Invocation, ?Method) :-
+	didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild),
+	isA(?NewChild, ?ChildType),
+	hasConstructor(?ChildType, ?Method).
 
 live(?Target, ?TargetInvocation) :-
-	didCall(?AnyCaller, ?AnyCallerInvocation, ?AnyCallSite, ?Target, ?TargetInvocation).
+	didCall(?AnyCaller, ?AnyCallerInvocation, ?AnyCallSite, ?Target, ?TargetInvocation, ?AnyMethod).
 
 /* Caller might call some target which may return Value. */
 didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue) :-
-	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation),
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	isA(?Target, ?TargetType),
-	mayReturn(?TargetType, ?TargetResultVar),
+	mayReturn(?Method, ?TargetResultVar),
 	value(?Target, ?TargetInvocation, ?TargetResultVar, ?ResultValue).
 
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	didCall(?Caller, ?Invocation, ?CallSite, ?Target, ?TargetInvocation),
+	didCall(?Caller, ?Invocation, ?CallSite, ?Target, ?TargetInvocation, ?AnyMethod),
 	mayPass(?CallSite, ?VarName),
 	value(?Caller, ?Invocation, ?VarName, ?ArgValue),
 	isA(?Target, ?TargetType),
@@ -62,7 +78,8 @@ field(?Target, ?ParamVar, ?ArgValue) :-
 didCreate(?Caller, ?Invocation, ?CallSite, ?Child) :-
 	live(?Caller, ?Invocation),
 	isA(?Caller, ?Type),
-	hasCallSite(?Type, ?CallSite),
+	hasMethod(?Type, ?Method),
+	hasCallSite(?Method, ?CallSite),
 	mayCreate(?CallSite, ?ChildType),
 	realNewObject(?Caller, ?Invocation, ?ChildType, ?Child).
 

@@ -24,6 +24,7 @@ public interface Analysis extends Switch
     void caseAReturnStatement(AReturnStatement node);
     void caseANewExpr(ANewExpr node);
     void caseACallExpr(ACallExpr node);
+    void caseACopyExpr(ACopyExpr node);
     void caseAArgs(AArgs node);
     void caseAArgsTail(AArgsTail node);
     void caseAParam(AParam node);
@@ -41,6 +42,7 @@ public interface Analysis extends Switch
     void caseTClassTok(TClassTok node);
     void caseTLBrace(TLBrace node);
     void caseTRBrace(TRBrace node);
+    void caseTDot(TDot node);
     void caseTEq(TEq node);
     void caseTBlank(TBlank node);
     void caseTComment(TComment node);

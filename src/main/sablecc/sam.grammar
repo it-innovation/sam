@@ -25,6 +25,7 @@ Tokens
   class_tok = 'class';
   l_brace = '{';
   r_brace = '}';
+  dot = '.';
   eq = '=';
   blank = (' ' | 13 | 9 | 10)+;
   comment = '//' input_character* line_terminator;
@@ -48,7 +49,8 @@ Productions
   statement = {assign} assign? expr semi
 	    | {return} return name semi;
   expr = {new} new type l_par args? r_par
-       | {call} name l_par args? r_par;
+       | {call} name dot [method]:name l_par args? r_par
+       | {copy} name;
   args = name args_tail*;
   args_tail = comma name;
   param = type name;

@@ -1,0 +1,103 @@
+/* vim: set syntax=java : */
+
+/* Imports */
+
+import("initial", "sam:base.dl").
+import("initial", "sam:graph.dl").
+import("final", "sam:system.dl").
+
+/* Behaviour */
+class Sender {
+  private Sealer sealer;
+  private Object precious;
+  private Object precious2;
+  private Object others;
+  private Object others2;
+
+  public void test() {
+    Box box1 = sealer.seal(precious);
+    Box box2 = sealer.seal(precious2);
+    others.accept(box1);
+    others2.accept(box2);
+  }
+}
+
+class Box {
+  private Object precious;
+
+  public Box(Object value) {
+    precious = value;
+  }
+}
+
+class Sealer {
+  public Box seal(Object value) {
+    Box box = new Box(value);
+    return box;
+  }
+}
+
+class Unsealer {
+  public Object unseal(Box box) {
+  }
+}
+mayReturn("Unsealer", "value").
+local(?Unsealer, ?Invocation, "value", ?Value) :-
+	isA(?Unsealer, "Unsealer"),
+	local(?Unsealer, ?Invocation, "box", ?Box),
+	field(?Box, "precious", ?Value).
+?- local("unsealer", ?TargetInvocation, ?ParamVar, ?ArgValue).
+
+/* Config */
+initialObject("sealer", "Sealer").
+initialObject("unsealer", "Unsealer").
+
+initialObject("precious", "Unknown").
+initialObject("precious2", "Unknown").
+initialObject("sender", "Sender").
+initialObject("withUnsealer", "Unknown").
+initialObject("withUnsealer2", "Unknown").
+//initialObject("withoutUnsealer", "Unknown").
+
+field("sender", "sealer", "sealer").
+field("sender", "precious", "precious").
+field("sender", "precious2", "precious2").
+field("sender", "others", "withUnsealer").
+//field("sender", "others", "withoutUnsealer").
+field("sender", "others2", "withUnsealer2").
+
+field("withUnsealer", "ref", "unsealer").
+field("withUnsealer2", "ref", "unsealer").
+
+initialInvocation("sender", "A").
+
+showInvocation("unsealer", ?Invocation) :- isInvocation(?Invocation).
+
+invocationObject("sender", "A", ?CallSite, "P1") :-
+	mayPass(?CallSite, "precious").
+invocationObject("sender", "A", ?CallSite, "P2") :-
+	mayPass(?CallSite, "precious2").
+
+invocationObject("sender", "A", ?CallSite, "O1") :-
+	mayCall(?CallSite, "others").
+invocationObject("sender", "A", ?CallSite, "O2") :-
+	mayCall(?CallSite, "others2").
+
+/* Goals */
+
+//denyAccess("withUnsealer", "withoutUnsealer").
+//denyAccess("withoutUnsealer", "withUnsealer").
+//denyAccess("withoutUnsealer", "unsealer").
+//denyAccess("withoutUnsealer", "precious").
+requireAccess("withUnsealer", "precious").
+requireAccess("withUnsealer2", "precious2").
+denyAccess("withUnsealer", "precious2").
+denyAccess("withUnsealer2", "precious").
+
+//?- didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
+
+debug :- live("BoxO1").
+
+?- local("withUnsealer2", ?I, "ref", ?Value).
+?- live(?O).
+// :- isInvocation(?I), isObject(?Value).

@@ -417,11 +417,40 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         {
             node.getLPar().apply(this);
         }
+        if(node.getMethod() != null)
+        {
+            node.getMethod().apply(this);
+        }
+        if(node.getDot() != null)
+        {
+            node.getDot().apply(this);
+        }
         if(node.getName() != null)
         {
             node.getName().apply(this);
         }
         outACallExpr(node);
+    }
+
+    public void inACopyExpr(ACopyExpr node)
+    {
+        defaultIn(node);
+    }
+
+    public void outACopyExpr(ACopyExpr node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseACopyExpr(ACopyExpr node)
+    {
+        inACopyExpr(node);
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        outACopyExpr(node);
     }
 
     public void inAArgs(AArgs node)

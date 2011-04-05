@@ -87,7 +87,7 @@ public class Debugger {
 	private IPredicate mayCall = BASIC.createPredicate("mayCall", 2);
 	private IPredicate mayPass = BASIC.createPredicate("mayPass", 2);
 	private IPredicate mayStore = BASIC.createPredicate("mayStore", 2);
-	private IPredicate didCall = BASIC.createPredicate("didCall", 5);
+	private IPredicate didCall = BASIC.createPredicate("didCall", 6);
 	private IPredicate didGet = BASIC.createPredicate("didGet", 4);
 	private IPredicate didCreate = BASIC.createPredicate("didCreate", 4);
 
@@ -148,10 +148,11 @@ public class Debugger {
 					String caller = getInvocation(tuple, 0);
 					String callSite = tuple.get(2).getValue().toString();
 					String target = getInvocation(tuple, 3);
+					String method = tuple.get(5).getValue().toString();
 					//String method = tuple.get(4).getValue().toString();
 					//String arg = tuple.get(5).getValue().toString();
 					//String result = tuple.get(6).getValue().toString();
-					steps.add(prefix + caller + "@" + callSite + " calls " + target);
+					steps.add(prefix + caller + "@" + callSite + " calls " + target + "." + method);
 					edges.add(BASIC.createTuple(tuple.get(0),
 								    tuple.get(1),
 								    tuple.get(2),

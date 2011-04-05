@@ -23,8 +23,8 @@ class ClientA {
   private Object ref;
 
   public void run() {
-    myTask = factory();
-    ref = ref(ref);
+    myTask = factory.newInstance();
+    ref = ref.invoke(ref);
   }
 }
 
