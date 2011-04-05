@@ -16,30 +16,37 @@ continues until the next line starting with "}" (with no leading spaces). The sy
     // Zero or more fields, of the form:
     private TYPE NAME;
 
+    // Zero or more constructors, of the form:
+    public TYPE(PARAMS) {
+      METHOD-BODY
+    }
+
     // Zero or more methods, of the form:
     public TYPE NAME(PARAMS) {
       METHOD-BODY
     }
   }
 
-Note: fields *must* be "private" and methods *must* be "public". Fields must come before methods.
+Note: fields *must* be "private" and methods *must* be "public". Fields must
+come before constructors, which come before methods.
 
-Types are currently ignored (and treated safely as "Object"). Method names are currently ignored.
+Types are currently ignored (and treated safely as "Object").
 
 `PARAMS` is a comma-separated list of "TYPE NAME" pairs, as in Java.
 
 `METHOD-BODY` is a list of statements, each of which is one of these::
 
   [TYPE] NAME = new TYPE(ARGS);
-  [TYPE] NAME = NAME(ARGS);
+  [TYPE] NAME = NAME.METHOD(ARGS);
+  [TYPE] NAME = NAME;
   return NAME;
 
-Where `NAME` is a variable name, `TYPE` is a class name, and `ARGS` is a comma-separated list of
-variable names.
+Where `NAME` is a variable name, `TYPE` is a class name, `METHOD` is a method name,
+and `ARGS` is a comma-separated list of variable names.
 
 
-Predicates
-----------
+Classes
+-------
 .. function:: hasField(?Type, ?VarName)
 
    There is a field on `Type` named `VarName`.
@@ -55,22 +62,26 @@ Predicates
    `Method` is a method on `Type`. This is a fully-qualified name,
    usually "Type.method".
 
-.. function:: mayAccept(?Type, ?ParamVar)
+Methods
+-------
+(and also constructors)
+
+.. function:: mayAccept(?Method, ?ParamVar)
 
    Objects of this type accept an argument value and store it in a variable namd ParamVar.
 
-.. function:: mayAccept(?Type, ?ParamVar, ?Value)
+.. function:: mayAccept(?Method, ?ParamVar, ?Value)
 
    Objects of this type accept these argument values and store them in the
-   variable namd ParamVar.
+   local variable namd ParamVar.
 
-.. function:: hasCallSite(?Type, ?CallSite)
+.. function:: hasCallSite(?Method, ?CallSite)
 
-   These objects may perform the call described in `CallSite` (see :ref:`CallSite`).
+   This method may perform the call described in `CallSite` (see :ref:`CallSite`).
 
-.. function:: mayReturn(?Type, ?TargetResultVar)
+.. function:: mayReturn(?Method, ?TargetResultVar)
 
-   These objects may return the contents of TargetResultVar to their callers.
+   This method may return the contents of TargetResultVar to its callers.
 
 .. _CallSite:
 
@@ -80,13 +91,23 @@ Call-sites
 
    This call invokes the object stored in TargetVar.
 
+.. function:: callsMethod(?CallSite, ?MethodName)
+
+   This call-site may call methods named `MethodName`.
+
+.. function:: callsAnyMethod(?CallSite)
+
+   This call-site may call methods with any name.
+
 .. function:: mayPass(?CallSite, ?ArgVar)
 
    This call passes ArgVar as an argument.
 
-.. function:: mayCreate(?Type, ?ChildType)
+.. function:: mayCreate(?CallSite, ?ChildType)
 
    This "call" (to the constructor) may create new objects of type ChildType.
+   There is no need for a `callsMethod` here; `mayCreate` implies that it may
+   call the constructor(s).
 
 
 Example
@@ -110,19 +131,24 @@ For example, a Jave class that does::
 could be modelled with::
 
      hasField("Proxy", "myTarget").
-     mayAccept("Proxy", "msg", msg) :- isData(msg).
-     hasCallSite("Proxy", "callsite1").
-     mayReturn("Proxy", "result").
+     hasMethod("Proxy", "Proxy.invoke").
+
+     methodName("Proxy.invoke", "invoke").
+     mayAccept("Proxy.invoke", "msg", msg) :- isData(msg).
+     hasCallSite("Proxy.invoke", "callsite1").
+     mayReturn("Proxy.invoke", "result").
 
      mayCall("callsite1", "myTarget").
+     callsMethod("callsite1", "invoke").
      mayPass("callsite1", "msg").
      local(?Caller, ?Invocation, "result", ?Value) :- didGet(?Caller, ?Invocation, "callsite1", ?Value).
 
-     mayAccept("ProxyFactory", "target").
-     hasCallSite("ProxyFactory", "callsite2").
-     mayReturn("ProxyFactory", "proxy").
+     mayAccept("ProxyFactory.createProxy", "target").
+     hasCallSite("ProxyFactory.createProxy", "callsite2").
+     mayReturn("ProxyFactory.createProxy", "proxy").
 
-     mayCreate("ProxyFactory", "Proxy").
+     mayCreate("callsite2", "Proxy").
+     mayPass("callsite2", "target").
      local(?Caller, ?Invocation, "proxy", ?Value) :- didCreate(?Caller, ?Invocation, "callsite2", ?Value).
 
 The Unknown type

@@ -57,7 +57,7 @@ Results
    The code at `CallSite` got `ResultValue` back as the result of a call made
    by object `Caller` in context `CallerInvocation`.
 
-.. function:: didCreate(?Caller, ?Invocation, ?CallSite, ?Child) :-
+.. function:: didCreate(?Caller, ?Invocation, ?CallSite, ?Child)
 
    The code at `CallSite` created `Child` as the result of a constructor call made
    by object `Caller` in context `CallerInvocation`.
