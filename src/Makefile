@@ -18,13 +18,17 @@ code:
 	javac -d ${DISTDIR} -cp ${CLASSPATH} ${JAVA_SOURCES}
 
 htmldoc: code examples
+	diff ${BUILDDIR}/failed-models ${SRCDIR}/src/failed-models.expected
 	sphinx-build -b html ${ALLSPHINXOPTS} ${SRCDIR}/doc ${SBUILDDIR}
 
 examples: factory.png factory-showing-invocations.png factory1.png factory2.png factory3.png factory4.png factory5.png sealers.png sealers2.png
 
-%.png: doc/examples/%.dl
+clearfailures:
+	rm -f ${BUILDDIR}/failed-models
+
+%.png: doc/examples/%.dl clearfailures
 	mkdir -p ${DISTDIR}/doc/_images
-	${SAM} $< || echo Fail
+	${SAM} $< || basename $< >> ${BUILDDIR}/failed-models
 	mv access.dot.png ${DISTDIR}/doc/_images/$@
 
 parser:
