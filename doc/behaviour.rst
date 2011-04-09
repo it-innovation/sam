@@ -99,9 +99,10 @@ Call-sites
 
    This call-site may call methods with any name.
 
-.. function:: mayPass(?CallSite, ?ArgVar)
+.. function:: maySend(?Target, ?TargetInvocation, ?Method, [?Pos,] ?ArgValue),
 
-   This call passes ArgVar as an argument.
+   Target.method may get called with `ArgValue` as parameter number `Pos` (or as any
+   parameter in the version without `Pos`.
 
 .. function:: mayCreate(?CallSite, ?ChildType)
 
