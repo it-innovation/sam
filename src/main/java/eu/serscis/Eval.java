@@ -28,6 +28,8 @@
 
 package eu.serscis;
 
+import java.util.Set;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.io.FileWriter;
@@ -254,13 +256,33 @@ public class Eval {
 			writer.write(format(nodeId) + " [" + nodeAttrs + "];\n");
 		}
 
+		Set<String> dotEdges = new HashSet<String>();
+		Set<String> doubles = new HashSet<String>();
+
 		for (int t = 0; t < edges.size(); t++) {
 			ITuple tuple = edges.get(t);
 			ITerm a = tuple.get(0);
 			ITerm b = tuple.get(1);
 			String edgeAttrs = tuple.get(2).getValue().toString();
 
-			writer.write(format(a) + " -> " + format(b) + " [" + edgeAttrs + "];\n");
+			String reverse = format(b) + " -> " + format(a) + " [" + edgeAttrs;
+
+			if (dotEdges.contains(reverse)) {
+				doubles.add(reverse);
+			} else {
+				String line = format(a) + " -> " + format(b) + " [" + edgeAttrs;
+				dotEdges.add(line);
+			}
+		}
+
+		for (String edge : dotEdges) {
+			if (doubles.contains(edge)) {
+				if (!edge.endsWith("[")) {
+					edge += ",";
+				}
+				edge += "dir=both";
+			}
+			writer.write(edge + "];\n");
 		}
 
 		for (int t = 0; t < labelledEdges.size(); t++) {

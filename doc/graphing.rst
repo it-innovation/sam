@@ -33,6 +33,7 @@ Notation
 --------
 
 .. graphviz::
+
    digraph notation {
      node [shape=plaintext];
      A -> B [label="field"];
@@ -43,9 +44,9 @@ Notation
 
      node [color=green,fontcolor=green];
      invocationOfA -> invocationOfB [label="calls",fontcolor=green,color=green];
-     invocationOfA -> A [color=blue,style=bold,label="this",fontcolor=blue];
-     invocationOfB -> B [color=blue,style=bold,label="this",fontcolor=blue];
-     invocationOfB -> C [color=blue,label="local",fontcolor=blue];
+     invocationOfA -> A [style=bold,label="this",style=dashed];
+     invocationOfB -> B [style=bold,label="this",style=dashed];
+     invocationOfB -> C [label="local",style=dashed];
    }
 
 This diagram shows:

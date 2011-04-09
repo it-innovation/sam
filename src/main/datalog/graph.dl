@@ -34,18 +34,100 @@
 graphNode(?Object, "fontcolor=red") :- live(?Object), isA(?Object, "Unknown").
 graphNode(?Object, "") :- live(?Object), isObject(?Object), !isA(?Object, "Unknown").
 
-graphField(?Object, ?Target) :- isObject(?Object), field(?Object, ?Var, ?Target), ?Object != ?Target.
-graphLocal(?Object, ?Target) :- local(?Object, ?Context, ?Var, ?Target), ?Object != ?Target, !graphField(?Object, ?Target), !showInvocation(?Object, ?Context).
-
-graphEdge(?Object, ?Target, "") :- graphField(?Object, ?Target), !graphField(?Target, ?Object).
-graphEdge(?Object, ?Target, "dir=both") :- graphField(?Object, ?Target), graphField(?Target, ?Object), ?Target > ?Object.
-
-graphEdge(?Object, ?Target, "color=blue,constraint=false") :- graphLocal(?Object, ?Target), !graphLocal(?Target, ?Object).
-graphEdge(?Object, ?Target, "dir=both,color=blue,constraint=false") :- graphLocal(?Object, ?Target), graphLocal(?Target, ?Object), ?Target > ?Object.
-
 graphEdge(?Object, ?Target, "color=red") :- haveBadAccess(?Object, ?Target).
 graphEdge(?Object, ?Target, "color=red,style=dashed") :- missingGoodAccess(?Object, ?Target).
 
+
+/* There are all the edges that logically exist, even if we might not show all of them. */
+
+/* (object to object) */
+fieldEdge(?Source, ?Target) :-
+	field(?Source, ?AnyField, ?Target).
+
+/* (invocation to object) */
+localEdge(?GraphSourceNode, ?Target) :-
+	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
+	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target).
+
+/* (invocation to invocation) */
+calledEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode) :-
+	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
+	graphInvocation(?Target, ?TargetInvocation, ?GraphTargetNode),
+	didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target).
+
+calledEdgeViaField(?GraphSourceNode, ?GraphTargetNode) :-
+	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
+	graphInvocation(?Target, ?TargetInvocation, ?GraphTargetNode),
+	didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	field(?Source, ?AnyVar, ?Target).
+
+/* (invocation to invocation) */
+problemEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode) :-
+	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
+	graphInvocation(?Target, ?TargetInvocation, ?GraphTargetNode),
+	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target),
+	debugEdge(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation).
+
+/* (invocation to invocation) */
+problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode) :-
+	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
+	graphInvocation(?Target, ?TargetInvocation, ?GraphTargetNode),
+	field(?Source, ?AnyVar, ?Target),
+	debugEdge(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation).
+
+/* (invocation to object) */
+uncalledEdge(?GraphSourceNode, ?Target) :-
+	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
+	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target),
+	!didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
+
+/* (object to object) */
+uncalledEdge(?Source, ?Target) :-
+	field(?Source, ?AnyLocal, ?Target),
+	!didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
+
+/* Hide arrows that have higher-priority replacements. */
+
+/* Problem field */
+graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=orange") :-
+	?GraphSourceNode != ?GraphTargetNode,
+	problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
+
+/* Problem local */
+graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=orange,style=dashed") :-
+	?GraphSourceNode != ?GraphTargetNode,
+	problemEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode),
+	!problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
+
+/* Called field */
+graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=green") :-
+	?GraphSourceNode != ?GraphTargetNode,
+	calledEdgeViaField(?GraphSourceNode, ?GraphTargetNode),
+	!problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
+
+/* Called local */
+graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=green,style=dashed") :-
+	?GraphSourceNode != ?GraphTargetNode,
+	calledEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode),
+	!calledEdgeViaField(?GraphSourceNode, ?GraphTargetNode),
+	!problemEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode),
+	!problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
+
+/* Uncalled field */
+graphEdge(?GraphSourceNode, ?GraphTargetNode, "") :-
+	?GraphSourceNode != ?GraphTargetNode,
+	uncalledEdge(?GraphSourceNode, ?GraphTargetNode),
+	fieldEdge(?GraphSourceNode, ?GraphTargetNode),
+	!problemEdge(?GraphSourceNode, ?GraphTargetNode).
+
+/* Uncalled local */
+graphEdge(?GraphSourceNode, ?GraphTargetNode, "style=dashed") :-
+	?GraphSourceNode != ?GraphTargetNode,
+	uncalledEdge(?GraphSourceNode, ?GraphTargetNode),
+	localEdge(?GraphSourceNode, ?GraphTargetNode),
+	!fieldEdge(?GraphSourceNode, ?GraphTargetNode),
+	!problemEdge(?GraphSourceNode, ?GraphTargetNode).
 
 /* Show invocation objects */
 
@@ -67,22 +149,3 @@ graphInvocationEdge(?GraphSourceNode, ?GraphTargetNode) :-
 	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
 	graphInvocation(?Target, ?TargetInvocation, ?GraphTargetNode),
 	?GraphSourceNode != ?GraphTargetNode.
-
-graphEdge(?A, ?B, "color=green") :- graphInvocationEdge(?A, ?B), !graphInvocationEdge(?B, ?A).
-graphEdge(?A, ?B, "color=green,dir=both") :- graphInvocationEdge(?A, ?B), graphInvocationEdge(?B, ?A), ?B > ?A.
-
-graphEdge(?InvocationNode, ?TargetObject, "color=blue") :-
-	graphInvocation(?SourceObject, ?Invocation, ?InvocationNode),
-	showInvocation(?SourceObject, ?Invocation),
-	local(?SourceObject, ?Invocation, ?AnyVar, ?TargetObject),
-	?SourceObject != ?TargetObject.
-graphEdge(?InvocationNode, ?TargetObject, "color=blue,style=bold,weight=40") :-
-	graphInvocation(?SourceObject, ?Invocation, ?InvocationNode),
-	showInvocation(?SourceObject, ?Invocation),
-	local(?SourceObject, ?Invocation, ?AnyVar, ?TargetObject),
-	?SourceObject = ?TargetObject.
-
-graphEdge(?SourceNode, ?TargetNode, "color=orange,fontcolor=orange") :-
-	debugEdge(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation),
-	graphInvocation(?Source, ?SourceInvocation, ?SourceNode),
-	graphInvocation(?Target, ?TargetInvocation, ?TargetNode).

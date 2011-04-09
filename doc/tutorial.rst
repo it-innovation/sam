@@ -115,7 +115,7 @@ This shows that, given the behaviour and initial configuration:
 * clientA may get access to the `TaskA` tasks.
 * otherClients may get access to the `TaskOther` tasks.
 * The factory gets a reference to all tasks but doesn't store the reference (the
-  blue arrow indicates a local varibale rather than a field).
+  dashed arrows indicate references held in local variables rather than in fields).
 
 See :ref:`Graphing` for more information about the graphs produced.
 
@@ -179,8 +179,8 @@ You can read this as:
       * `clientA` had called `factory.newInstance` and
       * `factory` had created `TaskA`.
 
-The red arrow in the diagram corresponds to this problem, and the orange arrows show an
-example sequence of steps that cause it:
+The red arrow in the diagram corresponds to this problem, and the orange arrows show the
+calls in the debugger's example:
 
 .. image:: _images/factory2.png
 
@@ -205,7 +205,8 @@ This model is safe, though it puts rather strict limits on what clientA can do:
 
 .. image:: _images/factory3.png
 
-If we later want to modify clientA, we can update the model to check whether all our previous
+The black arrow shows that, though `clientA` has a reference to `otherClients`, it never calls
+it. If we later want to modify clientA, we can update the model to check whether all our previous
 safety properties are still satisfied by the updated code.
 
 Explicit aggregation

@@ -11,11 +11,13 @@ Objects may create other objects. The rules for access propagation are as follow
 * An object A can only invoke (send a message to) another object B if it holds a reference to it:
 
     .. graphviz::
+
       digraph msg { rankdir=LR; A -> B [color=green,label="(calls)",fontcolor=green] }
 
 * When an object is created, the parent holds the only reference to it. The new object only has references given to it by its parent:
 
     .. graphviz::
+
       digraph msg {
       	rankdir=LR;
         B[style=dashed];
@@ -25,11 +27,13 @@ Objects may create other objects. The rules for access propagation are as follow
 * If object A has references to B and to C, then A may give its reference to C to B:
 
     .. graphviz::
+
        digraph msg { rankdir=LR; A -> B[color=green]; A -> C; B->C [style=dotted] }
 
 * If object A has a reference to B and B has a reference to C, then B may return its reference to C to A:
 
     .. graphviz::
+
        digraph msg { rankdir=LR; A -> B[color=green]; B -> C; A->C [style=dotted] }
 
 These are the only ways to get references.
@@ -50,11 +54,13 @@ The aggregated object has access to everything that any of the original objects
 did, and may do anything that they may have done. For example, this system:
 
     .. graphviz::
+
       digraph msg { rankdir=LR; A->B; A->C; B->D; C->E; }
 
 Can be aggregated like this:
 
     .. graphviz::
+
       digraph msg { rankdir=LR; A->"B,C"; "B,C"->"D,E"; }
 
 Aggregation is always "safe" in the sense that any safety property (e.g. "A can
@@ -73,6 +79,7 @@ we can model every object that could ever be created by a factory as a single
 "newObjects" object:
 
   .. graphviz::
+
      digraph msg { rankdir=LR; edge[style=dotted];
      factory; node[style=dashed];
        factory->newObject1; factory->newObject2; factory->"...";
@@ -82,6 +89,7 @@ we can model every object that could ever be created by a factory as a single
 Can be modelled as:
 
   .. graphviz::
+
      digraph msg { rankdir=LR; edge[style=dotted];
        factory; node[style=dashed];
        factory->newObjects;
@@ -96,6 +104,7 @@ Just as we can aggregate objects, we can (and must) also aggregate invocations.
 For example, consider a factory with some clients ("clientA" and "otherClients"):
 
   .. graphviz::
+
      digraph msg {
        node[shape=plaintext];
        factory;
@@ -113,8 +122,8 @@ cannot get access to the new objects created by "clientA":
    These diagrams use the SAM colour scheme:
 
    * An object in red text indicates an object with unknown behaviour.
-   * A black arrow represents a reference stored in a field on the object.
-   * A blue arrow represents a reference held in a local variable of an invocation.
+   * A solid arrow represents a reference stored in a field on the object.
+   * A dashed arrow represents a reference held in a local variable of an invocation.
 
 Without modelling invocations we could only say that the factory creates newTasksForA
 and newTasksForOthers and that it may return both to its callers. The behaviour of an object
@@ -136,5 +145,5 @@ of the factory shown in green, rather than aggregated with the factory object as
 Here we can see that none of otherClient's invocations can get access to newTasksForA, and so
 otherClients itself cannot either.
 
-The bold blue arrow from each invocation to the factory represents the "this" variable, giving
+The dashed blue arrow from each invocation to the factory represents the "this" variable, giving
 the invocation access to its object's fields.
