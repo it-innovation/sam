@@ -37,3 +37,6 @@ invocationObject("otherClients", "A", "anycallsite", "Other").
 
 denyAccess('otherClients', 'TaskA').
 requireAccess('clientA', 'TaskA').
+
+?- debugEdge(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation).
+

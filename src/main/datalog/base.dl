@@ -121,7 +121,10 @@ methodName("Unknown.invoke", "invoke").
 hasCallSite("Unknown.invoke", "anycallsite").
 callsAnyMethod("anycallsite").
 mayCall("anycallsite", "ref").
-mayPass("anycallsite", "ref").
+
+maySend(?Target, ?TargetInvocation, ?Method, ?Value) :-
+	didCall(?Caller, ?CallerInvocation, "anycallsite", ?Target, ?TargetInvocation, ?Method),
+	field(?Caller, "ref", ?Value).
 
 field(?Object, "ref", ?Value) :- didGet(?Object, ?AnyInvocation, "anycallsite", ?Value).
 field(?Object, "ref", ?Value) :- didAccept(?Object, ?AnyInvocation, "ref", ?Value).

@@ -89,9 +89,13 @@ didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue) :-
 	value(?Target, ?TargetInvocation, ?TargetResultVar, ?ResultValue).
 
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	didCall(?Caller, ?Invocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
-	mayPass(?CallSite, ?VarName),
-	value(?Caller, ?Invocation, ?VarName, ?ArgValue),
+	maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue),
+	isA(?Target, ?TargetType),
+	mayAccept(?Method, ?ParamVar, ?ArgValue).
+
+/* (no position information; e.g. Unknown sender) */
+didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
+	maySend(?Target, ?TargetInvocation, ?Method, ?ArgValue),
 	isA(?Target, ?TargetType),
 	mayAccept(?Method, ?ParamVar, ?ArgValue).
 

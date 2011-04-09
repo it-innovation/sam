@@ -76,6 +76,7 @@ import org.deri.iris.utils.TermMatchingAndSubstitution;
 import org.deri.iris.compiler.BuiltinRegister;
 import org.deri.iris.api.builtins.IBuiltinAtom;
 import static org.deri.iris.factory.Factory.*;
+import static eu.serscis.Constants.*;
 
 public class Debugger {
 	private List<IRule> rules = new LinkedList<IRule>();
@@ -84,12 +85,13 @@ public class Debugger {
 	private Map<IPredicate,DebugRelation> debugRelations = new HashMap<IPredicate,DebugRelation>();
 	private Map<ICompiledRule,IRule> sourceRules = new HashMap<ICompiledRule,IRule>();
 	private int counter = 0;
-	private IPredicate mayCall = BASIC.createPredicate("mayCall", 2);
-	private IPredicate mayPass = BASIC.createPredicate("mayPass", 2);
-	private IPredicate mayStore = BASIC.createPredicate("mayStore", 2);
-	private IPredicate didCall = BASIC.createPredicate("didCall", 6);
-	private IPredicate didGet = BASIC.createPredicate("didGet", 4);
-	private IPredicate didCreate = BASIC.createPredicate("didCreate", 4);
+	static private IPredicate mayCall = BASIC.createPredicate("mayCall", 2);
+	static private IPredicate mayPass = BASIC.createPredicate("mayPass", 2);
+	static private IPredicate mayStore = BASIC.createPredicate("mayStore", 2);
+	static private IPredicate didCall = BASIC.createPredicate("didCall", 6);
+	static private IPredicate didGet = BASIC.createPredicate("didGet", 4);
+	static private IPredicate didCreate = BASIC.createPredicate("didCreate", 4);
+	static private IPredicate getsAccess = BASIC.createPredicate("getsAccess", 2);
 
 	public Debugger(List<IRule> rules, Map<IPredicate,IRelation> initialFacts) throws Exception {
 		Configuration configuration = Eval.createDefaultConfiguration();
@@ -112,72 +114,25 @@ public class Debugger {
 
 	private static String getInvocation(ITuple tuple, int i) {
 		String object = tuple.get(i).getValue().toString();
+		return object;
+		/*
 		String context = tuple.get(i + 1).getValue().toString();
 		return object + ":" + context;
+		*/
 	}
 
 	/* Why was this true? Find a simple example which would cause it and
 	 * print the explanation to the console. Also, add graph edges to 'edges' to
 	 * explain it visually.
 	 */
-	public void debug(ILiteral problem, final IRelation edges) throws Exception {
+	public void debug(final ILiteral problem, final IRelation edges) throws Exception {
 		knowledgeBase.execute(BASIC.createQuery(problem));
-		final List<String> steps = new LinkedList<String>();
 
-		showGraph(problem, "", new HashSet<ILiteral>(), new Reporter() {
-			private int stepNumber = 1;
+		Recorder recorder = new Recorder(problem);
 
-			public void noteStep(ILiteral literal) {
-				String prefix = "" + stepNumber + ". ";
+		showGraph(problem, "", new HashSet<ILiteral>(), recorder);
 
-				ITuple tuple = literal.getAtom().getTuple();
-				IPredicate p = literal.getAtom().getPredicate();
-				if (p.equals(mayCall)) {
-					String callSite = tuple.get(0).getValue().toString();
-					String target = tuple.get(1).getValue().toString();
-					steps.add("   (" + callSite + " may call " + target + ")");
-				} else if (p.equals(mayPass)) {
-					String callSite = tuple.get(0).getValue().toString();
-					String arg = tuple.get(1).getValue().toString();
-					steps.add("   (" + callSite + " may pass " + arg + ")");
-				} else if (p.equals(mayStore)) {
-					String callSite = tuple.get(0).getValue().toString();
-					String target = tuple.get(1).getValue().toString();
-					steps.add("   (" + callSite + " may store result in " + target + ")");
-				} else if (p.equals(didCall)) {
-					String caller = getInvocation(tuple, 0);
-					String callSite = tuple.get(2).getValue().toString();
-					String target = getInvocation(tuple, 3);
-					String method = tuple.get(5).getValue().toString();
-					//String method = tuple.get(4).getValue().toString();
-					//String arg = tuple.get(5).getValue().toString();
-					//String result = tuple.get(6).getValue().toString();
-					steps.add(prefix + caller + "@" + callSite + " calls " + target + "." + method);
-					edges.add(BASIC.createTuple(tuple.get(0),
-								    tuple.get(1),
-								    tuple.get(2),
-								    tuple.get(3),
-								    tuple.get(4),
-								    TERM.createString("" + stepNumber)));
-					stepNumber++;
-				} else if (p.equals(didGet)) {
-					String caller = getInvocation(tuple, 0);
-					String callSite = tuple.get(2).getValue().toString();
-					String result = tuple.get(3).getValue().toString();
-					steps.add("   " + caller + "@" + callSite + ": got " + result);
-				} else if (p.equals(didCreate)) {
-					String actor = getInvocation(tuple, 0);
-					String resultVar = tuple.get(2).getValue().toString();
-					String type = tuple.get(3).getValue().toString();
-					steps.add("   " + actor + ": " + resultVar + " = new " + type + "()");
-				}
-			}
-		});
-
-		System.out.println("\nSteps:");
-		for (String step : steps) {
-			System.out.println(step);
-		}
+		recorder.showImportantSteps(edges);
 	}
 
 	private IQuery unify(IRule rule, ILiteral problem) throws Exception {
@@ -208,85 +163,89 @@ public class Debugger {
 	}
 
 	private void showGraph(ILiteral problem, String indent, Set<ILiteral> seen, Reporter reporter) throws Exception {
-		if (seen.contains(problem)) {
-			return;
-		}
-		seen.add(problem);
-		System.out.println(indent + problem);
+		reporter.enter(problem);
 
-		DebugRelation debugRelation = debugRelations.get(problem.getAtom().getPredicate());
-		IRule rule = debugRelation.getReason(problem.getAtom().getTuple());
-
-		if (rule == null) {
-			reporter.noteStep(problem);
-			return;		// initial fact
-		}
-
-		IQuery ruleQ = unify(rule, problem);
-		System.out.println(indent + ruleQ);
-
-		/* Check internal variable assignments that make this rule true, and select the
-		 * one that was true first.
-		 */
-
-		List<IVariable> queryVars = new LinkedList<IVariable>();
-		IRelation internalAssignments = knowledgeBase.execute(ruleQ, queryVars);
-
-		long bestTrue = -1;
-		List<ILiteral> bestLiterals = null;
-
-		for (int t = 0; t < internalAssignments.size(); ++t ) {
-			ITuple resultTuple = internalAssignments.get(t);
-
-			List<ILiteral> newLiterals = new LinkedList<ILiteral>();
-			List<ILiteral> negatives = new LinkedList<ILiteral>();
-
-			long lastTrue = -1;
-
-			for (ILiteral literal : ruleQ.getLiterals()) {
-				Map<IVariable,ITerm> varMap = getVarMap(queryVars, resultTuple);
-				ITuple result = TermMatchingAndSubstitution.substituteVariablesInToTuple(literal.getAtom().getTuple(), varMap);
-				IAtom newAtom = updateAtom(literal.getAtom(), result);
-
-				ILiteral newLiteral = BASIC.createLiteral(literal.isPositive(), newAtom);
-
-				if (newLiteral.isPositive()) {
-					long whenTrue;
-					if (newLiteral.getAtom().isBuiltin()) {
-						whenTrue = 0;
-					} else {
-						DebugRelation rel = debugRelations.get(literal.getAtom().getPredicate());
-						whenTrue = rel.getFirstTrue(newLiteral.getAtom().getTuple());
-					}
-					if (whenTrue > lastTrue) {
-						lastTrue = whenTrue;
-					}
-					if (whenTrue != 0) {
-						newLiterals.add(newLiteral);
-					}
-				} else {
-					negatives.add(newLiteral);
-				}
- 			}
-
-			//System.out.println(indent + newLiterals + " first true at " + lastTrue);
-
-			// this result was first true at "lastTrue"
-
-			if (bestTrue == -1 || lastTrue < bestTrue) {
-				bestTrue = lastTrue;
-				bestLiterals = newLiterals;
+		try {
+			if (seen.contains(problem)) {
+				return;
 			}
+			seen.add(problem);
+			System.out.println(indent + problem);
+
+			DebugRelation debugRelation = debugRelations.get(problem.getAtom().getPredicate());
+			IRule rule = debugRelation.getReason(problem.getAtom().getTuple());
+
+			if (rule == null) {
+				//reporter.noteStep(problem);
+				return;		// initial fact
+			}
+
+			IQuery ruleQ = unify(rule, problem);
+			System.out.println(indent + ruleQ);
+
+			/* Check internal variable assignments that make this rule true, and select the
+			 * one that was true first.
+			 */
+
+			List<IVariable> queryVars = new LinkedList<IVariable>();
+			IRelation internalAssignments = knowledgeBase.execute(ruleQ, queryVars);
+
+			long bestTrue = -1;
+			List<ILiteral> bestLiterals = null;
+
+			for (int t = 0; t < internalAssignments.size(); ++t ) {
+				ITuple resultTuple = internalAssignments.get(t);
+
+				List<ILiteral> newLiterals = new LinkedList<ILiteral>();
+				List<ILiteral> negatives = new LinkedList<ILiteral>();
+
+				long lastTrue = -1;
+
+				for (ILiteral literal : ruleQ.getLiterals()) {
+					Map<IVariable,ITerm> varMap = getVarMap(queryVars, resultTuple);
+					ITuple result = TermMatchingAndSubstitution.substituteVariablesInToTuple(literal.getAtom().getTuple(), varMap);
+					IAtom newAtom = updateAtom(literal.getAtom(), result);
+
+					ILiteral newLiteral = BASIC.createLiteral(literal.isPositive(), newAtom);
+
+					if (newLiteral.isPositive()) {
+						long whenTrue;
+						if (newLiteral.getAtom().isBuiltin()) {
+							whenTrue = 0;
+						} else {
+							DebugRelation rel = debugRelations.get(literal.getAtom().getPredicate());
+							whenTrue = rel.getFirstTrue(newLiteral.getAtom().getTuple());
+						}
+						if (whenTrue > lastTrue) {
+							lastTrue = whenTrue;
+						}
+						if (whenTrue != 0) {
+							newLiterals.add(newLiteral);
+						}
+					} else {
+						negatives.add(newLiteral);
+					}
+				}
+
+				//System.out.println(indent + newLiterals + " first true at " + lastTrue);
+
+				// this result was first true at "lastTrue"
+
+				if (bestTrue == -1 || lastTrue < bestTrue) {
+					bestTrue = lastTrue;
+					bestLiterals = newLiterals;
+				}
+			}
+
+			//System.out.println(indent + "best true: " + bestLiterals + " at " + bestTrue);
+
+			indent += "   ";
+			for (ILiteral lit : bestLiterals) {
+				showGraph(lit, indent, seen, reporter);
+			}
+		} finally {
+			reporter.leave(problem);
 		}
-
-		//System.out.println(indent + "best true: " + bestLiterals + " at " + bestTrue);
-
-		indent += "   ";
-		for (ILiteral lit : bestLiterals) {
-			showGraph(lit, indent, seen, reporter);
-		}
-
-		reporter.noteStep(problem);
 	}
 
 	private DebugRelation getDebugRelation(IPredicate predicate) {
@@ -462,6 +421,124 @@ public class Debugger {
  	}
 
 	private interface Reporter {
-		void noteStep(ILiteral literal);
+		void enter(ILiteral literal);
+		void leave(ILiteral literal);
+	}
+
+	private static class Step {
+		ILiteral problem;
+		Step parent;
+		List<Step> children;
+
+		private Step(Step parent, ILiteral problem) {
+			this.parent = parent;
+			this.problem = problem;
+			this.children = new LinkedList<Step>();
+		}
+
+		public void show(String indent, IRelation debugEdges) {
+			String msg = null;
+
+			ITuple tuple = problem.getAtom().getTuple();
+			IPredicate p = problem.getAtom().getPredicate();
+			if (p.equals(mayCall)) {
+				String callSite = tuple.get(0).getValue().toString();
+				String target = tuple.get(1).getValue().toString();
+				//steps.add("   (" + callSite + " may call " + target + ")");
+			} else if (p.getPredicateSymbol().equals("maySend")) {
+				String target = tuple.get(0).getValue().toString();
+				String method = tuple.get(2).getValue().toString();
+				String arg = tuple.get(3).getValue().toString();
+				msg = target + ": received " + arg;
+				if (!method.equals("Unknown.invoke")) {
+					msg += " (arg to " + method + ")";
+				} else {
+					msg += " (as an argument)";
+				}
+			} else if (p.equals(mayStore)) {
+				String callSite = tuple.get(0).getValue().toString();
+				String target = tuple.get(1).getValue().toString();
+				//steps.add("   (" + callSite + " may store result in " + target + ")");
+			} else if (p.equals(didCall)) {
+				String caller = getInvocation(tuple, 0);
+				String callSite = tuple.get(2).getValue().toString();
+				String target = getInvocation(tuple, 3);
+				String method = tuple.get(5).getValue().toString();
+				//String method = tuple.get(4).getValue().toString();
+				//String arg = tuple.get(5).getValue().toString();
+				//String result = tuple.get(6).getValue().toString();
+				//msg = caller + "@" + callSite + " calls " + target + "." + method;
+				int i = method.indexOf('.');
+				method = method.substring(i + 1);
+				msg = caller + ": " + target + "." + method + "()";
+				debugEdges.add(BASIC.createTuple(tuple.get(0),
+							    tuple.get(1),
+							    tuple.get(2),
+							    tuple.get(3),
+							    tuple.get(4)));
+			} else if (p.equals(didGet)) {
+				String caller = getInvocation(tuple, 0);
+				String callSite = tuple.get(2).getValue().toString();
+				String result = tuple.get(3).getValue().toString();
+				msg = "" + caller + ": got " + result;
+			} else if (p.equals(didCreate)) {
+				String actor = getInvocation(tuple, 0);
+				//String resultVar = tuple.get(2).getValue().toString();
+				String type = tuple.get(3).getValue().toString();
+				msg = actor + ": new " + type + "()";
+			}
+
+			if (msg == null) {
+				msg = problem.toString();
+			}
+
+			if (children.size() != 0) {
+				//msg += " because:";
+			}
+			if (parent != null) {
+				msg = "<= " + msg;
+			}
+			System.out.println(indent + msg);
+
+			indent += "   ";
+			for (Step child : children) {
+				child.show(indent, debugEdges);
+			}
+		}
+	}
+
+	private static class Recorder implements Reporter {
+		private String indent = "";
+		private Step myStep;
+		
+		public Recorder(ILiteral problem) {
+			myStep = new Step(null, problem);
+		}
+
+		public void enter(ILiteral literal) {
+			IPredicate p = literal.getAtom().getPredicate();
+
+			if (p.equals(didCall) ||
+			    p.equals(didGet) ||
+			    p.equals(didCreate) ||
+			    p.equals(getsAccess) ||
+			    p.getPredicateSymbol().equals("error") ||
+			    p.getPredicateSymbol().equals("maySend")) {	// /4 or /5
+				Step child = new Step(myStep, literal);
+				myStep.children.add(child);
+				myStep = child;
+			}
+		}
+
+		public void leave(ILiteral literal) {
+			if (myStep.problem == literal && myStep.parent != null) {
+				myStep = myStep.parent;
+			}
+		}
+
+		public void showImportantSteps(IRelation debugEdges) {
+			System.out.println("\nSimplified debug graph:\n");
+			myStep.show("", debugEdges);
+		}
 	}
 }

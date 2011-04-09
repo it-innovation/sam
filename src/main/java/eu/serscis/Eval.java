@@ -218,7 +218,7 @@ public class Eval {
 		Debugger debugger = new Debugger(rules, facts);
 		debugger.debug(debugL, debugEdges);
 
-		IPredicate debugEdgeP = BASIC.createPredicate("debugEdge", 6);
+		IPredicate debugEdgeP = BASIC.createPredicate("debugEdge", 5);
 		if (facts.containsKey(debugEdgeP)) {
 			throw new RuntimeException("facts already contains " + debugEdgeP);
 		}

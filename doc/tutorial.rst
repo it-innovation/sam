@@ -151,28 +151,38 @@ rest of the Internet too::
 
   field("clientA", "ref", "otherClients").
 
-When we model this, SAM will detect that our safety goal is not met, and prints an example
-of a sequence of steps that will cause the problem::
+When we model this, SAM will detect that our safety goal is not met, and prints a simple
+example of how the problem can occur::
 
-  Steps:
-  1. clientA(A): ref = factory.newInstance(factory)
-     factory(A): task = new Task()
-     clientA(A): (ref = TaskA)
-  2. clientA(A): ref = otherClients.invoke(TaskA)
+  debug()
+     <= getsAccess('otherClients', 'TaskA')
+        <= otherClients: received TaskA (as an argument)
+           <= clientA: otherClients.invoke()
+           <= clientA: got TaskA
+              <= clientA: factory.newInstance()
+              <= factory: new TaskA()
+                 <= clientA: factory.newInstance()
 
   === Errors detected after applying propagation rules ===
 
   ('unsafe access may be possible', 'otherClients', 'TaskA')
 
+You can read this as:
+
+* The debugger was triggered because `otherClients` got access to `TaskA`, which happened because:
+
+  * `otherClients` got passed `TaskA` as a method argument, which happened because:
+
+    * `clientA` invoked `otherClients`, and
+    * `clientA` had got `TaskA`, because:
+
+      * `clientA` had called `factory.newInstance` and
+      * `factory` had created `TaskA`.
 
 The red arrow in the diagram corresponds to this problem, and the orange arrows show an
 example sequence of steps that cause it:
 
 .. image:: _images/factory2.png
-
-.. note::
-   Actually, there's another problem with this model, which means that SAM may find another,
-   less obvious, sequence of steps when you try it. We'll look at this in the next section.
 
 This says that if we can't rely on clientA's behaviour then we can't be sure that
 other client's won't get access to its tasks. To fix this, we must restrict clientA's
@@ -221,22 +231,21 @@ Turning on display of invocations shows the reason:
 
 The example reported is::
 
-  Steps:
-  1. clientA(A): ref = otherClients.invoke(otherClients)
-  2. otherClients(A): ref = factory.newInstance(factory)
-  3. clientA(A): myTask = factory.newInstance(otherClients)
-     factory(A): task = new Task()
-     otherClients(A): (ref = TaskA)
+  debug()
+     <= getsAccess('otherClients', 'TaskA')
+        <= otherClients: got TaskA
+           <= otherClients: factory.newInstance()
+              <= clientA: otherClients.invoke()
+           <= factory: new TaskA()
+              <= clientA: factory.newInstance()
 
-1. `clientA` calls `otherClients` (causing an invocation of it in context "A")
-2. `otherClients` calls `factory` (creating a Task that is aggregated into `TaskA`)
-3. (`clientA` calls `factory`). `factory` creates a Task. `otherClients` gets `TaskA` back from `factory`.
+* `otherClients` got `TaskA` because:
+  
+  * it called `factory.newInstance()`, which it did because:
 
-.. note::
-  `clientA`'s call in step 3 isn't necessary to the proof (SAM doesn't always find the
-  simplest example). In the verbose debug output, you can see that it used this call to prove
-  that `factory` could be invoked in context "A"; something it could equally have deduced from
-  `otherClients`'s call.
+    * `clientA` invoked `otherClients`; and
+
+  * the factory created `TaskA`.
 
 The problem here is that the default aggregation strategy groups all calls resulting from
 actions by `clientA` under the "A" context. Because `clientA` invoked `otherClients`, tasks

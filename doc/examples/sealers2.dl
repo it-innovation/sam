@@ -26,15 +26,11 @@ initialInvocation("sender", "A").
 
 showInvocation("unsealer", ?Invocation) :- isInvocation(?Invocation).
 
-invocationObject("sender", "A", ?CallSite, "1") :-
-	mayPass(?CallSite, "precious").
-invocationObject("sender", "A", ?CallSite, "2") :-
-	mayPass(?CallSite, "precious2").
+invocationObject("sender", "A", "Sender.test-1", "1").
+invocationObject("sender", "A", "Sender.test-2", "2").
+invocationObject("sender", "A", "Sender.test-3", "1").
+invocationObject("sender", "A", "Sender.test-4", "2").
 
-invocationObject("sender", "A", ?CallSite, "1") :-
-	mayCall(?CallSite, "others").
-invocationObject("sender", "A", ?CallSite, "2") :-
-	mayCall(?CallSite, "others2").
 
 /* Goals */
 
