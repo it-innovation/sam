@@ -448,7 +448,12 @@ public class Debugger {
 			} else if (p.getPredicateSymbol().equals("maySend")) {
 				String target = tuple.get(0).getValue().toString();
 				String method = tuple.get(2).getValue().toString();
-				String arg = tuple.get(3).getValue().toString();
+				String arg;
+				if (tuple.size() == 4) {
+					arg = tuple.get(3).getValue().toString();
+				} else {
+					arg = tuple.get(4).getValue().toString();
+				}
 				msg = target + ": received " + arg;
 				if (!method.equals("Unknown.invoke")) {
 					msg += " (arg to " + method + ")";
