@@ -7,7 +7,7 @@ import eu.serscis.sam.analysis.*;
 @SuppressWarnings("nls")
 public final class Start extends Node
 {
-    private PBehaviour _pBehaviour_;
+    private PProgram _pProgram_;
     private EOF _eof_;
 
     public Start()
@@ -16,10 +16,10 @@ public final class Start extends Node
     }
 
     public Start(
-        @SuppressWarnings("hiding") PBehaviour _pBehaviour_,
+        @SuppressWarnings("hiding") PProgram _pProgram_,
         @SuppressWarnings("hiding") EOF _eof_)
     {
-        setPBehaviour(_pBehaviour_);
+        setPProgram(_pProgram_);
         setEOF(_eof_);
     }
 
@@ -27,7 +27,7 @@ public final class Start extends Node
     public Object clone()
     {
         return new Start(
-            cloneNode(this._pBehaviour_),
+            cloneNode(this._pProgram_),
             cloneNode(this._eof_));
     }
 
@@ -36,16 +36,16 @@ public final class Start extends Node
         ((Analysis) sw).caseStart(this);
     }
 
-    public PBehaviour getPBehaviour()
+    public PProgram getPProgram()
     {
-        return this._pBehaviour_;
+        return this._pProgram_;
     }
 
-    public void setPBehaviour(PBehaviour node)
+    public void setPProgram(PProgram node)
     {
-        if(this._pBehaviour_ != null)
+        if(this._pProgram_ != null)
         {
-            this._pBehaviour_.parent(null);
+            this._pProgram_.parent(null);
         }
 
         if(node != null)
@@ -58,7 +58,7 @@ public final class Start extends Node
             node.parent(this);
         }
 
-        this._pBehaviour_ = node;
+        this._pProgram_ = node;
     }
 
     public EOF getEOF()
@@ -89,9 +89,9 @@ public final class Start extends Node
     @Override
     void removeChild(Node child)
     {
-        if(this._pBehaviour_ == child)
+        if(this._pProgram_ == child)
         {
-            this._pBehaviour_ = null;
+            this._pProgram_ = null;
             return;
         }
 
@@ -107,9 +107,9 @@ public final class Start extends Node
     @Override
     void replaceChild(Node oldChild, Node newChild)
     {
-        if(this._pBehaviour_ == oldChild)
+        if(this._pProgram_ == oldChild)
         {
-            setPBehaviour((PBehaviour) newChild);
+            setPProgram((PProgram) newChild);
             return;
         }
 
@@ -126,7 +126,7 @@ public final class Start extends Node
     public String toString()
     {
         return "" +
-            toString(this._pBehaviour_) +
+            toString(this._pProgram_) +
             toString(this._eof_);
     }
 }

@@ -32,8 +32,7 @@ code::
 
 .. note::
   SAM uses a small Java-like syntax to define behaviour. The above Java code can be
-  used as-is, but more complex code must be simplified. Note also that the final "}"
-  defining a class must occur on a line of its own, and at the beginning of the line.
+  used as-is, but more complex code must be simplified.
 
 The `Unknown` class is used for code whose behaviour is unknown or untrusted. Making
 `Task` extend `Unknown` here means that the safety properties we verify for the model will

@@ -44,5 +44,5 @@ field("clientA", "ref", "otherClients").
 
 /* Goals */
 
-denyAccess('otherClients', 'TaskA').
-requireAccess('clientA', 'TaskA').
+denyAccess("otherClients", "TaskA").
+requireAccess("clientA", "TaskA").

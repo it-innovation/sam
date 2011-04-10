@@ -31,9 +31,518 @@ public class DepthFirstAdapter extends AnalysisAdapter
     public void caseStart(Start node)
     {
         inStart(node);
-        node.getPBehaviour().apply(this);
+        node.getPProgram().apply(this);
         node.getEOF().apply(this);
         outStart(node);
+    }
+
+    public void inAProgram(AProgram node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAProgram(AProgram node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAProgram(AProgram node)
+    {
+        inAProgram(node);
+        {
+            List<PToplevel> copy = new ArrayList<PToplevel>(node.getToplevel());
+            for(PToplevel e : copy)
+            {
+                e.apply(this);
+            }
+        }
+        outAProgram(node);
+    }
+
+    public void inABehaviourToplevel(ABehaviourToplevel node)
+    {
+        defaultIn(node);
+    }
+
+    public void outABehaviourToplevel(ABehaviourToplevel node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseABehaviourToplevel(ABehaviourToplevel node)
+    {
+        inABehaviourToplevel(node);
+        if(node.getBehaviour() != null)
+        {
+            node.getBehaviour().apply(this);
+        }
+        outABehaviourToplevel(node);
+    }
+
+    public void inAFactToplevel(AFactToplevel node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAFactToplevel(AFactToplevel node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAFactToplevel(AFactToplevel node)
+    {
+        inAFactToplevel(node);
+        if(node.getFact() != null)
+        {
+            node.getFact().apply(this);
+        }
+        outAFactToplevel(node);
+    }
+
+    public void inARuleToplevel(ARuleToplevel node)
+    {
+        defaultIn(node);
+    }
+
+    public void outARuleToplevel(ARuleToplevel node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseARuleToplevel(ARuleToplevel node)
+    {
+        inARuleToplevel(node);
+        if(node.getRule() != null)
+        {
+            node.getRule().apply(this);
+        }
+        outARuleToplevel(node);
+    }
+
+    public void inAQueryToplevel(AQueryToplevel node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAQueryToplevel(AQueryToplevel node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAQueryToplevel(AQueryToplevel node)
+    {
+        inAQueryToplevel(node);
+        if(node.getQuery() != null)
+        {
+            node.getQuery().apply(this);
+        }
+        outAQueryToplevel(node);
+    }
+
+    public void inAFact(AFact node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAFact(AFact node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAFact(AFact node)
+    {
+        inAFact(node);
+        if(node.getAtom() != null)
+        {
+            node.getAtom().apply(this);
+        }
+        if(node.getDot() != null)
+        {
+            node.getDot().apply(this);
+        }
+        outAFact(node);
+    }
+
+    public void inARule(ARule node)
+    {
+        defaultIn(node);
+    }
+
+    public void outARule(ARule node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseARule(ARule node)
+    {
+        inARule(node);
+        if(node.getHead() != null)
+        {
+            node.getHead().apply(this);
+        }
+        if(node.getIfDl() != null)
+        {
+            node.getIfDl().apply(this);
+        }
+        if(node.getBody() != null)
+        {
+            node.getBody().apply(this);
+        }
+        if(node.getDot() != null)
+        {
+            node.getDot().apply(this);
+        }
+        outARule(node);
+    }
+
+    public void inALiterals(ALiterals node)
+    {
+        defaultIn(node);
+    }
+
+    public void outALiterals(ALiterals node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseALiterals(ALiterals node)
+    {
+        inALiterals(node);
+        if(node.getLiteral() != null)
+        {
+            node.getLiteral().apply(this);
+        }
+        {
+            List<PLiteralTail> copy = new ArrayList<PLiteralTail>(node.getLiteralTail());
+            for(PLiteralTail e : copy)
+            {
+                e.apply(this);
+            }
+        }
+        outALiterals(node);
+    }
+
+    public void inALiteralTail(ALiteralTail node)
+    {
+        defaultIn(node);
+    }
+
+    public void outALiteralTail(ALiteralTail node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseALiteralTail(ALiteralTail node)
+    {
+        inALiteralTail(node);
+        if(node.getComma() != null)
+        {
+            node.getComma().apply(this);
+        }
+        if(node.getLiteral() != null)
+        {
+            node.getLiteral().apply(this);
+        }
+        outALiteralTail(node);
+    }
+
+    public void inAPositiveLiteral(APositiveLiteral node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAPositiveLiteral(APositiveLiteral node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAPositiveLiteral(APositiveLiteral node)
+    {
+        inAPositiveLiteral(node);
+        if(node.getAtom() != null)
+        {
+            node.getAtom().apply(this);
+        }
+        outAPositiveLiteral(node);
+    }
+
+    public void inANegativeLiteral(ANegativeLiteral node)
+    {
+        defaultIn(node);
+    }
+
+    public void outANegativeLiteral(ANegativeLiteral node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseANegativeLiteral(ANegativeLiteral node)
+    {
+        inANegativeLiteral(node);
+        if(node.getBang() != null)
+        {
+            node.getBang().apply(this);
+        }
+        if(node.getAtom() != null)
+        {
+            node.getAtom().apply(this);
+        }
+        outANegativeLiteral(node);
+    }
+
+    public void inANullaryAtom(ANullaryAtom node)
+    {
+        defaultIn(node);
+    }
+
+    public void outANullaryAtom(ANullaryAtom node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseANullaryAtom(ANullaryAtom node)
+    {
+        inANullaryAtom(node);
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        outANullaryAtom(node);
+    }
+
+    public void inANormalAtom(ANormalAtom node)
+    {
+        defaultIn(node);
+    }
+
+    public void outANormalAtom(ANormalAtom node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseANormalAtom(ANormalAtom node)
+    {
+        inANormalAtom(node);
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        if(node.getLPar() != null)
+        {
+            node.getLPar().apply(this);
+        }
+        if(node.getTerms() != null)
+        {
+            node.getTerms().apply(this);
+        }
+        if(node.getRPar() != null)
+        {
+            node.getRPar().apply(this);
+        }
+        outANormalAtom(node);
+    }
+
+    public void inABuiltinAtom(ABuiltinAtom node)
+    {
+        defaultIn(node);
+    }
+
+    public void outABuiltinAtom(ABuiltinAtom node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseABuiltinAtom(ABuiltinAtom node)
+    {
+        inABuiltinAtom(node);
+        if(node.getLhs() != null)
+        {
+            node.getLhs().apply(this);
+        }
+        if(node.getBinop() != null)
+        {
+            node.getBinop().apply(this);
+        }
+        if(node.getRhs() != null)
+        {
+            node.getRhs().apply(this);
+        }
+        outABuiltinAtom(node);
+    }
+
+    public void inATerms(ATerms node)
+    {
+        defaultIn(node);
+    }
+
+    public void outATerms(ATerms node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseATerms(ATerms node)
+    {
+        inATerms(node);
+        if(node.getTerm() != null)
+        {
+            node.getTerm().apply(this);
+        }
+        {
+            List<PTermTail> copy = new ArrayList<PTermTail>(node.getTermTail());
+            for(PTermTail e : copy)
+            {
+                e.apply(this);
+            }
+        }
+        outATerms(node);
+    }
+
+    public void inATermTail(ATermTail node)
+    {
+        defaultIn(node);
+    }
+
+    public void outATermTail(ATermTail node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseATermTail(ATermTail node)
+    {
+        inATermTail(node);
+        if(node.getComma() != null)
+        {
+            node.getComma().apply(this);
+        }
+        if(node.getTerm() != null)
+        {
+            node.getTerm().apply(this);
+        }
+        outATermTail(node);
+    }
+
+    public void inAVarTerm(AVarTerm node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAVarTerm(AVarTerm node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAVarTerm(AVarTerm node)
+    {
+        inAVarTerm(node);
+        if(node.getQuestion() != null)
+        {
+            node.getQuestion().apply(this);
+        }
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        outAVarTerm(node);
+    }
+
+    public void inAStringTerm(AStringTerm node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAStringTerm(AStringTerm node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAStringTerm(AStringTerm node)
+    {
+        inAStringTerm(node);
+        if(node.getStringLiteral() != null)
+        {
+            node.getStringLiteral().apply(this);
+        }
+        outAStringTerm(node);
+    }
+
+    public void inACompositeTerm(ACompositeTerm node)
+    {
+        defaultIn(node);
+    }
+
+    public void outACompositeTerm(ACompositeTerm node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseACompositeTerm(ACompositeTerm node)
+    {
+        inACompositeTerm(node);
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        if(node.getLPar() != null)
+        {
+            node.getLPar().apply(this);
+        }
+        if(node.getTerms() != null)
+        {
+            node.getTerms().apply(this);
+        }
+        if(node.getRPar() != null)
+        {
+            node.getRPar().apply(this);
+        }
+        outACompositeTerm(node);
+    }
+
+    public void inAQuery(AQuery node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAQuery(AQuery node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAQuery(AQuery node)
+    {
+        inAQuery(node);
+        if(node.getQueryStart() != null)
+        {
+            node.getQueryStart().apply(this);
+        }
+        if(node.getLiterals() != null)
+        {
+            node.getLiterals().apply(this);
+        }
+        if(node.getDot() != null)
+        {
+            node.getDot().apply(this);
+        }
+        outAQuery(node);
     }
 
     public void inABehaviour(ABehaviour node)

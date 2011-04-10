@@ -112,8 +112,44 @@ class TokenIndex extends AnalysisAdapter
     }
 
     @Override
-    public void caseEOF(@SuppressWarnings("unused") EOF node)
+    public void caseTIfDl(@SuppressWarnings("unused") TIfDl node)
     {
         this.index = 17;
+    }
+
+    @Override
+    public void caseTBang(@SuppressWarnings("unused") TBang node)
+    {
+        this.index = 18;
+    }
+
+    @Override
+    public void caseTStringLiteral(@SuppressWarnings("unused") TStringLiteral node)
+    {
+        this.index = 19;
+    }
+
+    @Override
+    public void caseTQueryStart(@SuppressWarnings("unused") TQueryStart node)
+    {
+        this.index = 20;
+    }
+
+    @Override
+    public void caseTQuestion(@SuppressWarnings("unused") TQuestion node)
+    {
+        this.index = 21;
+    }
+
+    @Override
+    public void caseTBinop(@SuppressWarnings("unused") TBinop node)
+    {
+        this.index = 22;
+    }
+
+    @Override
+    public void caseEOF(@SuppressWarnings("unused") EOF node)
+    {
+        this.index = 23;
     }
 }

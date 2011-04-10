@@ -72,7 +72,7 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Meth
 	accessAllowed(?Caller, ?Target, ?Method),
 	realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
 
-/* Parent calls the child's constructor */
+/* Parent calls the child"s constructor */
 didCall(?Caller, ?Invocation, ?CallSite, ?NewChild, ?Invocation, ?Method) :-
 	didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild),
 	isA(?NewChild, ?ChildType),
@@ -99,7 +99,7 @@ didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
 	isA(?Target, ?TargetType),
 	mayAccept(?Method, ?ParamVar, ?ArgValue).
 
-/* Target's parameter variable may contain ArgValue if someone called it with that value. */
+/* Target"s parameter variable may contain ArgValue if someone called it with that value. */
 local(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
 	didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue).
 
@@ -127,8 +127,8 @@ realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild) :-
 
 /* Sanity checking */
 
-error('Unknown source object in deny rule', ?A) :- denyAccess(?A, ?B), !isObject(?A).
-error('Unknown target object in deny rule', ?B) :- denyAccess(?A, ?B), !isObject(?B).
+error("Unknown source object in deny rule", ?A) :- denyAccess(?A, ?B), !isObject(?A).
+error("Unknown target object in deny rule", ?B) :- denyAccess(?A, ?B), !isObject(?B).
 
 
 /* Goal checking (here because we only check after applying the system rules) */
@@ -137,7 +137,7 @@ missingGoodAccess(?SourceObject, ?TargetObject) :-
 	requireAccess(?SourceObject, ?TargetObject),
 	!getsAccess(?SourceObject, ?TargetObject).
 
-error('required access is not possible', ?SourceObject, ?TargetObject) :-
+error("required access is not possible", ?SourceObject, ?TargetObject) :-
 	missingGoodAccess(?SourceObject, ?TargetObject).
 
 debug :- haveBadAccess(?Source, ?Target).

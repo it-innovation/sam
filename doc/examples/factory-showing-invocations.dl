@@ -39,10 +39,10 @@ newObject("factory", "other", "Task", "newTasksOthers").
 
 /* Graphing */
 
-showInvocation('factory', ?Invocation) :- live('factory', ?Invocation).
+showInvocation("factory", ?Invocation) :- live("factory", ?Invocation).
 
 
 /* Goals */
 
-denyAccess('otherClients', 'newTasksForA').
-requireAccess('clientA', 'newTasksForA').
+denyAccess("otherClients", "newTasksForA").
+requireAccess("clientA", "newTasksForA").

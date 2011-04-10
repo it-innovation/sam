@@ -75,7 +75,7 @@ isInvocation(?Invocation) :- invocationObject(?Caller, ?CallerInvocation, ?CallS
 /* If an Invocation has direct access to an object (via a local variable or a field on its object) */
 hasRef(?Object, ?Invocation, ?Value) :- value(?Object, ?Invocation, ?AnyVar, ?Value).
 
-/* Every invocation has a 'this' variable with a reference to its object. */
+/* Every invocation has a "this" variable with a reference to its object. */
 local(?Object, ?Invocation, "this", ?Object) :- isObject(?Object), live(?Object, ?Invocation).
 
 /* Local or field */
@@ -85,9 +85,9 @@ value(?Object, ?Invocation, ?Var, ?Value) :- field(?Object, ?Var, ?Value), isInv
 
 /* Error checking */
 
-error('Not an object (no type!)', ?Object) :- hasRef(?AnyObject, ?X, ?Object), !isObject(?Object).
+error("Not an object (no type!)", ?Object) :- hasRef(?AnyObject, ?X, ?Object), !isObject(?Object).
 
-error('Live invocation for non-alive object', ?Invocation, ?Object) :-
+error("Live invocation for non-alive object", ?Invocation, ?Object) :-
 	live(?Object, ?Invocation), !live(?Object).
 
 getsAccess(?SourceObject, ?TargetObject) :-
@@ -97,14 +97,14 @@ haveBadAccess(?SourceObject, ?TargetObject) :-
 	denyAccess(?SourceObject, ?TargetObject),
 	getsAccess(?SourceObject, ?TargetObject).
 
-error('unsafe access may be possible', ?SourceObject, ?TargetObject) :-
+error("unsafe access may be possible", ?SourceObject, ?TargetObject) :-
 	haveBadAccess(?SourceObject, ?TargetObject).
 
-error('Local on non-invocation', ?Invocation, ?Var, ?Value) :- local(?Object, ?Invocation, ?Var, ?Value), !isInvocation(?Invocation).
+error("Local on non-invocation", ?Invocation, ?Var, ?Value) :- local(?Object, ?Invocation, ?Var, ?Value), !isInvocation(?Invocation).
 
 objectHasField(?Object, ?Field) :- isA(?Object, ?Type), hasField(?Type, ?Field).
-error('Undeclared field', ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !objectHasField(?Object, ?Var).
-error('Field on non-object', ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !isObject(?Object).
+error("Undeclared field", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !objectHasField(?Object, ?Var).
+error("Field on non-object", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !isObject(?Object).
 
 
 /* Unknown behaviour */

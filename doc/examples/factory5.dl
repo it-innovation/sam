@@ -46,13 +46,13 @@ invocationObject("clientA", "Other", ?CallSite, "A") :- mayCall(?CallSite, "fact
 
 /* Goals */
 
-denyAccess('otherClients', 'TaskA').
-requireAccess('clientA', 'TaskA').
+denyAccess("otherClients", "TaskA").
+requireAccess("clientA", "TaskA").
 
 error("otherClient may access some clientA.myTask") :-
-	getsAccess('otherClients', ?Value),
-	field('clientA', 'myTask', ?Value).
+	getsAccess("otherClients", ?Value),
+	field("clientA", "myTask", ?Value).
 
 /* Graphing */
 
-showInvocation('factory', ?Invocation) :- isInvocation(?Invocation).
+showInvocation("factory", ?Invocation) :- isInvocation(?Invocation).

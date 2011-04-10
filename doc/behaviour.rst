@@ -9,8 +9,7 @@ in Datalog directly.
 
 Java-like syntax
 ----------------
-A type may be defined using the "class" keyword. This must occur at the start of a new line, and
-continues until the next line starting with "}" (with no leading spaces). The syntax is::
+A type may be defined using the "class" keyword. The syntax is::
 
   class NAME [extends SUPERCLASS] {
     // Zero or more fields, of the form:

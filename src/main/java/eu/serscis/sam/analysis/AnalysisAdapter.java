@@ -69,6 +69,106 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseAProgram(AProgram node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseABehaviourToplevel(ABehaviourToplevel node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAFactToplevel(AFactToplevel node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseARuleToplevel(ARuleToplevel node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAQueryToplevel(AQueryToplevel node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAFact(AFact node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseARule(ARule node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseALiterals(ALiterals node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseALiteralTail(ALiteralTail node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAPositiveLiteral(APositiveLiteral node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseANegativeLiteral(ANegativeLiteral node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseANullaryAtom(ANullaryAtom node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseANormalAtom(ANormalAtom node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseABuiltinAtom(ABuiltinAtom node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseATerms(ATerms node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseATermTail(ATermTail node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAVarTerm(AVarTerm node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAStringTerm(AStringTerm node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseACompositeTerm(ACompositeTerm node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAQuery(AQuery node)
+    {
+        defaultCase(node);
+    }
+
     public void caseABehaviour(ABehaviour node)
     {
         defaultCase(node);
@@ -234,6 +334,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseTBlockComment(TBlockComment node)
+    {
+        defaultCase(node);
+    }
+
     public void caseTComma(TComma node)
     {
         defaultCase(node);
@@ -250,6 +355,36 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseTName(TName node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTIfDl(TIfDl node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTBang(TBang node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTStringLiteral(TStringLiteral node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTQueryStart(TQueryStart node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTQuestion(TQuestion node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTBinop(TBinop node)
     {
         defaultCase(node);
     }

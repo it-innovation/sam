@@ -43,5 +43,5 @@ newObject("factory", "other", "Task", "newTasksOthers").
 
 /* Goals */
 
-denyAccess('otherClients', 'newTasksForA').
-requireAccess('clientA', 'newTasksForA').
+denyAccess("otherClients", "newTasksForA").
+requireAccess("clientA", "newTasksForA").

@@ -11,7 +11,13 @@ Helpers
   digit = ['0'..'9'];
   line_terminator = lf | cr | cr lf;
   input_character = [unicode_input_character - [cr + lf]];
+  not_star = [unicode_input_character - '*'];
+  not_star_not_slash = [unicode_input_character - ['*' + '/']];
   underscode = '_';
+  
+  // (based on sablecc example Java grammar)
+  escape_sequence = '\b' | '\t' | '\n' | '\f' | '\r' | '\"' | '\' ''' | '\\';
+  string_character = [input_character - ['"' + '\']] | escape_sequence;
 
 Tokens
   number = ['0' .. '9']+;
@@ -29,15 +35,46 @@ Tokens
   eq = '=';
   blank = (' ' | 13 | 9 | 10)+;
   comment = '//' input_character* line_terminator;
+  block_comment = '/*' not_star* ('*' not_star_not_slash*)* '*/';
+
   comma = ',';
   goal = 'goal';
   semi = ';';
   name = char(char|digit|underscode)*;
+  if_dl = ':-';
+  bang = '!';
+  string_literal = '"' string_character* '"';
+  query_start = '?-';
+  question = '?';
+  binop = '=' | '!=';
 
 Ignored Tokens
-  blank, comment;
+  blank, comment, block_comment;
 
 Productions
+  program = toplevel+;
+  toplevel = {behaviour} behaviour
+  	   | {fact} fact
+  	   | {rule} rule
+	   | {query} query;
+
+  fact = atom dot;
+  rule = [head]:atom if_dl [body]:literals dot;
+  literals = literal literal_tail*;
+  literal_tail = comma literal;
+  literal = {positive} atom
+  	  | {negative} bang atom;
+  atom = {nullary} name
+       | {normal} name l_par terms r_par
+       | {builtin} [lhs]:term binop [rhs]:term;
+  terms = term term_tail*;
+  term_tail = comma term;
+  term = {var} question name
+       | {string} string_literal
+       | {composite} name l_par terms r_par;
+
+  query = query_start literals dot;
+
   behaviour = class_tok name extends? l_brace class_body r_brace;
   extends = extends_tok name;
   class_body = field* method*;

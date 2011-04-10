@@ -12,6 +12,26 @@ public interface Analysis extends Switch
     void setOut(Node node, Object o);
 
     void caseStart(Start node);
+    void caseAProgram(AProgram node);
+    void caseABehaviourToplevel(ABehaviourToplevel node);
+    void caseAFactToplevel(AFactToplevel node);
+    void caseARuleToplevel(ARuleToplevel node);
+    void caseAQueryToplevel(AQueryToplevel node);
+    void caseAFact(AFact node);
+    void caseARule(ARule node);
+    void caseALiterals(ALiterals node);
+    void caseALiteralTail(ALiteralTail node);
+    void caseAPositiveLiteral(APositiveLiteral node);
+    void caseANegativeLiteral(ANegativeLiteral node);
+    void caseANullaryAtom(ANullaryAtom node);
+    void caseANormalAtom(ANormalAtom node);
+    void caseABuiltinAtom(ABuiltinAtom node);
+    void caseATerms(ATerms node);
+    void caseATermTail(ATermTail node);
+    void caseAVarTerm(AVarTerm node);
+    void caseAStringTerm(AStringTerm node);
+    void caseACompositeTerm(ACompositeTerm node);
+    void caseAQuery(AQuery node);
     void caseABehaviour(ABehaviour node);
     void caseAExtends(AExtends node);
     void caseAClassBody(AClassBody node);
@@ -46,9 +66,16 @@ public interface Analysis extends Switch
     void caseTEq(TEq node);
     void caseTBlank(TBlank node);
     void caseTComment(TComment node);
+    void caseTBlockComment(TBlockComment node);
     void caseTComma(TComma node);
     void caseTGoal(TGoal node);
     void caseTSemi(TSemi node);
     void caseTName(TName node);
+    void caseTIfDl(TIfDl node);
+    void caseTBang(TBang node);
+    void caseTStringLiteral(TStringLiteral node);
+    void caseTQueryStart(TQueryStart node);
+    void caseTQuestion(TQuestion node);
+    void caseTBinop(TBinop node);
     void caseEOF(EOF node);
 }

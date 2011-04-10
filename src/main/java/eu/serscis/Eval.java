@@ -315,6 +315,9 @@ public class Eval {
 		FileReader reader = new FileReader(source);
 		try {
 			parse(reader);
+		} catch (Exception ex) {
+			System.out.println("Parsing error:\n" + ex + "\n" + source);
+			System.exit(1);
 		} finally {
 			reader.close();
 		}
@@ -350,6 +353,7 @@ public class Eval {
 		for (int t = 0; t < importResults.size(); t++) {
 			ITuple tuple = importResults.get(t);
 			String path = (String) tuple.get(0).getValue();
+			System.out.println("Importing " + path);
 
 			String[] components = path.split(":", 2);
 			if (components[0].equals("this")) {

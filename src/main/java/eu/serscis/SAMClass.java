@@ -80,18 +80,10 @@ class SAMClass {
 		return rel;
 	}
 
-	public SAMClass(Configuration configuration, String javaCode) throws Exception {
+	public SAMClass(Configuration configuration, ABehaviour behaviour) throws Exception {
 		this.configuration = configuration;
 
-		PushbackReader pbr = new PushbackReader(new StringReader(javaCode));
-		Lexer lexer = new Lexer(pbr);
-		Parser parser = new Parser(lexer);
-
-		System.out.println("Parsing " + javaCode);
-		Start start = parser.parse();
-		System.out.println("Parsed: " + start);
-
-		this.behaviour = (ABehaviour) start.getPBehaviour();
+		this.behaviour = behaviour;
 		System.out.println("Class: " + behaviour);
 
 		this.name = behaviour.getName().getText();
