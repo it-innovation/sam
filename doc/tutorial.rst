@@ -195,8 +195,7 @@ factory, "factory" is the factory, and "ref" will represent all other fields (ag
     private Object ref;
   
     public void run() {
-      myTask = factory();
-      myTask = myTask(myTask);
+      myTask = factory.newInstance();
     }
   }
 
@@ -220,8 +219,8 @@ we find that the required properties can't be verified::
     private Object ref;
   
     public void run() {
-      myTask = factory();
-      ref = ref(ref);
+      myTask = factory.newInstance();
+      ref = ref.invoke(ref);
     }
   }
 

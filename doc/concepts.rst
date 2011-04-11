@@ -119,11 +119,15 @@ cannot get access to the new objects created by "clientA":
   .. image:: _images/factory.png
 
 .. note::
-   These diagrams use the SAM colour scheme:
+   These diagrams use the SAM notation:
 
    * An object in red text indicates an object with unknown behaviour.
+   * A green arrow represents a reference that was invoked.
+   * A black arrow represents a reference that was not invoked.
    * A solid arrow represents a reference stored in a field on the object.
    * A dashed arrow represents a reference held in a local variable of an invocation.
+
+   See :ref:`graphing` for more information.
 
 Without modelling invocations we could only say that the factory creates newTasksForA
 and newTasksForOthers and that it may return both to its callers. The behaviour of an object
@@ -145,5 +149,5 @@ of the factory shown in green, rather than aggregated with the factory object as
 Here we can see that none of otherClient's invocations can get access to newTasksForA, and so
 otherClients itself cannot either.
 
-The dashed blue arrow from each invocation to the factory represents the "this" variable, giving
+The dashed arrow from each invocation to the factory represents the "this" variable, giving
 the invocation access to its object's fields.
