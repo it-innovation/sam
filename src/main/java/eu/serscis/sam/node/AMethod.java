@@ -9,9 +9,10 @@ public final class AMethod extends PMethod
 {
     private TPublicTok _publicTok_;
     private PType _type_;
-    private TName _name_;
+    private PPattern _name_;
     private TLPar _lPar_;
     private PParams _params_;
+    private TStar _star_;
     private TRPar _rPar_;
     private TLBrace _lBrace_;
     private PCode _code_;
@@ -25,9 +26,10 @@ public final class AMethod extends PMethod
     public AMethod(
         @SuppressWarnings("hiding") TPublicTok _publicTok_,
         @SuppressWarnings("hiding") PType _type_,
-        @SuppressWarnings("hiding") TName _name_,
+        @SuppressWarnings("hiding") PPattern _name_,
         @SuppressWarnings("hiding") TLPar _lPar_,
         @SuppressWarnings("hiding") PParams _params_,
+        @SuppressWarnings("hiding") TStar _star_,
         @SuppressWarnings("hiding") TRPar _rPar_,
         @SuppressWarnings("hiding") TLBrace _lBrace_,
         @SuppressWarnings("hiding") PCode _code_,
@@ -43,6 +45,8 @@ public final class AMethod extends PMethod
         setLPar(_lPar_);
 
         setParams(_params_);
+
+        setStar(_star_);
 
         setRPar(_rPar_);
 
@@ -63,6 +67,7 @@ public final class AMethod extends PMethod
             cloneNode(this._name_),
             cloneNode(this._lPar_),
             cloneNode(this._params_),
+            cloneNode(this._star_),
             cloneNode(this._rPar_),
             cloneNode(this._lBrace_),
             cloneNode(this._code_),
@@ -124,12 +129,12 @@ public final class AMethod extends PMethod
         this._type_ = node;
     }
 
-    public TName getName()
+    public PPattern getName()
     {
         return this._name_;
     }
 
-    public void setName(TName node)
+    public void setName(PPattern node)
     {
         if(this._name_ != null)
         {
@@ -197,6 +202,31 @@ public final class AMethod extends PMethod
         }
 
         this._params_ = node;
+    }
+
+    public TStar getStar()
+    {
+        return this._star_;
+    }
+
+    public void setStar(TStar node)
+    {
+        if(this._star_ != null)
+        {
+            this._star_.parent(null);
+        }
+
+        if(node != null)
+        {
+            if(node.parent() != null)
+            {
+                node.parent().removeChild(node);
+            }
+
+            node.parent(this);
+        }
+
+        this._star_ = node;
     }
 
     public TRPar getRPar()
@@ -308,6 +338,7 @@ public final class AMethod extends PMethod
             + toString(this._name_)
             + toString(this._lPar_)
             + toString(this._params_)
+            + toString(this._star_)
             + toString(this._rPar_)
             + toString(this._lBrace_)
             + toString(this._code_)
@@ -345,6 +376,12 @@ public final class AMethod extends PMethod
         if(this._params_ == child)
         {
             this._params_ = null;
+            return;
+        }
+
+        if(this._star_ == child)
+        {
+            this._star_ = null;
             return;
         }
 
@@ -393,7 +430,7 @@ public final class AMethod extends PMethod
 
         if(this._name_ == oldChild)
         {
-            setName((TName) newChild);
+            setName((PPattern) newChild);
             return;
         }
 
@@ -406,6 +443,12 @@ public final class AMethod extends PMethod
         if(this._params_ == oldChild)
         {
             setParams((PParams) newChild);
+            return;
+        }
+
+        if(this._star_ == oldChild)
+        {
+            setStar((TStar) newChild);
             return;
         }
 

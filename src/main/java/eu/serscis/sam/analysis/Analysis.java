@@ -32,6 +32,8 @@ public interface Analysis extends Switch
     void caseAStringTerm(AStringTerm node);
     void caseACompositeTerm(ACompositeTerm node);
     void caseAQuery(AQuery node);
+    void caseANamedPattern(ANamedPattern node);
+    void caseAAnyPattern(AAnyPattern node);
     void caseABehaviour(ABehaviour node);
     void caseAExtends(AExtends node);
     void caseAClassBody(AClassBody node);
@@ -62,7 +64,6 @@ public interface Analysis extends Switch
     void caseTClassTok(TClassTok node);
     void caseTLBrace(TLBrace node);
     void caseTRBrace(TRBrace node);
-    void caseTDot(TDot node);
     void caseTEq(TEq node);
     void caseTBlank(TBlank node);
     void caseTComment(TComment node);
@@ -70,12 +71,15 @@ public interface Analysis extends Switch
     void caseTComma(TComma node);
     void caseTGoal(TGoal node);
     void caseTSemi(TSemi node);
-    void caseTName(TName node);
     void caseTIfDl(TIfDl node);
     void caseTBang(TBang node);
     void caseTStringLiteral(TStringLiteral node);
     void caseTQueryStart(TQueryStart node);
     void caseTQuestion(TQuestion node);
     void caseTBinop(TBinop node);
+    void caseTName(TName node);
+    void caseTStar(TStar node);
+    void caseTDots(TDots node);
+    void caseTDot(TDot node);
     void caseEOF(EOF node);
 }

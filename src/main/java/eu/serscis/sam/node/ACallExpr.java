@@ -9,7 +9,7 @@ public final class ACallExpr extends PExpr
 {
     private TName _name_;
     private TDot _dot_;
-    private TName _method_;
+    private PPattern _method_;
     private TLPar _lPar_;
     private PArgs _args_;
     private TRPar _rPar_;
@@ -22,7 +22,7 @@ public final class ACallExpr extends PExpr
     public ACallExpr(
         @SuppressWarnings("hiding") TName _name_,
         @SuppressWarnings("hiding") TDot _dot_,
-        @SuppressWarnings("hiding") TName _method_,
+        @SuppressWarnings("hiding") PPattern _method_,
         @SuppressWarnings("hiding") TLPar _lPar_,
         @SuppressWarnings("hiding") PArgs _args_,
         @SuppressWarnings("hiding") TRPar _rPar_)
@@ -109,12 +109,12 @@ public final class ACallExpr extends PExpr
         this._dot_ = node;
     }
 
-    public TName getMethod()
+    public PPattern getMethod()
     {
         return this._method_;
     }
 
-    public void setMethod(TName node)
+    public void setMethod(PPattern node)
     {
         if(this._method_ != null)
         {
@@ -282,7 +282,7 @@ public final class ACallExpr extends PExpr
 
         if(this._method_ == oldChild)
         {
-            setMethod((TName) newChild);
+            setMethod((PPattern) newChild);
             return;
         }
 

@@ -108,23 +108,17 @@ error("Field on non-object", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Val
 
 
 /* Unknown behaviour */
-hasField("Unknown", "ref").
-field(?Object, "ref", ?Object) :- live(?Object), isA(?Object, "Unknown").
-//mayCall("Unknown", "ref", "ref", "ref").
-hasConstructor("Unknown", "Unknown.<init>").
-mayAccept("Unknown.<init>", "ref").
-mayAccept("Unknown.invoke", "ref").
-mayReturn("Unknown.invoke", "ref").
+class Unknown {
+	private Object ref;
 
-hasMethod("Unknown", "Unknown.invoke").
-methodName("Unknown.invoke", "invoke").
-hasCallSite("Unknown.invoke", "anycallsite").
-callsAnyMethod("anycallsite").
-mayCall("anycallsite", "ref").
+	public Unknown(Object args*) {
+		this.*(args);
+	}
 
-maySend(?Target, ?TargetInvocation, ?Method, ?Value) :-
-	didCall(?Caller, ?CallerInvocation, "anycallsite", ?Target, ?TargetInvocation, ?Method),
-	field(?Caller, "ref", ?Value).
-
-field(?Object, "ref", ?Value) :- didGet(?Object, ?AnyInvocation, "anycallsite", ?Value).
-field(?Object, "ref", ?Value) :- didAccept(?Object, ?AnyInvocation, "ref", ?Value).
+	public Object *(Object args*) {
+		ref = args;
+		ref = this;
+		ref = ref.*(ref);
+		return ref;
+	}
+}

@@ -123,7 +123,13 @@ class SAMClass {
 			AMethod method = (AMethod) m;
 			Set<String> locals = new HashSet<String>();
 
-			String methodName = method.getName().getText();
+			PPattern methodPattern = method.getName();
+			String methodName;
+			if (methodPattern instanceof ANamedPattern) {
+				methodName = ((ANamedPattern) methodPattern).getName().getText();
+			} else {
+				methodName = "*";
+			}
 			ITerm methodNameFull;
 
 			if (method.getType() == null) {

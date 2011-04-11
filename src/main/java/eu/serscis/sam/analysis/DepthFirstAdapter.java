@@ -545,6 +545,48 @@ public class DepthFirstAdapter extends AnalysisAdapter
         outAQuery(node);
     }
 
+    public void inANamedPattern(ANamedPattern node)
+    {
+        defaultIn(node);
+    }
+
+    public void outANamedPattern(ANamedPattern node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseANamedPattern(ANamedPattern node)
+    {
+        inANamedPattern(node);
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        outANamedPattern(node);
+    }
+
+    public void inAAnyPattern(AAnyPattern node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAAnyPattern(AAnyPattern node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAAnyPattern(AAnyPattern node)
+    {
+        inAAnyPattern(node);
+        if(node.getStar() != null)
+        {
+            node.getStar().apply(this);
+        }
+        outAAnyPattern(node);
+    }
+
     public void inABehaviour(ABehaviour node)
     {
         defaultIn(node);
@@ -729,6 +771,10 @@ public class DepthFirstAdapter extends AnalysisAdapter
         if(node.getParams() != null)
         {
             node.getParams().apply(this);
+        }
+        if(node.getStar() != null)
+        {
+            node.getStar().apply(this);
         }
         if(node.getRPar() != null)
         {

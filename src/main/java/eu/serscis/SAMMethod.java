@@ -77,6 +77,14 @@ class SAMMethod {
 		this.rules = rules;
 	}
 
+	private String parsePattern(PPattern parsed) {
+		if (parsed instanceof ANamedPattern) {
+			return ((ANamedPattern) parsed).getName().getText();
+		} else {
+			return "*";
+		}
+	}
+
 	public void addDatalog(AMethod m, ITerm methodNameFull) throws Exception {
 		AMethod method = (AMethod) m;
 		ACode code = (ACode) method.getCode();
@@ -122,9 +130,14 @@ class SAMMethod {
 					addArgs(callSite, (AArgs) callExpr.getArgs());
 
 					// callsMethod(callSite, method)
-					rel = parent.getRelation(facts, callsMethodP);
-					String targetMethod = callExpr.getMethod().getText();
-					rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetMethod)));
+					String targetMethod = parsePattern(callExpr.getMethod());
+					if ("*".equals(targetMethod)) {
+						rel = parent.getRelation(facts, callsAnyMethodP);
+						rel.add(BASIC.createTuple(TERM.createString(callSite)));
+					} else {
+						rel = parent.getRelation(facts, callsMethodP);
+						rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetMethod)));
+					}
 
 					valueP = didGetP;
 				} else if (expr instanceof ANewExpr) {
@@ -290,6 +303,8 @@ class SAMMethod {
 	 *   local(?Caller, ?CallerInvocation, 'var', ?Value)
 	 * or
 	 *   field(?Caller, 'var', ?Value)
+	 * or
+	 *   equals(?Caller, ?Value)  (for "this")
 	 * depending on whether varName refers to a local or a field.
 	 */
 	private ILiteral getValue(String sourceVar) {
@@ -306,6 +321,10 @@ class SAMMethod {
 					TERM.createString(sourceVar),
 					TERM.createVariable("Value"));
 			return BASIC.createLiteral(true, BASIC.createAtom(fieldP, tuple));
+		} else if (sourceVar.equals("this")) {
+			return BASIC.createLiteral(true, BUILTIN.createEqual(
+					TERM.createVariable("Caller"),
+					TERM.createVariable("Value")));
 		} else {
 			throw new RuntimeException("Unknown variable " + sourceVar);
 		}

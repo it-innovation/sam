@@ -61,8 +61,9 @@ methodMatches(?CallSite, ?Target, ?Method) :-	/* Call may call any method */
 	callsAnyMethod(?CallSite),
 	isA(?Target, ?TargetType),
 	hasMethod(?TargetType, ?Method).
-methodMatches(?CallSite, ?Target, "Unknown.invoke") :-	/* Any call to Unknown matches "invoke" */
-	hasCallSite(?Method, ?CallSite),
+methodMatches(?CallSite, ?Target, ?Method) :-	/* Any call matches a "*" method */
+	methodName(?Method, "*"),
+	hasCallSite(?CallerMethod, ?CallSite),
 	isA(?Target, "Unknown").
 
 /* Assume caller did a call if caller might do "Object resultVar = targetObject.do(argValue)" */

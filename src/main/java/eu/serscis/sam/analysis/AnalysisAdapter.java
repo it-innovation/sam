@@ -169,6 +169,16 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseANamedPattern(ANamedPattern node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAAnyPattern(AAnyPattern node)
+    {
+        defaultCase(node);
+    }
+
     public void caseABehaviour(ABehaviour node)
     {
         defaultCase(node);
@@ -314,11 +324,6 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
-    public void caseTDot(TDot node)
-    {
-        defaultCase(node);
-    }
-
     public void caseTEq(TEq node)
     {
         defaultCase(node);
@@ -354,11 +359,6 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
-    public void caseTName(TName node)
-    {
-        defaultCase(node);
-    }
-
     public void caseTIfDl(TIfDl node)
     {
         defaultCase(node);
@@ -385,6 +385,26 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseTBinop(TBinop node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTName(TName node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTStar(TStar node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTDots(TDots node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTDot(TDot node)
     {
         defaultCase(node);
     }
