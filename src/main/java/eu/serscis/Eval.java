@@ -119,7 +119,7 @@ public class Eval {
 		handleImports("initial", baseDir);
 
 		IKnowledgeBase initialKnowledgeBase = createKnowledgeBase();
-		graph(initialKnowledgeBase, new File("initial.dot"));
+		//graph(initialKnowledgeBase, new File("initial.dot"));
 
 		checkForErrors(initialKnowledgeBase, "in initial configuration");
 		handleImports("final", baseDir);
