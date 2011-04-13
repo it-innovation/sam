@@ -2,10 +2,6 @@
 
 /* Imports */
 
-import("initial", "sam:base.dl").
-import("initial", "sam:graph.dl").
-import("final", "sam:system.dl").
-
 import("initial", "this:sealers-common.dl").
 
 /* Config */

@@ -58,6 +58,7 @@ import org.deri.iris.rules.IRuleSafetyProcessor;
 import org.deri.iris.RuleUnsafeException;
 import org.deri.iris.compiler.BuiltinRegister;
 import static org.deri.iris.factory.Factory.*;
+import eu.serscis.Constants;
 
 public class Eval {
 	private Configuration configuration = createDefaultConfiguration();
@@ -93,6 +94,15 @@ public class Eval {
 		return config;
 	}
 
+	private IRelation getRelation(IPredicate pred) {
+		IRelation rel = facts.get(pred);
+		if (rel == null) {
+			rel = configuration.relationFactory.createRelation();
+			facts.put(pred, rel);
+		}
+		return rel;
+	}
+
 	public Eval(File scenario) throws Exception {
 		File baseDir = scenario.getParentFile();
 
@@ -100,6 +110,11 @@ public class Eval {
 
 		parse(scenario);
 		List<IQuery> queries = parser.getQueries();
+
+		IRelation defaultImports = getRelation(Constants.importP);
+		defaultImports.add(BASIC.createTuple(TERM.createString("initial"), TERM.createString("sam:base.dl")));
+		defaultImports.add(BASIC.createTuple(TERM.createString("initial"), TERM.createString("sam:graph.dl")));
+		defaultImports.add(BASIC.createTuple(TERM.createString("final"), TERM.createString("sam:system.dl")));
 
 		handleImports("initial", baseDir);
 

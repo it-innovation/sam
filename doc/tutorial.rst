@@ -69,14 +69,8 @@ See :ref:`Configuration` for more information.
 
 Running the scenario
 --------------------
-Adding a few standard imports to the top gives this complete model file (factory1.dl)::
+Putting these together gives this complete model file (examples/factory1.dl)::
 
-  /* Imports */
-  
-  import("initial", "sam:base.dl").
-  import("initial", "sam:graph.dl").
-  import("final", "sam:system.dl").
-  
   /* Behaviour */
   class Factory {
     public Task newInstance() {

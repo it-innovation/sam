@@ -1,11 +1,5 @@
 /* vim: set syntax=prolog : */
 
-/* Imports */
-
-import("initial", "sam:base.dl").
-import("initial", "sam:graph.dl").
-import("final", "sam:system.dl").
-
 /* Behaviour */
 class Factory {
   public Task newInstance() {
