@@ -78,9 +78,9 @@ Methods
 
    This method may perform the call described in `CallSite` (see :ref:`CallSite`).
 
-.. function:: mayReturn(?Method, ?TargetResultVar)
+.. function:: mayReturn(?Object, ?Invocation, ?Method, ?Value)
 
-   This method may return the contents of TargetResultVar to its callers.
+   This method invocation may return `Value` to its callers.
 
 .. _CallSite:
 
@@ -136,7 +136,10 @@ could be modelled with::
      methodName("Proxy.invoke", "invoke").
      mayAccept("Proxy.invoke", "msg", msg) :- isData(msg).
      hasCallSite("Proxy.invoke", "callsite1").
-     mayReturn("Proxy.invoke", "result").
+     mayReturn(?Object, ?Invocation, "Proxy.invoke", ?Result) :-
+       isA(?Object, "Proxy"),
+       live(?Object, ?Invocation),
+       local(?Object, ?Invocation, "result", ?Value).
 
      mayCall("callsite1", "myTarget").
      callsMethod("callsite1", "invoke").
@@ -145,7 +148,10 @@ could be modelled with::
 
      mayAccept("ProxyFactory.createProxy", "target").
      hasCallSite("ProxyFactory.createProxy", "callsite2").
-     mayReturn("ProxyFactory.createProxy", "proxy").
+     mayReturn(?Object, ?Invocation, "ProxyFactory.createProxy", ?Result) :-
+       isA(?Object, "ProxyFactory"),
+       live(?Object, ?Invocation),
+       local(?Object, ?Invocation, "proxy", ?Value).
 
      mayCreate("callsite2", "Proxy").
      mayPass("callsite2", "target").

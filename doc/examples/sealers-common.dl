@@ -37,9 +37,9 @@ class Unsealer {
     return value;
   }
 }
-local(?Unsealer, ?Invocation, "value", ?Value) :-
+local(?Unsealer, ?Invocation, "Unsealer.unseal.value", ?Value) :-
 	isA(?Unsealer, "Unsealer"),
-	local(?Unsealer, ?Invocation, "box", ?Box),
+	local(?Unsealer, ?Invocation, "Unsealer.unseal.box", ?Box),
 	field(?Box, "precious", ?Value).
 
 /* Config */

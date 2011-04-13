@@ -70,6 +70,7 @@ class SAMMethod {
 	private SAMClass parent;
 	private Map<IPredicate,IRelation> facts;
 	private List<IRule> rules;
+	private String localPrefix;
 
 	public SAMMethod(SAMClass parent, Map<IPredicate,IRelation> facts, List<IRule> rules) throws Exception {
 		this.parent = parent;
@@ -86,6 +87,8 @@ class SAMMethod {
 	}
 
 	public void addDatalog(AMethod m, ITerm methodNameFull) throws Exception {
+		this.localPrefix = methodNameFull.getValue() + ".";
+
 		AMethod method = (AMethod) m;
 		ACode code = (ACode) method.getCode();
 
@@ -189,11 +192,31 @@ class SAMMethod {
 			} else if (ps instanceof AReturnStatement) {
 				AReturnStatement s = (AReturnStatement) ps;
 
-				// mayReturn(method, var)
-				IRelation rel = parent.getRelation(facts, mayReturnP);
+				// mayReturn(?Target, ?TargetInvocation, ?Method, ?Value) :-
+				//	isA(?Target, name),
+				//	live(?Target, ?TargetInvocation),
+				//	(value)
+				ITuple tuple = BASIC.createTuple(
+						// XXX: badly named: should be Target, but getValue uses "Caller"
+						TERM.createVariable("Caller"),
+						TERM.createVariable("CallerInvocation"),
+						methodNameFull,
+						TERM.createVariable("Value"));
+
+				ILiteral head = BASIC.createLiteral(true, BASIC.createAtom(mayReturnP, tuple));
+
+				ILiteral isA = BASIC.createLiteral(true, BASIC.createAtom(isAP, BASIC.createTuple(
+							TERM.createVariable("Caller"),
+							TERM.createString(this.parent.name))));
+				ILiteral live = BASIC.createLiteral(true, BASIC.createAtom(live2P, BASIC.createTuple(
+							TERM.createVariable("Caller"),
+							TERM.createVariable("CallerInvocation"))));
+
 				String varName = s.getName().getText();
-				rel.add(BASIC.createTuple(methodNameFull,
-							  TERM.createString(varName)));
+
+				IRule rule = BASIC.createRule(makeList(head), makeList(isA, live, getValue(varName)));
+				System.out.println(rule);
+				rules.add(rule);
 			} else {
 				throw new RuntimeException("Unknown statement type: " + ps);
 			}
@@ -232,7 +255,7 @@ class SAMMethod {
 		if (locals.contains(varName)) {
 			ITuple tuple = BASIC.createTuple(TERM.createVariable("Caller"),
 							 TERM.createVariable("CallerInvocation"),
-							 TERM.createString(varName),
+							 TERM.createString(expandLocal(varName)),
 							 TERM.createVariable("Value"));
 			head = BASIC.createLiteral(true, BASIC.createAtom(localP, tuple));
 		} else if (parent.fields.contains(varName)) {
@@ -251,7 +274,7 @@ class SAMMethod {
 
 	private void addParam(ITerm method, IRelation acceptRel, PParam param) {
 		String name = ((AParam) param).getName().getText();
-		acceptRel.add(BASIC.createTuple(method, TERM.createString(name)));
+		acceptRel.add(BASIC.createTuple(method, TERM.createString(expandLocal(name))));
 
 		if (locals.contains(name)) {
 			throw new RuntimeException("Duplicate definition of local " + name);
@@ -318,7 +341,7 @@ class SAMMethod {
 			ITuple tuple = BASIC.createTuple(
 					TERM.createVariable("Caller"),
 					TERM.createVariable("CallerInvocation"),
-					TERM.createString(sourceVar),
+					TERM.createString(expandLocal(sourceVar)),
 					TERM.createVariable("Value"));
 			return BASIC.createLiteral(true, BASIC.createAtom(localP, tuple));
 		} else if (parent.fields.contains(sourceVar)) {
@@ -334,5 +357,9 @@ class SAMMethod {
 		} else {
 			throw new RuntimeException("Unknown variable " + sourceVar);
 		}
+	}
+
+	private String expandLocal(String local) {
+		return localPrefix + local;
 	}
 }

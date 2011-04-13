@@ -85,9 +85,7 @@ live(?Target, ?TargetInvocation) :-
 /* Caller might call some target which may return Value. */
 didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
-	isA(?Target, ?TargetType),
-	mayReturn(?Method, ?TargetResultVar),
-	value(?Target, ?TargetInvocation, ?TargetResultVar, ?ResultValue).
+	mayReturn(?Target, ?TargetInvocation, ?Method, ?ResultValue).
 
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
 	maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue),

@@ -37,6 +37,7 @@ public class Constants {
 	static public IPredicate importP = BASIC.createPredicate("import", 2);
 	static public IPredicate isTypeP = BASIC.createPredicate("isType", 1);
 	static public IPredicate isAP = BASIC.createPredicate("isA", 2);
+	static public IPredicate live2P = BASIC.createPredicate("live", 2);
 	static public IPredicate hasCallSiteP = BASIC.createPredicate("hasCallSite", 2);
 	static public IPredicate didCallP = BASIC.createPredicate("didCall", 6);
 	static public IPredicate didGetP = BASIC.createPredicate("didGet", 4);
@@ -47,7 +48,7 @@ public class Constants {
 	static public IPredicate maySendP = BASIC.createPredicate("maySend", 5);
 	static public IPredicate mayCreateP = BASIC.createPredicate("mayCreate", 2);
 	static public IPredicate mayAcceptP = BASIC.createPredicate("mayAccept", 2);
-	static public IPredicate mayReturnP = BASIC.createPredicate("mayReturn", 2);
+	static public IPredicate mayReturnP = BASIC.createPredicate("mayReturn", 4);
 	static public IPredicate hasFieldP = BASIC.createPredicate("hasField", 2);
 	static public IPredicate hasConstructorP = BASIC.createPredicate("hasConstructor", 2);
 	static public IPredicate hasMethodP = BASIC.createPredicate("hasMethod", 2);
