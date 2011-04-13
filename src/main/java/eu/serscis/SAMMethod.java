@@ -215,7 +215,7 @@ class SAMMethod {
 				String varName = s.getName().getText();
 
 				IRule rule = BASIC.createRule(makeList(head), makeList(isA, live, getValue(varName)));
-				System.out.println(rule);
+				//System.out.println(rule);
 				rules.add(rule);
 			} else {
 				throw new RuntimeException("Unknown statement type: " + ps);
@@ -268,7 +268,7 @@ class SAMMethod {
 		}
 
 		IRule rule = BASIC.createRule(makeList(head), body);
-		System.out.println(rule);
+		//System.out.println(rule);
 		rules.add(rule);
 	}
 
@@ -309,7 +309,7 @@ class SAMMethod {
 
 		IRule rule = BASIC.createRule(makeList(head), makeList(didCall, getValue(varName)));
 		rules.add(rule);
-		System.out.println(rule);
+		//System.out.println(rule);
 	}
 
 	private void addArgs(String callSite, AArgs args) {

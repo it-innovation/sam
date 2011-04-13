@@ -84,7 +84,7 @@ class SAMClass {
 		this.configuration = configuration;
 
 		this.behaviour = behaviour;
-		System.out.println("Class: " + behaviour);
+		//System.out.println("Class: " + behaviour);
 
 		this.name = behaviour.getName().getText();
 	}
