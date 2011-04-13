@@ -53,10 +53,6 @@ realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?CallerInvocation) :
 	isInvocation(?CallerInvocation),
 	!invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?AnyTargetInvocation).
 
-/* static predicates on types */
-
-isType(?Type) :- isA(?AnyObject, ?Type).
-
 
 /* predicates on objects */
 
@@ -106,6 +102,7 @@ objectHasField(?Object, ?Field) :- isA(?Object, ?Type), hasField(?Type, ?Field).
 error("Undeclared field", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !objectHasField(?Object, ?Var).
 error("Field on non-object", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !isObject(?Object).
 
+error("Object has undefined type", ?Object, ?Type) :- isA(?Object, ?Type), !isType(?Type).
 
 /* Unknown behaviour */
 class Unknown {

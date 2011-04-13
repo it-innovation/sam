@@ -35,6 +35,7 @@ import static org.deri.iris.factory.Factory.*;
 
 public class Constants {
 	static public IPredicate importP = BASIC.createPredicate("import", 2);
+	static public IPredicate isTypeP = BASIC.createPredicate("isType", 1);
 	static public IPredicate isAP = BASIC.createPredicate("isA", 2);
 	static public IPredicate hasCallSiteP = BASIC.createPredicate("hasCallSite", 2);
 	static public IPredicate didCallP = BASIC.createPredicate("didCall", 6);

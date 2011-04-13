@@ -90,6 +90,9 @@ class SAMClass {
 	}
 
 	public void addDatalog(Map<IPredicate,IRelation> facts, List<IRule> rules) throws Exception {
+		IRelation isType = getRelation(facts, isTypeP);
+		isType.add(BASIC.createTuple(TERM.createString(name)));
+
 		AExtends extend = (AExtends) behaviour.getExtends();
 		if (extend != null) {
 			String superclass = extend.getName().getText();
