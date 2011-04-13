@@ -63,6 +63,7 @@ import org.deri.iris.compiler.BuiltinRegister;
 import static org.deri.iris.factory.Factory.*;
 import eu.serscis.sam.lexer.Lexer;
 import eu.serscis.sam.parser.Parser;
+import eu.serscis.sam.parser.ParserException;
 import static eu.serscis.Constants.*;
 
 class SAMMethod {
@@ -146,8 +147,6 @@ class SAMMethod {
 				} else if (expr instanceof ANewExpr) {
 					ANewExpr newExpr = (ANewExpr) expr;
 
-					String varName = assign.getName().getText();
-
 					// mayCreate(classname, newType, var)
 					rel = parent.getRelation(facts, mayCreateP);
 					String newType = ((AType) newExpr.getType()).getName().getText();
@@ -170,7 +169,7 @@ class SAMMethod {
 									TERM.createVariable("Caller"),
 									TERM.createString(parent.name))));
 
-					String sourceVar = copyExpr.getName().getText();
+					TName sourceVar = copyExpr.getName();
 					assignVar(assign, makeList(isA, getValue(sourceVar)));
 				} else {
 					throw new RuntimeException("Unknown expr type: " + expr);
@@ -212,9 +211,7 @@ class SAMMethod {
 							TERM.createVariable("Caller"),
 							TERM.createVariable("CallerInvocation"))));
 
-				String varName = s.getName().getText();
-
-				IRule rule = BASIC.createRule(makeList(head), makeList(isA, live, getValue(varName)));
+				IRule rule = BASIC.createRule(makeList(head), makeList(isA, live, getValue(s.getName())));
 				//System.out.println(rule);
 				rules.add(rule);
 			} else {
@@ -289,7 +286,7 @@ class SAMMethod {
 	 * 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	 *	local|field,
 	 */
-	private void addArg(String callSite, int pos, String varName) {
+	private void addArg(String callSite, int pos, TName varName) throws ParserException {
 		ILiteral head = BASIC.createLiteral(true, maySendP, BASIC.createTuple(
 					TERM.createVariable("Target"),
 					TERM.createVariable("TargetInvocation"),
@@ -312,18 +309,18 @@ class SAMMethod {
 		//System.out.println(rule);
 	}
 
-	private void addArgs(String callSite, AArgs args) {
+	private void addArgs(String callSite, AArgs args) throws ParserException {
 		if (args == null) {
 			return;
 		}
 		int pos = 0;
-		String arg0 = args.getName().getText();
+		TName arg0 = args.getName();
 
 		addArg(callSite, pos, arg0);
 
 		for (PArgsTail tail : args.getArgsTail()) {
 			pos += 1;
-			String arg = ((AArgsTail) tail).getName().getText();
+			TName arg = ((AArgsTail) tail).getName();
 			addArg(callSite, pos, arg);
 		}
 	}
@@ -336,7 +333,8 @@ class SAMMethod {
 	 *   equals(?Caller, ?Value)  (for "this")
 	 * depending on whether varName refers to a local or a field.
 	 */
-	private ILiteral getValue(String sourceVar) {
+	private ILiteral getValue(TName var) throws ParserException {
+		String sourceVar = var.getText();
 		if (locals.contains(sourceVar)) {
 			ITuple tuple = BASIC.createTuple(
 					TERM.createVariable("Caller"),
@@ -355,7 +353,7 @@ class SAMMethod {
 					TERM.createVariable("Caller"),
 					TERM.createVariable("Value")));
 		} else {
-			throw new RuntimeException("Unknown variable " + sourceVar);
+			throw new ParserException(var, "Unknown variable " + sourceVar);
 		}
 	}
 

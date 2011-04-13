@@ -28,6 +28,8 @@
 
 package eu.serscis;
 
+import eu.serscis.sam.node.Token;
+import java.io.BufferedReader;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -325,13 +327,30 @@ public class Eval {
 		}
 	}
 
+	/* Get the nth line of a file. */
+	private String getLine(File source, int line) throws Exception {
+		 BufferedReader in = new BufferedReader(new FileReader(source));
+		 for (int i = 1; i < line; i++) {
+			  in.readLine();
+		 }
+		 return in.readLine();
+	}
+
 	/* Extend rules and facts with information from source. */
 	private void parse(File source) throws Exception {
 		FileReader reader = new FileReader(source);
 		try {
 			parse(reader);
 		} catch (eu.serscis.sam.parser.ParserException ex) {
-			System.out.println("Parsing error:\n" + ex + "\n" + source);
+			Token t = ex.getToken();
+			System.out.println("\nParsing error: " + ex.getMessage());
+			System.out.println(getLine(source, t.getLine()));
+			String spaces = "";
+			for (int i = t.getPos(); i > 1; i--) {
+				spaces += " ";
+			}
+			System.out.println(spaces + "^");
+			System.out.println(source + ":" + t.getLine());
 			System.exit(1);
 		} finally {
 			reader.close();
