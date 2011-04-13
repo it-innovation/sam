@@ -88,6 +88,7 @@ Productions
   code = statement*;
   assign = type? name eq;
   statement = {assign} assign? expr semi
+            | {decl} type name semi
 	    | {return} return name semi;
   expr = {new} new type l_par args? r_par
        | {call} name dot [method]:pattern l_par args? r_par

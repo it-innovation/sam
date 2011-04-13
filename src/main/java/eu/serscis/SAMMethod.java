@@ -93,11 +93,11 @@ class SAMMethod {
 		IRelation acceptRel = parent.getRelation(facts, mayAcceptP);
 		AParams params = (AParams) method.getParams();
 		if (params != null) {
-			addParam(methodNameFull, acceptRel, locals, params.getParam());
+			addParam(methodNameFull, acceptRel, params.getParam());
 
 			for (PParamsTail tail : params.getParamsTail()) {
 				AParam param2 = (AParam) ((AParamsTail) tail).getParam();
-				addParam(methodNameFull, acceptRel, locals, param2);
+				addParam(methodNameFull, acceptRel, param2);
 			}
 		}
 
@@ -183,7 +183,9 @@ class SAMMethod {
 
 					assignVar(assign, makeList(value));
 				}
-
+			} else if (ps instanceof ADeclStatement) {
+				ADeclStatement decl = (ADeclStatement) ps;
+				declareLocal(decl.getType(), decl.getName());
 			} else if (ps instanceof AReturnStatement) {
 				AReturnStatement s = (AReturnStatement) ps;
 
@@ -198,17 +200,21 @@ class SAMMethod {
 		}
 	}
 
-	private void declareLocal(Set<String> locals, AAssign assign) {
+	private void declareLocal(AAssign assign) {
 		AType type = (AType) assign.getType();
 		if (type != null) {
-			String name = assign.getName().getText();
-			if (locals.contains(name)) {
-				throw new RuntimeException("Duplicate definition of local " + name);
-			} else if (parent.fields.contains(name)) {
-				throw new RuntimeException("Local variable shadows field of same name: " + name);
-			} else {
-				locals.add(name);
-			}
+			declareLocal(type, assign.getName());
+		}
+	}
+
+	private void declareLocal(PType type, TName aName) {
+		String name = aName.getText();
+		if (locals.contains(name)) {
+			throw new RuntimeException("Duplicate definition of local " + name);
+		} else if (parent.fields.contains(name)) {
+			throw new RuntimeException("Local variable shadows field of same name: " + name);
+		} else {
+			locals.add(name);
 		}
 	}
 
@@ -220,7 +226,7 @@ class SAMMethod {
 	private void assignVar(AAssign assign, List<ILiteral> body) {
 		ILiteral head;
 
-		declareLocal(locals, assign);
+		declareLocal(assign);
 
 		String varName = assign.getName().getText();
 		if (locals.contains(varName)) {
@@ -243,7 +249,7 @@ class SAMMethod {
 		rules.add(rule);
 	}
 
-	private void addParam(ITerm method, IRelation acceptRel, Set<String> locals, PParam param) {
+	private void addParam(ITerm method, IRelation acceptRel, PParam param) {
 		String name = ((AParam) param).getName().getText();
 		acceptRel.add(BASIC.createTuple(method, TERM.createString(name)));
 

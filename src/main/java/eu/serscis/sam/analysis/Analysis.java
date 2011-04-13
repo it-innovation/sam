@@ -43,6 +43,7 @@ public interface Analysis extends Switch
     void caseACode(ACode node);
     void caseAAssign(AAssign node);
     void caseAAssignStatement(AAssignStatement node);
+    void caseADeclStatement(ADeclStatement node);
     void caseAReturnStatement(AReturnStatement node);
     void caseANewExpr(ANewExpr node);
     void caseACallExpr(ACallExpr node);

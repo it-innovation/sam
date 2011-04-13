@@ -330,7 +330,7 @@ public class Eval {
 		FileReader reader = new FileReader(source);
 		try {
 			parse(reader);
-		} catch (Exception ex) {
+		} catch (eu.serscis.sam.parser.ParserException ex) {
 			System.out.println("Parsing error:\n" + ex + "\n" + source);
 			System.exit(1);
 		} finally {

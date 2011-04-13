@@ -33,14 +33,14 @@ class Sealer {
 
 class Unsealer {
   public Object unseal(Box box) {
+    Object value;
+    return value;
   }
 }
-mayReturn("Unsealer.unseal", "value").
 local(?Unsealer, ?Invocation, "value", ?Value) :-
 	isA(?Unsealer, "Unsealer"),
 	local(?Unsealer, ?Invocation, "box", ?Box),
 	field(?Box, "precious", ?Value).
-?- local("unsealer", ?TargetInvocation, ?ParamVar, ?ArgValue).
 
 /* Config */
 initialObject("sealer", "Sealer").

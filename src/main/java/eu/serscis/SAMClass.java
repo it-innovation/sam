@@ -124,7 +124,6 @@ class SAMClass {
 		List<PMethod> methods = body.getMethod();
 		for (PMethod m : methods) {
 			AMethod method = (AMethod) m;
-			Set<String> locals = new HashSet<String>();
 
 			PPattern methodPattern = method.getName();
 			String methodName;

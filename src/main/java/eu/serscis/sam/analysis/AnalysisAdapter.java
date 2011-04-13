@@ -224,6 +224,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseADeclStatement(ADeclStatement node)
+    {
+        defaultCase(node);
+    }
+
     public void caseAReturnStatement(AReturnStatement node)
     {
         defaultCase(node);

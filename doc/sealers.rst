@@ -20,17 +20,18 @@ We can augment the Unsealer's code with some Datalog::
 
   class Unsealer {
     public Object unseal(Box box) {
+      Object value;
+      return value;
     }
   }
-  mayReturn("Unsealer.unseal", "value").
   local(?Unsealer, ?Invocation, "value", ?Value) :-
   	isA(?Unsealer, "Unsealer"),
   	local(?Unsealer, ?Invocation, "box", ?Box),
   	field(?Box, "precious", ?Value).
 
-This says that `Unsealer.unseal` may return a local variable called `value`, and
-that `value` has a particular value if the `box` passed as an input parameter has
-a field called `precious` with that value.
+This says that `Unsealer.unseal`'s local variable `value` may have a particular
+value if the `box` passed as an input parameter has a field called `precious`
+with that value.
 
 Notice that we could not implement a real unsealer this way, because it wouldn't
 have access to the box's private field. However, having created this unsealer, we
