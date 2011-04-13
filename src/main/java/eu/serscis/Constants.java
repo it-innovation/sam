@@ -42,7 +42,7 @@ public class Constants {
 	static public IPredicate didCallP = BASIC.createPredicate("didCall", 6);
 	static public IPredicate didGetP = BASIC.createPredicate("didGet", 4);
 	static public IPredicate didCreateP = BASIC.createPredicate("didCreate", 4);
-	static public IPredicate mayCallP = BASIC.createPredicate("mayCall", 2);
+	static public IPredicate mayCallObjectP = BASIC.createPredicate("mayCallObject", 4);
 	static public IPredicate callsMethodP = BASIC.createPredicate("callsMethod", 2);
 	static public IPredicate callsAnyMethodP = BASIC.createPredicate("callsAnyMethod", 1);
 	static public IPredicate maySendP = BASIC.createPredicate("maySend", 5);

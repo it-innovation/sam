@@ -22,12 +22,6 @@ class ClientA {
   }
 }
 
-// myTask = myTask.invoke(myTask)
-mayCall("ClientA", "factory", "ref", "myTask").
-
-// ref = ref(ref)
-mayCall("ClientA", "ref", "ref", "ref").
-
 /* Config */
 
 initialObject("clientA", "ClientA").

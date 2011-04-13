@@ -85,7 +85,6 @@ public class Debugger {
 	private Map<IPredicate,DebugRelation> debugRelations = new HashMap<IPredicate,DebugRelation>();
 	private Map<ICompiledRule,IRule> sourceRules = new HashMap<ICompiledRule,IRule>();
 	private int counter = 0;
-	static private IPredicate mayCall = BASIC.createPredicate("mayCall", 2);
 	static private IPredicate mayPass = BASIC.createPredicate("mayPass", 2);
 	static private IPredicate mayStore = BASIC.createPredicate("mayStore", 2);
 	static private IPredicate didCall = BASIC.createPredicate("didCall", 6);
@@ -441,11 +440,7 @@ public class Debugger {
 
 			ITuple tuple = problem.getAtom().getTuple();
 			IPredicate p = problem.getAtom().getPredicate();
-			if (p.equals(mayCall)) {
-				String callSite = tuple.get(0).getValue().toString();
-				String target = tuple.get(1).getValue().toString();
-				//steps.add("   (" + callSite + " may call " + target + ")");
-			} else if (p.getPredicateSymbol().equals("maySend")) {
+			if (p.getPredicateSymbol().equals("maySend")) {
 				String target = tuple.get(0).getValue().toString();
 				String method = tuple.get(2).getValue().toString();
 				String arg;

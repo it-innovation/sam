@@ -32,7 +32,6 @@
 /* Refinements */
 mayAccept(?Method, ?ParamVar, ?Value) :- mayAccept(?Method, ?ParamVar), isObject(?Value).
 
-//mayCall(?Type, ?TargetVar, ?Method, ?ArgVar, ?ResultVar) :- mayCall(?Type, ?TargetVar, ?ArgVar, ?ResultVar), isMethod(?Method).
 
 /* Access control */
 
@@ -41,15 +40,6 @@ accessAllowed(?Caller, ?Target, ?Method) :-
 	isObject(?Caller),
 	isA(?Target, ?TargetType),
 	hasMethod(?TargetType, ?Method).
-
-/* The concrete objects that may be called, based on the behaviour (in terms of variables) and the values of those variables. */
-mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target) :-
-	live(?Caller, ?CallerInvocation),
-	isA(?Caller, ?Type),
-	hasMethod(?Type, ?Method),
-	hasCallSite(?Method, ?CallSite),
-	mayCall(?CallSite, ?TargetVar),
-	value(?Caller, ?CallerInvocation, ?TargetVar, ?Target).
 
 /* Which methods may CallSite invoke on Target */
 methodMatches(?CallSite, ?Target, ?Method) :-	/* Exact match */

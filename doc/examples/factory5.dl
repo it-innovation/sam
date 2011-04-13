@@ -36,7 +36,7 @@ initialInvocation("otherClients", "Other").
 
 field("clientA", "ref", "otherClients").
 
-invocationObject("clientA", "Other", ?CallSite, "A") :- mayCall(?CallSite, "factory").
+invocationObject("clientA", "Other", "ClientA.run-1", "A").
 
 /* Goals */
 

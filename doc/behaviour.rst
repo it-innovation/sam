@@ -86,9 +86,9 @@ Methods
 
 Call-sites
 ----------
-.. function:: mayCall(?CallSite, ?TargetVar)
+.. function:: mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target)
 
-   This call invokes the object stored in TargetVar.
+   This call invokes `Target`.
 
 .. function:: callsMethod(?CallSite, ?MethodName)
 
@@ -141,7 +141,7 @@ could be modelled with::
        live(?Object, ?Invocation),
        local(?Object, ?Invocation, "result", ?Value).
 
-     mayCall("callsite1", "myTarget").
+     mayCall("callsite1", "myTarget").	// FIXME
      callsMethod("callsite1", "invoke").
      mayPass("callsite1", "msg").
      local(?Caller, ?Invocation, "result", ?Value) :- didGet(?Caller, ?Invocation, "callsite1", ?Value).

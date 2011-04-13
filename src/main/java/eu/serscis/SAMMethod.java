@@ -126,10 +126,32 @@ class SAMMethod {
 				if (expr instanceof ACallExpr) {
 					ACallExpr callExpr = (ACallExpr) expr;
 
-					// mayCall(callSite, var)
-					rel = parent.getRelation(facts, mayCallP);
-					String targetVar = callExpr.getName().getText();
-					rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetVar)));
+					// mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Value) :-
+					//	isA(?Caller, ?Type),
+					//	live(?Caller, ?CallerInvocation),
+					//	hasMethod(?Type, ?Method),
+					//	hasCallSite(?Method, ?CallSite),
+					//	mayCall(?CallSite, ?TargetVar),
+					//	value(?Caller, ?CallerInvocation, ?TargetVar, ?Value).
+
+					ITuple tuple = BASIC.createTuple(
+							TERM.createVariable("Caller"),
+							TERM.createVariable("CallerInvocation"),
+							TERM.createString(callSite),
+							TERM.createVariable("Value"));
+
+					ILiteral head = BASIC.createLiteral(true, BASIC.createAtom(mayCallObjectP, tuple));
+
+					ILiteral isA = BASIC.createLiteral(true, BASIC.createAtom(isAP, BASIC.createTuple(
+								TERM.createVariable("Caller"),
+								TERM.createString(this.parent.name))));
+					ILiteral live = BASIC.createLiteral(true, BASIC.createAtom(live2P, BASIC.createTuple(
+								TERM.createVariable("Caller"),
+								TERM.createVariable("CallerInvocation"))));
+
+					IRule rule = BASIC.createRule(makeList(head), makeList(isA, live, getValue(callExpr.getName())));
+					System.out.println(rule);
+					rules.add(rule);
 
 					addArgs(callSite, (AArgs) callExpr.getArgs());
 

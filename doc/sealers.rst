@@ -53,13 +53,7 @@ unseal the correct value:
 To prove this, we needed to aggregate calls to the unsealer separately for the two groups
 of clients, and to the sealer separately for the two values being sealed::
 
-  invocationObject("sender", "A", ?CallSite, "1") :-
-  	mayPass(?CallSite, "precious").
-  invocationObject("sender", "A", ?CallSite, "2") :-
-  	mayPass(?CallSite, "precious2").
-  
-  invocationObject("sender", "A", ?CallSite, "1") :-
-  	mayCall(?CallSite, "others").
-  invocationObject("sender", "A", ?CallSite, "2") :-
-  	mayCall(?CallSite, "others2").
-
+  invocationObject("sender", "A", "Sender.test-1", "1").
+  invocationObject("sender", "A", "Sender.test-2", "2").
+  invocationObject("sender", "A", "Sender.test-3", "1").
+  invocationObject("sender", "A", "Sender.test-4", "2").

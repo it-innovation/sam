@@ -254,7 +254,9 @@ We will therefore put `clientA`'s initial invocation into the "Other" group, and
 tell SAM to put only the `factory.invoke()` invocation under "A"::
 
   initialInvocation("clientA", "Other").
-  invocationObject("clientA", "Other", ?CallSite, "A") :- mayCall(?CallSite, "factory").
+  invocationObject("clientA", "Other", "ClientA.run-1", "A").
+
+The third argument to `invocationObject` identifies the call: the first call in the `ClientA.run` method.
 
 With this division, the desired propery can be proved. `clientA` can now get access to tasks created
 by other parties, but others still can't get access to the tasks by `clientA`.
