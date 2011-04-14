@@ -45,10 +45,13 @@ Tokens
   query_start = '?-';
   question = '?';
   binop = '=' | '!=';
-  name = char(char|digit|underscode)*;
   star = '*';
   dots = '...';
   dot = '.';
+  import_tok = 'import';
+
+  // must be last
+  name = char(char|digit|underscode)*;
 
 Ignored Tokens
   blank, comment, block_comment;
@@ -56,9 +59,12 @@ Ignored Tokens
 Productions
   program = toplevel+;
   toplevel = {behaviour} behaviour
+	   | {import} import
   	   | {fact} fact
   	   | {rule} rule
 	   | {query} query;
+
+  import = import_tok string_literal dot;
 
   fact = atom dot;
   rule = [head]:atom if_dl [body]:literals dot;

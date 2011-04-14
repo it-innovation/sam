@@ -64,7 +64,6 @@ import eu.serscis.Constants;
 
 public class Eval {
 	private Model model = new Model(createDefaultConfiguration());
-	private SAMParser parser = new SAMParser(model);
 
 	public static void main(String[] args) throws Exception {
 		if (args.length != 1) {
@@ -99,27 +98,32 @@ public class Eval {
 
 		ClassLoader loader = Eval.class.getClassLoader();
 
-		parse(scenario);
+		parseResource("base.dl");
+		parseResource("graph.dl");
+
+		SAMParser parser = new SAMParser(model, scenario);
 		List<IQuery> queries = parser.getQueries();
-
-		IRelation defaultImports = model.getRelation(Constants.importP);
-		defaultImports.add(BASIC.createTuple(TERM.createString("initial"), TERM.createString("sam:base.dl")));
-		defaultImports.add(BASIC.createTuple(TERM.createString("initial"), TERM.createString("sam:graph.dl")));
-		defaultImports.add(BASIC.createTuple(TERM.createString("final"), TERM.createString("sam:system.dl")));
-
-		handleImports("initial", baseDir);
 
 		IKnowledgeBase initialKnowledgeBase = model.createKnowledgeBase();
 		//graph(initialKnowledgeBase, new File("initial.dot"));
 
 		checkForErrors(initialKnowledgeBase, "in initial configuration");
-		handleImports("final", baseDir);
+		parseResource("system.dl");
 
 		IKnowledgeBase finalKnowledgeBase = model.createKnowledgeBase();
 		finalKnowledgeBase = doDebugging(finalKnowledgeBase);
 		graph(finalKnowledgeBase, new File("access.dot"));
 		doQueries(finalKnowledgeBase, queries);
 		checkForErrors(finalKnowledgeBase, "after applying propagation rules");
+	}
+
+	private void parseResource(String resource) throws Exception {
+		InputStream is = getClass().getClassLoader().getResourceAsStream(resource);
+		try {
+			SAMParser parser = new SAMParser(model, new InputStreamReader(is));
+		} finally {
+			is.close();
+		}
 	}
 
 	static private void doQueries(IKnowledgeBase knowledgeBase, List<IQuery> queries) throws Exception {
@@ -294,70 +298,6 @@ public class Eval {
 		int result = proc.waitFor();
 		if (result != 0) {
 			throw new RuntimeException("dot failed to run: exit status = " + result);
-		}
-	}
-
-	/* Get the nth line of a file. */
-	private String getLine(File source, int line) throws Exception {
-		 BufferedReader in = new BufferedReader(new FileReader(source));
-		 for (int i = 1; i < line; i++) {
-			  in.readLine();
-		 }
-		 return in.readLine();
-	}
-
-	/* Extend rules and facts with information from source. */
-	private void parse(File source) throws Exception {
-		FileReader reader = new FileReader(source);
-		try {
-			parse(reader);
-		} catch (eu.serscis.sam.parser.ParserException ex) {
-			Token t = ex.getToken();
-			System.out.println("\nParsing error: " + ex.getMessage());
-			System.out.println(getLine(source, t.getLine()));
-			String spaces = "";
-			for (int i = t.getPos(); i > 1; i--) {
-				spaces += " ";
-			}
-			System.out.println(spaces + "^");
-			System.out.println(source + ":" + t.getLine());
-			System.exit(1);
-		} finally {
-			reader.close();
-		}
-	}
-
-	private void parse(Reader source) throws Exception {
-		parser.parse(source);
-	}
-
-	private void handleImports(String stage, File baseDir) throws Exception {
-		IKnowledgeBase knowledgeBase = model.createKnowledgeBase();
-
-		ITuple terms = BASIC.createTuple(TERM.createString(stage), TERM.createVariable("Path"));
-		IPredicate importPredicate = BASIC.createPredicate("import", 2);
-		ILiteral importLiteral = BASIC.createLiteral(true, importPredicate, terms);
-		IQuery importQuery = BASIC.createQuery(importLiteral);
-		IRelation importResults = knowledgeBase.execute(importQuery);
-
-		for (int t = 0; t < importResults.size(); t++) {
-			ITuple tuple = importResults.get(t);
-			String path = (String) tuple.get(0).getValue();
-			//System.out.println("Importing " + path);
-
-			String[] components = path.split(":", 2);
-			if (components[0].equals("this")) {
-				parse(new File(baseDir, components[1]));
-			} else if (components[0].equals("sam")) {
-				InputStream is = getClass().getClassLoader().getResourceAsStream(components[1]);
-				try {
-					parse(new InputStreamReader(is));
-				} finally {
-					is.close();
-				}
-			} else {
-				throw new RuntimeException("Missing prefix on import: " + components[0]);
-			}
 		}
 	}
 }

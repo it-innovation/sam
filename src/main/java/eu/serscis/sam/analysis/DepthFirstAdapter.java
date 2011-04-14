@@ -81,6 +81,27 @@ public class DepthFirstAdapter extends AnalysisAdapter
         outABehaviourToplevel(node);
     }
 
+    public void inAImportToplevel(AImportToplevel node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAImportToplevel(AImportToplevel node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAImportToplevel(AImportToplevel node)
+    {
+        inAImportToplevel(node);
+        if(node.getImport() != null)
+        {
+            node.getImport().apply(this);
+        }
+        outAImportToplevel(node);
+    }
+
     public void inAFactToplevel(AFactToplevel node)
     {
         defaultIn(node);
@@ -142,6 +163,35 @@ public class DepthFirstAdapter extends AnalysisAdapter
             node.getQuery().apply(this);
         }
         outAQueryToplevel(node);
+    }
+
+    public void inAImport(AImport node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAImport(AImport node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAImport(AImport node)
+    {
+        inAImport(node);
+        if(node.getImportTok() != null)
+        {
+            node.getImportTok().apply(this);
+        }
+        if(node.getStringLiteral() != null)
+        {
+            node.getStringLiteral().apply(this);
+        }
+        if(node.getDot() != null)
+        {
+            node.getDot().apply(this);
+        }
+        outAImport(node);
     }
 
     public void inAFact(AFact node)

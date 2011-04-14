@@ -28,6 +28,7 @@
 
 package eu.serscis;
 
+import java.io.BufferedReader;
 import java.util.HashSet;
 import java.util.Set;
 import eu.serscis.sam.node.*;
@@ -67,17 +68,40 @@ import eu.serscis.sam.parser.Parser;
 import static eu.serscis.Constants.*;
 
 public class SAMParser {
-	public List<IQuery> queries;
+	public List<IQuery> queries = new LinkedList<IQuery>();
 	private Model model;
 	private BuiltinRegister builtinRegister = new BuiltinRegister();
+	private File dir;
 
-	public SAMParser(Model model) {
+	public SAMParser(Model model, File path) throws Exception {
 		this.model = model;
+		dir = path.getParentFile();
+
+		FileReader reader = new FileReader(path);
+		try {
+			parse(reader);
+		} catch (eu.serscis.sam.parser.ParserException ex) {
+			Token t = ex.getToken();
+			System.out.println("\nParsing error: " + ex.getMessage());
+			System.out.println(getLine(path, t.getLine()));
+			String spaces = "";
+			for (int i = t.getPos(); i > 1; i--) {
+				spaces += " ";
+			}
+			System.out.println(spaces + "^");
+			System.out.println(path + ":" + t.getLine());
+			System.exit(1);
+		} finally {
+			reader.close();
+		}
 	}
 
-	public void parse(Reader source) throws Exception {
-		queries = new LinkedList<IQuery>();
+	public SAMParser(Model model, Reader source) throws Exception {
+		this.model = model;
+		parse(source);
+	}
 
+	private void parse(Reader source) throws Exception {
 		Map<String,SAMClass> classDefinitions = new HashMap<String,SAMClass>();
 
 		PushbackReader pbr = new PushbackReader(source);
@@ -100,6 +124,8 @@ public class SAMParser {
 				addRule((ARule) ((ARuleToplevel) toplevel).getRule());
 			} else if (toplevel instanceof AQueryToplevel) {
 				addQuery((AQuery) ((AQueryToplevel) toplevel).getQuery());
+			} else if (toplevel instanceof AImportToplevel) {
+				addImport((AImport) ((AImportToplevel) toplevel).getImport());
 			} else {
 				throw new RuntimeException("UNKNOWN " + toplevel + ", " + toplevel.getClass());
 			}
@@ -114,10 +140,15 @@ public class SAMParser {
 		return queries;
 	}
 
+	private String getString(TStringLiteral literal) {
+		String str = literal.getText();
+		return str.substring(1, str.length() - 1);	// TODO: ignores escapes
+	}
+
 	private ITerm parseTerm(PTerm parsed) {
 		if (parsed instanceof AStringTerm) {
-			String str = ((AStringTerm) parsed).getStringLiteral().getText();
-			return TERM.createString(str.substring(1, str.length() - 1));	// TODO: ignores escapes
+			String str = getString(((AStringTerm) parsed).getStringLiteral());
+			return TERM.createString(str);
 		} else if (parsed instanceof AVarTerm) {
 			String name = ((AVarTerm) parsed).getName().getText();
 			return TERM.createVariable(name);
@@ -223,5 +254,20 @@ public class SAMParser {
 		IQuery q = BASIC.createQuery(literals);
 
 		queries.add(q);
+	}
+
+	private void addImport(AImport aImport) throws Exception {
+		String path = getString(aImport.getStringLiteral());
+
+		new SAMParser(model, new File(dir, path));
+	}
+
+	/* Get the nth line of a file. */
+	private String getLine(File source, int line) throws Exception {
+		 BufferedReader in = new BufferedReader(new FileReader(source));
+		 for (int i = 1; i < line; i++) {
+			  in.readLine();
+		 }
+		 return in.readLine();
 	}
 }

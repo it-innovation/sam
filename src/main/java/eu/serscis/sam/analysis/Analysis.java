@@ -14,9 +14,11 @@ public interface Analysis extends Switch
     void caseStart(Start node);
     void caseAProgram(AProgram node);
     void caseABehaviourToplevel(ABehaviourToplevel node);
+    void caseAImportToplevel(AImportToplevel node);
     void caseAFactToplevel(AFactToplevel node);
     void caseARuleToplevel(ARuleToplevel node);
     void caseAQueryToplevel(AQueryToplevel node);
+    void caseAImport(AImport node);
     void caseAFact(AFact node);
     void caseARule(ARule node);
     void caseALiterals(ALiterals node);
@@ -78,9 +80,10 @@ public interface Analysis extends Switch
     void caseTQueryStart(TQueryStart node);
     void caseTQuestion(TQuestion node);
     void caseTBinop(TBinop node);
-    void caseTName(TName node);
     void caseTStar(TStar node);
     void caseTDots(TDots node);
     void caseTDot(TDot node);
+    void caseTImportTok(TImportTok node);
+    void caseTName(TName node);
     void caseEOF(EOF node);
 }

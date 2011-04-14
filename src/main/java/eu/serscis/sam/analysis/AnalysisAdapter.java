@@ -79,6 +79,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseAImportToplevel(AImportToplevel node)
+    {
+        defaultCase(node);
+    }
+
     public void caseAFactToplevel(AFactToplevel node)
     {
         defaultCase(node);
@@ -90,6 +95,11 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseAQueryToplevel(AQueryToplevel node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAImport(AImport node)
     {
         defaultCase(node);
     }
@@ -394,11 +404,6 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
-    public void caseTName(TName node)
-    {
-        defaultCase(node);
-    }
-
     public void caseTStar(TStar node)
     {
         defaultCase(node);
@@ -410,6 +415,16 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseTDot(TDot node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTImportTok(TImportTok node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTName(TName node)
     {
         defaultCase(node);
     }
