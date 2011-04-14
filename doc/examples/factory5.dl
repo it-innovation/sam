@@ -31,17 +31,17 @@ initialObject("factory", "Factory").
 field("clientA", "factory", "factory").
 field("otherClients", "ref", "factory").
 
-initialInvocation("clientA", "Other").
-initialInvocation("otherClients", "Other").
+initialInvocation("clientA", "other").
+initialInvocation("otherClients", "other").
 
 field("clientA", "ref", "otherClients").
 
-invocationObject("clientA", "Other", "ClientA.run-1", "A").
+invocationObject("clientA", "other", "ClientA.run-1", "a").
 
 /* Goals */
 
-denyAccess("otherClients", "TaskA").
-requireAccess("clientA", "TaskA").
+denyAccess("otherClients", "aTask").
+requireAccess("clientA", "aTask").
 
 error("otherClient may access some clientA.myTask") :-
 	getsAccess("otherClients", ?Value),

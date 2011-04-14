@@ -112,7 +112,7 @@ realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild) :-
 	mayCreate(?CallSite, ?ChildType),
 	isInvocation(?Invocation),
 	!newObject(?Object, ?Invocation, ?ChildType, ?AnyChild),
-	STRING_CONCAT(?ChildType, ?Invocation, ?NewChild).
+	STRING_CONCAT(?Invocation, ?ChildType, ?NewChild).
 
 /* Sanity checking */
 

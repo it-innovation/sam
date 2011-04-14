@@ -20,5 +20,5 @@ initialObject("factory", "Factory").
 field("clientA", "ref", "factory").
 field("otherClients", "ref", "factory").
 
-initialInvocation("clientA", "A").
-initialInvocation("otherClients", "Other").
+initialInvocation("clientA", "a").
+initialInvocation("otherClients", "other").

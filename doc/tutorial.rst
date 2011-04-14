@@ -48,8 +48,8 @@ We can now define the initial configuration. We'll model two client objects: cli
   initialObject("otherClients", "Unknown").
   initialObject("factory", "Factory").
 
-  initialInvocation("clientA", "A").
-  initialInvocation("otherClients", "Other").
+  initialInvocation("clientA", "a").
+  initialInvocation("otherClients", "other").
 
 The :func:`initialObject` lines define the three objects and their types.
 
@@ -91,8 +91,8 @@ Putting these together gives this complete model file (examples/factory1.dl)::
   field("clientA", "ref", "factory").
   field("otherClients", "ref", "factory").
   
-  initialInvocation("clientA", "A").
-  initialInvocation("otherClients", "Other").
+  initialInvocation("clientA", "a").
+  initialInvocation("otherClients", "other").
 
 You can run the model like this::
 
@@ -104,9 +104,9 @@ You should find you now have an output file called "access.dot.png":
 
 This shows that, given the behaviour and initial configuration:
 
-* Some new Task objects will be created. SAM aggregates all those that may be created in context "A" as `TaskA` and those created in "Other" as `TaskOther`.
-* clientA may get access to the `TaskA` tasks.
-* otherClients may get access to the `TaskOther` tasks.
+* Some new Task objects will be created. SAM aggregates all those that may be created in context "a" as `aTask` and those created in "other" as `otherTask`.
+* clientA may get access to the `aTask` tasks.
+* otherClients may get access to the `otherTask` tasks.
 * The factory gets a reference to all tasks but doesn't store the reference (the
   dashed arrows indicate references held in local variables rather than in fields).
 
@@ -123,10 +123,10 @@ Because our model is an over-approximation of the real system, safety properties
 a much stronger guarantee than liveness properties. Liveness properties are mainly useful
 as a sanity check that the model isn't too restrictive.
 
-For example, we can require that no other clients can get access to A's tasks::
+For example, we can require that no other clients can get access to a's tasks::
 
-  denyAccess('otherClients', 'TaskA').
-  requireAccess('clientA', 'TaskA').
+  denyAccess('otherClients', 'aTask').
+  requireAccess('clientA', 'aTask').
 
 Unconfined clients
 ------------------
@@ -148,29 +148,29 @@ When we model this, SAM will detect that our safety goal is not met, and prints 
 example of how the problem can occur::
 
   debug()
-     <= getsAccess('otherClients', 'TaskA')
-        <= otherClients: received TaskA (as an argument)
+     <= getsAccess('otherClients', 'aTask')
+        <= otherClients: received aTask (as an argument)
            <= clientA: otherClients.invoke()
-           <= clientA: got TaskA
+           <= clientA: got aTask
               <= clientA: factory.newInstance()
-              <= factory: new TaskA()
+              <= factory: new aTask()
                  <= clientA: factory.newInstance()
 
   === Errors detected after applying propagation rules ===
 
-  ('unsafe access may be possible', 'otherClients', 'TaskA')
+  ('unsafe access may be possible', 'otherClients', 'aTask')
 
 You can read this as:
 
-* The debugger was triggered because `otherClients` got access to `TaskA`, which happened because:
+* The debugger was triggered because `otherClients` got access to `aTask`, which happened because:
 
-  * `otherClients` got passed `TaskA` as a method argument, which happened because:
+  * `otherClients` got passed `aTask` as a method argument, which happened because:
 
     * `clientA` invoked `otherClients`, and
-    * `clientA` had got `TaskA`, because:
+    * `clientA` had got `aTask`, because:
 
       * `clientA` had called `factory.newInstance` and
-      * `factory` had created `TaskA`.
+      * `factory` had created `aTask`.
 
 The red arrow in the diagram corresponds to this problem, and the orange arrows show the
 calls in the debugger's example:
@@ -225,23 +225,23 @@ Turning on display of invocations shows the reason:
 The example reported is::
 
   debug()
-     <= getsAccess('otherClients', 'TaskA')
-        <= otherClients: got TaskA
+     <= getsAccess('otherClients', 'aTask')
+        <= otherClients: got aTask
            <= otherClients: factory.newInstance()
               <= clientA: otherClients.invoke()
-           <= factory: new TaskA()
+           <= factory: new aTask()
               <= clientA: factory.newInstance()
 
-* `otherClients` got `TaskA` because:
+* `otherClients` got `aTask` because:
   
   * it called `factory.newInstance()`, which it did because:
 
     * `clientA` invoked `otherClients`; and
 
-  * the factory created `TaskA`.
+  * the factory created `aTask`.
 
 The problem here is that the default aggregation strategy groups all calls resulting from
-actions by `clientA` under the "A" context. Because `clientA` invoked `otherClients`, tasks
+actions by `clientA` under the "a" context. Because `clientA` invoked `otherClients`, tasks
 created directly by `clientA` are grouped with tasks created by `otherClients`. Often this is
 what you want (for example, if `otherClients` was instead some kind of proxy), but in this case
 we want to treat them separately.
@@ -250,11 +250,11 @@ In fact, clientA may end up with references to two different groups of Tasks: th
 `clientA` created directly using the factory, and those received from calls to other
 objects.
 
-We will therefore put `clientA`'s initial invocation into the "Other" group, and
-tell SAM to put only the `factory.invoke()` invocation under "A"::
+We will therefore put `clientA`'s initial invocation into the "other" group, and
+tell SAM to put only the `factory.invoke()` invocation under "a"::
 
-  initialInvocation("clientA", "Other").
-  invocationObject("clientA", "Other", "ClientA.run-1", "A").
+  initialInvocation("clientA", "other").
+  invocationObject("clientA", "other", "ClientA.run-1", "a").
 
 The third argument to `invocationObject` identifies the call: the first call in the `ClientA.run` method.
 
@@ -265,8 +265,8 @@ by other parties, but others still can't get access to the tasks by `clientA`.
 
 We need to be careful here. While playing around with aggregation
 strategies always leads to a correct over-approximation of the behaviour of the
-system, note that our goal refers to `TaskA`. We have proved that `otherClients` never
-gets access to `TaskA`, but which real tasks are in `TaskA` now, and which are in `TaskOther`?
+system, note that our goal refers to `aTask`. We have proved that `otherClients` never
+gets access to `aTask`, but which real tasks are in `aTask` now, and which are in `otherTask`?
 
 We can state our goal more explicitly by saying that `otherClients` must not get access to any
 reference that `clientA` may store in `myTask`::
@@ -274,4 +274,4 @@ reference that `clientA` may store in `myTask`::
   denyAccess('otherClients', ?Value) :- field('clientA', 'myTask', ?Value).
 
 This means that if there is some way that `clientA` could create a new task, aggregated under
-`TaskOther`, and store it in `myTask` then we would still detect the problem.
+`otherTask`, and store it in `myTask` then we would still detect the problem.

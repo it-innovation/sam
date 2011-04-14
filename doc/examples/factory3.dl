@@ -31,12 +31,12 @@ initialObject("factory", "Factory").
 field("clientA", "factory", "factory").
 field("otherClients", "ref", "factory").
 
-initialInvocation("clientA", "A").
-initialInvocation("otherClients", "Other").
+initialInvocation("clientA", "a").
+initialInvocation("otherClients", "other").
 
 field("clientA", "ref", "otherClients").
 
 /* Goals */
 
-denyAccess("otherClients", "TaskA").
-requireAccess("clientA", "TaskA").
+denyAccess("otherClients", "aTask").
+requireAccess("clientA", "aTask").

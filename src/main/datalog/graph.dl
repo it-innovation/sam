@@ -140,7 +140,10 @@ shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation) :-
 shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation) :- live(?Source, ?SourceInvocation), showInvocation(?Target, ?TargetInvocation).
 
 /* Which graph object is used to represent this invocation. */
-graphInvocation(?Object, ?Invocation, ?Str) :- showInvocation(?Object, ?Invocation), STRING_CONCAT(?Object, ?Invocation, ?Str).
+graphInvocation(?Object, ?Invocation, ?Str) :-
+	showInvocation(?Object, ?Invocation),
+	STRING_CONCAT(?Object, "#", ?Prefix),
+	STRING_CONCAT(?Prefix, ?Invocation, ?Str).
 graphInvocation(?Object, ?Invocation, ?Object) :- live(?Object, ?Invocation), !showInvocation(?Object, ?Invocation).
 
 graphInvocationEdge(?GraphSourceNode, ?GraphTargetNode) :-
