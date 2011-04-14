@@ -2,7 +2,7 @@
 
 /* Imports */
 
-import("initial", "this:sealers-common.dl").
+import("initial", "this:sealers-common.sam").
 
 /* Config */
 initialObject("precious1", "Unknown").

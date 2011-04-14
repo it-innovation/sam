@@ -69,7 +69,7 @@ See :ref:`Configuration` for more information.
 
 Running the scenario
 --------------------
-Putting these together gives this complete model file (examples/factory1.dl)::
+Putting these together gives this complete model file (examples/factory1.sam)::
 
   /* Behaviour */
   class Factory {
@@ -96,7 +96,7 @@ Putting these together gives this complete model file (examples/factory1.dl)::
 
 You can run the model like this::
 
-  $ sam factory1.dl
+  $ sam factory1.sam
 
 You should find you now have an output file called "access.dot.png":
 

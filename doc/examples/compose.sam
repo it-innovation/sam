@@ -1,0 +1,67 @@
+class ReadOnly {
+    private Object myUnderlying;
+
+    public ReadOnly(Object underlying) {
+        myUnderlying = underlying;
+    }
+
+    public Object get() {
+        Object value = myUnderlying.get();
+        return value;
+    }
+
+    public Object readOnly() {
+        return this;    // Already read-only
+    }
+}
+
+class Logger {
+    private Object myUnderlying;
+
+    public Logger(Object underlying) {
+        myUnderlying = underlying;
+    }
+
+    public Object *(Object arg*) {
+        Object value = myUnderlying.*(arg);
+        return value;
+    }
+}
+
+class Directory {
+    private Object myFile;
+
+    public void put(Object file) {
+        myFile = file;
+    }
+
+    public Object get() {
+        return myFile;
+    }
+
+    public Object readOnly() {
+        ReadOnly ro = new ReadOnly(this);
+        return ro;
+    }
+}
+
+class Owner {
+    private Object delegate;
+
+    public void test() {
+        Directory dir = new Directory();
+        Object readOnly = dir.readOnly();
+        Object loggedReadOnly = new Logger(readOnly);
+
+        delegate.read(loggedReadOnly);
+    }
+}
+
+initialObject("owner", "Owner").
+initialObject("delegate", "Unknown").
+
+field("owner", "delegate", "delegate").
+
+initialInvocation("owner", "a").
+
+denyAccess("delegate", "aReadOnly").
