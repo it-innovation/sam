@@ -48,6 +48,7 @@ Tokens
   star = '*';
   dots = '...';
   dot = '.';
+  declare_tok = 'declare';
   import_tok = 'import';
 
   // must be last
@@ -62,10 +63,12 @@ Productions
 	   | {import} import
   	   | {fact} fact
   	   | {rule} rule
+	   | {declare} declare
 	   | {query} query;
 
   import = import_tok string_literal dot;
 
+  declare = declare_tok atom dot;
   fact = atom dot;
   rule = [head]:atom if_dl [body]:literals dot;
   literals = literal literal_tail*;

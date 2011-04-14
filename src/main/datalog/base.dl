@@ -28,13 +28,60 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
+/* declarations */
 
-/* predicates
+declare field(?Object, ?VarName, ?Value).
+declare getsAccess(?SourceObject, ?TargetObject).
+declare hasRef(?Object, ?Invocation, ?Value).
+declare haveBadAccess(?SourceObject, ?TargetObject).
+declare isA(?Object, ?Type).
+declare isInvocation(?Invocation).
+declare isObject(?X).
+declare live(?Object).
+declare live(?Object, ?Invocation).
+declare local(?Object, ?Invocation, ?VarName, ?Value).
+declare objectHasField(?Object, ?Field).
+declare realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
+declare invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
+declare value(?Object, ?Invocation, ?Var, ?Value).
+declare hasMethod(?Type, ?Method).
+declare hasCallSite(?Type, ?Method).
+declare initialObject(?Object, ?Type).
+declare initialInvocation(?Object, ?Invocation).
+declare realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild).
+declare denyAccess(?Object, ?Target).
+declare requireAccess(?Object, ?Target).
+declare hasField(?Type, ?Name).
+declare isType(?Type).
+declare missingGoodAccess(?SourceObject, ?TargetObject).
 
-local(?Invocation, ?VarName, ?Value)
-field(?Object, ?VarName, ?Value)
+declare graphNode(?Node, ?Attrs).
+declare graphEdge(?Source, ?Target, ?Attrs).
+declare debugEdge(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation).
+declare showInvocation(?Object, ?Invocation).
 
-*/
+declare didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
+declare mayAccept(?Method, ?ParamVar).
+declare mayAccept(?Method, ?ParamVar, ?Value).
+
+declare accessControlOn.
+declare accessAllowed(?Caller, ?Target, ?Method).
+declare methodMatches(?CallSite, ?Target, ?Method).
+declare callsMethod(?CallSite, ?MethodName).
+declare methodName(?Method, ?MethodName).
+declare callsAnyMethod(?CallSite).
+declare mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target).
+declare didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild).
+declare hasConstructor(?ChildType, ?Method).
+declare didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue).
+declare mayReturn(?Target, ?TargetInvocation, ?Method, ?ResultValue).
+declare didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue).
+declare maySend(?Target, ?TargetInvocation, ?Method, ?ArgValue).
+declare maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue).
+declare mayCreate(?CallSite, ?ChildType).
+declare newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
+declare debug.
+
 
 /* aggregation */
 

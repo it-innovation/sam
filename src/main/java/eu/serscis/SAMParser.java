@@ -28,6 +28,7 @@
 
 package eu.serscis;
 
+import eu.serscis.sam.parser.ParserException;
 import java.io.BufferedReader;
 import java.util.HashSet;
 import java.util.Set;
@@ -124,6 +125,8 @@ public class SAMParser {
 				addRule((ARule) ((ARuleToplevel) toplevel).getRule());
 			} else if (toplevel instanceof AQueryToplevel) {
 				addQuery((AQuery) ((AQueryToplevel) toplevel).getQuery());
+			} else if (toplevel instanceof ADeclareToplevel) {
+				addDeclare((ADeclare) ((ADeclareToplevel) toplevel).getDeclare());
 			} else if (toplevel instanceof AImportToplevel) {
 				addImport((AImport) ((AImportToplevel) toplevel).getImport());
 			} else {
@@ -168,7 +171,11 @@ public class SAMParser {
 		return BASIC.createTuple(terms);
 	}
 
-	private IAtom parseAtom(PAtom parsed) {
+	private IAtom parseAtom(PAtom parsed) throws ParserException {
+		return parseAtom(parsed, false);
+	}
+
+	private IAtom parseAtom(PAtom parsed, boolean declaration) throws ParserException {
 		if (parsed instanceof ANormalAtom) {
 			ANormalAtom atom = (ANormalAtom) parsed;
 			ITuple terms = parseTerms((ATerms) atom.getTerms());
@@ -178,6 +185,12 @@ public class SAMParser {
 			Class<?> builtinClass = builtinRegister.getBuiltinClass(name);
 			if (builtinClass == null) {
 				IPredicate predicate = BASIC.createPredicate(name, terms.size());
+
+				if (declaration) {
+					declare(predicate);
+				} else {
+					requireDeclared(atom.getName(), predicate);
+				}
 
 				return BASIC.createAtom(predicate, terms);
 			} else {
@@ -194,6 +207,12 @@ public class SAMParser {
 			String name = atom.getName().getText();
 			IPredicate predicate = BASIC.createPredicate(name, 0);
 
+			if (declaration) {
+				declare(predicate);
+			} else {
+				requireDeclared(atom.getName(), predicate);
+			}
+
 			return BASIC.createAtom(predicate, BASIC.createTuple());
 		} else {
 			ABuiltinAtom atom = (ABuiltinAtom) parsed;
@@ -209,7 +228,7 @@ public class SAMParser {
 		}
 	}
 
-	private void addFact(AFact fact) {
+	private void addFact(AFact fact) throws ParserException {
 		IAtom atom = parseAtom(fact.getAtom());
 
 		//System.out.println(" --> " + atom);
@@ -218,7 +237,7 @@ public class SAMParser {
 		rel.add(atom.getTuple());
 	}
 
-	private ILiteral parseLiteral(PLiteral parsed) {
+	private ILiteral parseLiteral(PLiteral parsed) throws ParserException {
 		if (parsed instanceof APositiveLiteral) {
 			return BASIC.createLiteral(true, parseAtom(((APositiveLiteral) parsed).getAtom()));
 		} else {
@@ -226,7 +245,7 @@ public class SAMParser {
 		}
 	}
 
-	private List<ILiteral> parseLiterals(ALiterals parsed) {
+	private List<ILiteral> parseLiterals(ALiterals parsed) throws ParserException {
 		List<ILiteral> literals = new LinkedList<ILiteral>();
 
 		literals.add(parseLiteral(parsed.getLiteral()));
@@ -237,7 +256,7 @@ public class SAMParser {
 		return literals;
 	}
 
-	private void addRule(ARule rule) {
+	private void addRule(ARule rule) throws ParserException {
 		ILiteral head = BASIC.createLiteral(true, parseAtom(rule.getHead()));
 
 		List<ILiteral> body = parseLiterals((ALiterals) rule.getBody());
@@ -248,12 +267,35 @@ public class SAMParser {
 		model.rules.add(r);
 	}
 
-	private void addQuery(AQuery query) {
+	private void addQuery(AQuery query) throws ParserException {
 		List<ILiteral> literals = parseLiterals((ALiterals) query.getLiterals());
 
 		IQuery q = BASIC.createQuery(literals);
 
 		queries.add(q);
+	}
+
+	private void addDeclare(ADeclare declare) throws ParserException {
+		parseAtom(declare.getAtom(), true);
+	}
+
+	private void declare(IPredicate pred) {
+		if (model.declared.contains(pred)) {
+			throw new RuntimeException("Predicate already declared: " + pred);
+		}
+
+		//System.out.println("Declare " + pred + "/" + pred.getArity());
+		model.declared.add(pred);
+	}
+
+	private void requireDeclared(Token tok, IPredicate pred) throws ParserException {
+		if ("error".equals(pred.getPredicateSymbol())) {
+			return;
+		}
+
+		if (!model.declared.contains(pred)) {
+			throw new ParserException(tok, "Predicate not declared: " + pred + "/" + pred.getArity());
+		}
 	}
 
 	private void addImport(AImport aImport) throws Exception {

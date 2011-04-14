@@ -28,6 +28,17 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
+declare calledEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
+declare calledEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode).
+declare fieldEdge(?Source, ?Target).
+declare graphInvocationEdge(?GraphSourceNode, ?GraphTargetNode).
+declare graphInvocation(?Object, ?Invocation, ?Str).
+declare localEdge(?GraphSourceNode, ?Target).
+declare problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
+declare problemEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode).
+declare shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation).
+declare uncalledEdge(?Source, ?Target).
+declare problemEdge(?Source, ?Target).
 
 /* Graphing */
 
@@ -75,6 +86,9 @@ problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode) :-
 	graphInvocation(?Target, ?TargetInvocation, ?GraphTargetNode),
 	field(?Source, ?AnyVar, ?Target),
 	debugEdge(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation).
+
+problemEdge(?Source, ?Target) :- problemEdgeViaField(?Source, ?Target).
+problemEdge(?Source, ?Target) :- problemEdgeViaLocal(?Source, ?Target).
 
 /* (invocation to object) */
 uncalledEdge(?GraphSourceNode, ?Target) :-

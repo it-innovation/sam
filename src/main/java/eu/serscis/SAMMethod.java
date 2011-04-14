@@ -146,7 +146,7 @@ class SAMMethod {
 								TERM.createVariable("CallerInvocation"))));
 
 					IRule rule = BASIC.createRule(makeList(head), makeList(isA, live, getValue(callExpr.getName())));
-					System.out.println(rule);
+					//System.out.println(rule);
 					parent.model.rules.add(rule);
 
 					addArgs(callSite, (AArgs) callExpr.getArgs());

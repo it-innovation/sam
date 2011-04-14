@@ -145,6 +145,27 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         outARuleToplevel(node);
     }
 
+    public void inADeclareToplevel(ADeclareToplevel node)
+    {
+        defaultIn(node);
+    }
+
+    public void outADeclareToplevel(ADeclareToplevel node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseADeclareToplevel(ADeclareToplevel node)
+    {
+        inADeclareToplevel(node);
+        if(node.getDeclare() != null)
+        {
+            node.getDeclare().apply(this);
+        }
+        outADeclareToplevel(node);
+    }
+
     public void inAQueryToplevel(AQueryToplevel node)
     {
         defaultIn(node);
@@ -193,6 +214,35 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
             node.getImportTok().apply(this);
         }
         outAImport(node);
+    }
+
+    public void inADeclare(ADeclare node)
+    {
+        defaultIn(node);
+    }
+
+    public void outADeclare(ADeclare node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseADeclare(ADeclare node)
+    {
+        inADeclare(node);
+        if(node.getDot() != null)
+        {
+            node.getDot().apply(this);
+        }
+        if(node.getAtom() != null)
+        {
+            node.getAtom().apply(this);
+        }
+        if(node.getDeclareTok() != null)
+        {
+            node.getDeclareTok().apply(this);
+        }
+        outADeclare(node);
     }
 
     public void inAFact(AFact node)

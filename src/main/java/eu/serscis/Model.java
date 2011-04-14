@@ -66,6 +66,7 @@ public class Model {
 	final Configuration configuration;
 	final List<IRule> rules = new LinkedList<IRule>();
 	final Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
+	final Set<IPredicate> declared = new HashSet<IPredicate>();
 
 	public Model(Configuration configuration) {
 		this.configuration = configuration;

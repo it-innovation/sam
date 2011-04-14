@@ -94,12 +94,22 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseADeclareToplevel(ADeclareToplevel node)
+    {
+        defaultCase(node);
+    }
+
     public void caseAQueryToplevel(AQueryToplevel node)
     {
         defaultCase(node);
     }
 
     public void caseAImport(AImport node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseADeclare(ADeclare node)
     {
         defaultCase(node);
     }
@@ -415,6 +425,11 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseTDot(TDot node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTDeclareTok(TDeclareTok node)
     {
         defaultCase(node);
     }
