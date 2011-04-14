@@ -63,10 +63,8 @@ import static org.deri.iris.factory.Factory.*;
 import eu.serscis.Constants;
 
 public class Eval {
-	private Configuration configuration = createDefaultConfiguration();
-	private List<IRule> rules = new LinkedList<IRule>();
-	private Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
-	private SAMParser parser = new SAMParser(configuration);
+	private Model model = new Model(createDefaultConfiguration());
+	private SAMParser parser = new SAMParser(model);
 
 	public static void main(String[] args) throws Exception {
 		if (args.length != 1) {
@@ -96,15 +94,6 @@ public class Eval {
 		return config;
 	}
 
-	private IRelation getRelation(IPredicate pred) {
-		IRelation rel = facts.get(pred);
-		if (rel == null) {
-			rel = configuration.relationFactory.createRelation();
-			facts.put(pred, rel);
-		}
-		return rel;
-	}
-
 	public Eval(File scenario) throws Exception {
 		File baseDir = scenario.getParentFile();
 
@@ -113,37 +102,24 @@ public class Eval {
 		parse(scenario);
 		List<IQuery> queries = parser.getQueries();
 
-		IRelation defaultImports = getRelation(Constants.importP);
+		IRelation defaultImports = model.getRelation(Constants.importP);
 		defaultImports.add(BASIC.createTuple(TERM.createString("initial"), TERM.createString("sam:base.dl")));
 		defaultImports.add(BASIC.createTuple(TERM.createString("initial"), TERM.createString("sam:graph.dl")));
 		defaultImports.add(BASIC.createTuple(TERM.createString("final"), TERM.createString("sam:system.dl")));
 
 		handleImports("initial", baseDir);
 
-		IKnowledgeBase initialKnowledgeBase = createKnowledgeBase();
+		IKnowledgeBase initialKnowledgeBase = model.createKnowledgeBase();
 		//graph(initialKnowledgeBase, new File("initial.dot"));
 
 		checkForErrors(initialKnowledgeBase, "in initial configuration");
 		handleImports("final", baseDir);
 
-		IKnowledgeBase finalKnowledgeBase = createKnowledgeBase();
+		IKnowledgeBase finalKnowledgeBase = model.createKnowledgeBase();
 		finalKnowledgeBase = doDebugging(finalKnowledgeBase);
 		graph(finalKnowledgeBase, new File("access.dot"));
 		doQueries(finalKnowledgeBase, queries);
 		checkForErrors(finalKnowledgeBase, "after applying propagation rules");
-	}
-
-	private IKnowledgeBase createKnowledgeBase() throws Exception {
-		Map<IPredicate,IRelation> workingFacts = new HashMap<IPredicate,IRelation>();
-
-		/* Make a copy of the initial facts (otherwise the debugger doesn't work). */
-		for (Map.Entry<IPredicate,IRelation> entry: facts.entrySet()) {
-			IRelation copy = configuration.relationFactory.createRelation();
-			copy.addAll(entry.getValue());
-			workingFacts.put(entry.getKey(), copy);
-		}
-
-		return KnowledgeBaseFactory.createKnowledgeBase(workingFacts, rules, configuration);
 	}
 
 	static private void doQueries(IKnowledgeBase knowledgeBase, List<IQuery> queries) throws Exception {
@@ -232,18 +208,12 @@ public class Eval {
 			return knowledgeBase;
 		}
 
-		IRelation debugEdges = configuration.relationFactory.createRelation();
+		IRelation debugEdges = model.getRelation(Constants.debugEdgeP);
 		System.out.println("Starting debugger...");
-		Debugger debugger = new Debugger(rules, facts);
+		Debugger debugger = new Debugger(model);
 		debugger.debug(debugL, debugEdges);
 
-		IPredicate debugEdgeP = BASIC.createPredicate("debugEdge", 5);
-		if (facts.containsKey(debugEdgeP)) {
-			throw new RuntimeException("facts already contains " + debugEdgeP);
-		}
-		facts.put(debugEdgeP, debugEdges);
-
-		return createKnowledgeBase();
+		return model.createKnowledgeBase();
 	}
 
 	static private void formatResults(IRelation m )
@@ -359,24 +329,10 @@ public class Eval {
 
 	private void parse(Reader source) throws Exception {
 		parser.parse(source);
-
-		Map<IPredicate,IRelation> newFacts = parser.facts;
-		List<IRule> newRules = parser.rules;
-
-		rules.addAll(newRules);
-
-		for (Map.Entry<IPredicate,IRelation> entry : newFacts.entrySet()) {
-			IRelation existing = facts.get(entry.getKey());
-			if (existing == null) {
-				facts.put(entry.getKey(), entry.getValue());
-			} else {
-				existing.addAll(entry.getValue());
-			}
-		}
 	}
 
 	private void handleImports(String stage, File baseDir) throws Exception {
-		IKnowledgeBase knowledgeBase = createKnowledgeBase();
+		IKnowledgeBase knowledgeBase = model.createKnowledgeBase();
 
 		ITuple terms = BASIC.createTuple(TERM.createString(stage), TERM.createVariable("Path"));
 		IPredicate importPredicate = BASIC.createPredicate("import", 2);

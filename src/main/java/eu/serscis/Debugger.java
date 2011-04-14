@@ -92,11 +92,11 @@ public class Debugger {
 	static private IPredicate didCreate = BASIC.createPredicate("didCreate", 4);
 	static private IPredicate getsAccess = BASIC.createPredicate("getsAccess", 2);
 
-	public Debugger(List<IRule> rules, Map<IPredicate,IRelation> initialFacts) throws Exception {
+	public Debugger(Model model) throws Exception {
 		Configuration configuration = Eval.createDefaultConfiguration();
 
-		this.rules = rules;
-		this.facts = initialFacts;
+		this.rules = model.rules;
+		this.facts = model.facts;
 
 		configuration.evaluationStrategyFactory = new IEvaluationStrategyFactory() {
 			public IEvaluationStrategy createEvaluator(IFacts facts, List<IRule> rules, Configuration configuration) throws EvaluationException {

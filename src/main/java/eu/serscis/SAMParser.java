@@ -67,19 +67,15 @@ import eu.serscis.sam.parser.Parser;
 import static eu.serscis.Constants.*;
 
 public class SAMParser {
-	public Map<IPredicate,IRelation> facts;
-	public List<IRule> rules;
 	public List<IQuery> queries;
-	private Configuration configuration;
+	private Model model;
 	private BuiltinRegister builtinRegister = new BuiltinRegister();
 
-	public SAMParser(Configuration configuration) {
-		this.configuration = configuration;
+	public SAMParser(Model model) {
+		this.model = model;
 	}
 
 	public void parse(Reader source) throws Exception {
-		facts = new HashMap<IPredicate,IRelation>();
-		rules = new LinkedList<IRule>();
 		queries = new LinkedList<IQuery>();
 
 		Map<String,SAMClass> classDefinitions = new HashMap<String,SAMClass>();
@@ -93,7 +89,7 @@ public class SAMParser {
 			//System.out.println("Processing " + toplevel);
 
 			if (toplevel instanceof ABehaviourToplevel) {
-				SAMClass klass = new SAMClass(configuration, (ABehaviour) ((ABehaviourToplevel) toplevel).getBehaviour());
+				SAMClass klass = new SAMClass(model, (ABehaviour) ((ABehaviourToplevel) toplevel).getBehaviour());
 				if (classDefinitions.containsKey(klass.name)) {
 					throw new RuntimeException("Duplicate class definition: " + klass.name);
 				}
@@ -110,7 +106,7 @@ public class SAMParser {
 		}
 
 		for (SAMClass klass : classDefinitions.values()) {
-			klass.addDatalog(facts, rules);
+			klass.addDatalog();
 		}
 	}
 
@@ -187,7 +183,7 @@ public class SAMParser {
 
 		//System.out.println(" --> " + atom);
 
-		IRelation rel = getRelation(atom.getPredicate());
+		IRelation rel = model.getRelation(atom.getPredicate());
 		rel.add(atom.getTuple());
 	}
 
@@ -218,7 +214,7 @@ public class SAMParser {
 		IRule r = BASIC.createRule(makeList(head), body);
 		//System.out.println(" --> " + r);
 
-		rules.add(r);
+		model.rules.add(r);
 	}
 
 	private void addQuery(AQuery query) {
@@ -227,14 +223,5 @@ public class SAMParser {
 		IQuery q = BASIC.createQuery(literals);
 
 		queries.add(q);
-	}
-
-	IRelation getRelation(IPredicate pred) {
-		IRelation rel = facts.get(pred);
-		if (rel == null) {
-			rel = configuration.relationFactory.createRelation();
-			facts.put(pred, rel);
-		}
-		return rel;
 	}
 }

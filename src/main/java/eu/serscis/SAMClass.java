@@ -69,19 +69,10 @@ class SAMClass {
 	public String name;
 	private ABehaviour behaviour;
 	Set<String> fields = new HashSet<String>();
-	private Configuration configuration;
+	Model model;
 
-	IRelation getRelation(Map<IPredicate,IRelation> facts, IPredicate pred) {
-		IRelation rel = facts.get(pred);
-		if (rel == null) {
-			rel = configuration.relationFactory.createRelation();
-			facts.put(pred, rel);
-		}
-		return rel;
-	}
-
-	public SAMClass(Configuration configuration, ABehaviour behaviour) throws Exception {
-		this.configuration = configuration;
+	public SAMClass(Model model, ABehaviour behaviour) throws Exception {
+		this.model = model;
 
 		this.behaviour = behaviour;
 		//System.out.println("Class: " + behaviour);
@@ -89,8 +80,8 @@ class SAMClass {
 		this.name = behaviour.getName().getText();
 	}
 
-	public void addDatalog(Map<IPredicate,IRelation> facts, List<IRule> rules) throws Exception {
-		IRelation isType = getRelation(facts, isTypeP);
+	public void addDatalog() throws Exception {
+		IRelation isType = model.getRelation(isTypeP);
 		isType.add(BASIC.createTuple(TERM.createString(name)));
 
 		AExtends extend = (AExtends) behaviour.getExtends();
@@ -102,7 +93,7 @@ class SAMClass {
 			ILiteral body = BASIC.createLiteral(true, isAP, objAndName);
 			IRule rule = BASIC.createRule(makeList(head), makeList(body));
 			//System.out.println(rule);
-			rules.add(rule);
+			model.rules.add(rule);
 		}
 
 		AClassBody body = (AClassBody) behaviour.getClassBody();
@@ -111,15 +102,15 @@ class SAMClass {
 			AField field = (AField) f;
 
 			// hasField(type, name)
-			IRelation rel = getRelation(facts, hasFieldP);
+			IRelation rel = model.getRelation(hasFieldP);
 			String fieldName = field.getName().getText();
 			fields.add(fieldName);
 			rel.add(BASIC.createTuple(TERM.createString(this.name), TERM.createString(fieldName)));
 		}
 
-		IRelation hasConstructorRel = getRelation(facts, hasConstructorP);
-		IRelation hasMethodRel = getRelation(facts, hasMethodP);
-		IRelation methodNameRel = getRelation(facts, methodNameP);
+		IRelation hasConstructorRel = model.getRelation(hasConstructorP);
+		IRelation hasMethodRel = model.getRelation(hasMethodP);
+		IRelation methodNameRel = model.getRelation(methodNameP);
 
 		List<PMethod> methods = body.getMethod();
 		for (PMethod m : methods) {
@@ -155,7 +146,7 @@ class SAMClass {
 				methodNameRel.add(BASIC.createTuple(methodNameFull, TERM.createString(methodName)));
 			}
 
-			SAMMethod sm = new SAMMethod(this, facts, rules);
+			SAMMethod sm = new SAMMethod(this);
 			sm.addDatalog(method, methodNameFull);
 		}
 	}

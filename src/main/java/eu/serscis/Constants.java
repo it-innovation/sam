@@ -55,6 +55,7 @@ public class Constants {
 	static public IPredicate methodNameP = BASIC.createPredicate("methodName", 2);	/* Class.method -> "method" */
 	static public IPredicate localP = BASIC.createPredicate("local", 4);
 	static public IPredicate fieldP = BASIC.createPredicate("field", 3);
+	static public IPredicate debugEdgeP = BASIC.createPredicate("debugEdge", 5);
 
 	static <X> List<X> makeList(X... items) {
 		return Arrays.asList(items);

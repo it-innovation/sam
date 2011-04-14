@@ -69,14 +69,10 @@ import static eu.serscis.Constants.*;
 class SAMMethod {
 	private Set<String> locals = new HashSet<String>();
 	private SAMClass parent;
-	private Map<IPredicate,IRelation> facts;
-	private List<IRule> rules;
 	private String localPrefix;
 
-	public SAMMethod(SAMClass parent, Map<IPredicate,IRelation> facts, List<IRule> rules) throws Exception {
+	public SAMMethod(SAMClass parent) throws Exception {
 		this.parent = parent;
-		this.facts = facts;
-		this.rules = rules;
 	}
 
 	private String parsePattern(PPattern parsed) {
@@ -94,7 +90,7 @@ class SAMMethod {
 		ACode code = (ACode) method.getCode();
 
 		// mayAccept(type, param)
-		IRelation acceptRel = parent.getRelation(facts, mayAcceptP);
+		IRelation acceptRel = parent.model.getRelation(mayAcceptP);
 		AParams params = (AParams) method.getParams();
 		if (params != null) {
 			addParam(methodNameFull, acceptRel, params.getParam());
@@ -118,7 +114,7 @@ class SAMMethod {
 				nextCallSite++;
 
 				// hasCallSite(methodFull, callSite).
-				IRelation rel = parent.getRelation(facts, hasCallSiteP);
+				IRelation rel = parent.model.getRelation(hasCallSiteP);
 				rel.add(BASIC.createTuple(methodNameFull, TERM.createString(callSite)));
 
 				IPredicate valueP = null;
@@ -151,17 +147,17 @@ class SAMMethod {
 
 					IRule rule = BASIC.createRule(makeList(head), makeList(isA, live, getValue(callExpr.getName())));
 					System.out.println(rule);
-					rules.add(rule);
+					parent.model.rules.add(rule);
 
 					addArgs(callSite, (AArgs) callExpr.getArgs());
 
 					// callsMethod(callSite, method)
 					String targetMethod = parsePattern(callExpr.getMethod());
 					if ("*".equals(targetMethod)) {
-						rel = parent.getRelation(facts, callsAnyMethodP);
+						rel = parent.model.getRelation(callsAnyMethodP);
 						rel.add(BASIC.createTuple(TERM.createString(callSite)));
 					} else {
-						rel = parent.getRelation(facts, callsMethodP);
+						rel = parent.model.getRelation(callsMethodP);
 						rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetMethod)));
 					}
 
@@ -170,7 +166,7 @@ class SAMMethod {
 					ANewExpr newExpr = (ANewExpr) expr;
 
 					// mayCreate(classname, newType, var)
-					rel = parent.getRelation(facts, mayCreateP);
+					rel = parent.model.getRelation(mayCreateP);
 					String newType = ((AType) newExpr.getType()).getName().getText();
 					rel.add(BASIC.createTuple(TERM.createString(callSite),
 								  TERM.createString(newType)));
@@ -235,7 +231,7 @@ class SAMMethod {
 
 				IRule rule = BASIC.createRule(makeList(head), makeList(isA, live, getValue(s.getName())));
 				//System.out.println(rule);
-				rules.add(rule);
+				parent.model.rules.add(rule);
 			} else {
 				throw new RuntimeException("Unknown statement type: " + ps);
 			}
@@ -288,7 +284,7 @@ class SAMMethod {
 
 		IRule rule = BASIC.createRule(makeList(head), body);
 		//System.out.println(rule);
-		rules.add(rule);
+		parent.model.rules.add(rule);
 	}
 
 	private void addParam(ITerm method, IRelation acceptRel, PParam param) {
@@ -327,7 +323,7 @@ class SAMMethod {
 					));
 
 		IRule rule = BASIC.createRule(makeList(head), makeList(didCall, getValue(varName)));
-		rules.add(rule);
+		parent.model.rules.add(rule);
 		//System.out.println(rule);
 	}
 
