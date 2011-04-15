@@ -249,7 +249,22 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseATryStatement(ATryStatement node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAThrowStatement(AThrowStatement node)
+    {
+        defaultCase(node);
+    }
+
     public void caseAReturnStatement(AReturnStatement node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseACatchBlock(ACatchBlock node)
     {
         defaultCase(node);
     }
@@ -325,6 +340,11 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseTNew(TNew node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTThrow(TThrow node)
     {
         defaultCase(node);
     }
@@ -435,6 +455,16 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseTImportTok(TImportTok node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTTry(TTry node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTCatch(TCatch node)
     {
         defaultCase(node);
     }

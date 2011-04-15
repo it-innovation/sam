@@ -1012,6 +1012,80 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         outADeclStatement(node);
     }
 
+    public void inATryStatement(ATryStatement node)
+    {
+        defaultIn(node);
+    }
+
+    public void outATryStatement(ATryStatement node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseATryStatement(ATryStatement node)
+    {
+        inATryStatement(node);
+        {
+            List<PCatchBlock> copy = new ArrayList<PCatchBlock>(node.getCatchBlock());
+            Collections.reverse(copy);
+            for(PCatchBlock e : copy)
+            {
+                e.apply(this);
+            }
+        }
+        if(node.getRBrace() != null)
+        {
+            node.getRBrace().apply(this);
+        }
+        {
+            List<PStatement> copy = new ArrayList<PStatement>(node.getStatement());
+            Collections.reverse(copy);
+            for(PStatement e : copy)
+            {
+                e.apply(this);
+            }
+        }
+        if(node.getLBrace() != null)
+        {
+            node.getLBrace().apply(this);
+        }
+        if(node.getTry() != null)
+        {
+            node.getTry().apply(this);
+        }
+        outATryStatement(node);
+    }
+
+    public void inAThrowStatement(AThrowStatement node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAThrowStatement(AThrowStatement node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAThrowStatement(AThrowStatement node)
+    {
+        inAThrowStatement(node);
+        if(node.getSemi() != null)
+        {
+            node.getSemi().apply(this);
+        }
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        if(node.getThrow() != null)
+        {
+            node.getThrow().apply(this);
+        }
+        outAThrowStatement(node);
+    }
+
     public void inAReturnStatement(AReturnStatement node)
     {
         defaultIn(node);
@@ -1039,6 +1113,59 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
             node.getReturn().apply(this);
         }
         outAReturnStatement(node);
+    }
+
+    public void inACatchBlock(ACatchBlock node)
+    {
+        defaultIn(node);
+    }
+
+    public void outACatchBlock(ACatchBlock node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseACatchBlock(ACatchBlock node)
+    {
+        inACatchBlock(node);
+        if(node.getRBrace() != null)
+        {
+            node.getRBrace().apply(this);
+        }
+        {
+            List<PStatement> copy = new ArrayList<PStatement>(node.getStatement());
+            Collections.reverse(copy);
+            for(PStatement e : copy)
+            {
+                e.apply(this);
+            }
+        }
+        if(node.getLBrace() != null)
+        {
+            node.getLBrace().apply(this);
+        }
+        if(node.getRPar() != null)
+        {
+            node.getRPar().apply(this);
+        }
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        if(node.getType() != null)
+        {
+            node.getType().apply(this);
+        }
+        if(node.getLPar() != null)
+        {
+            node.getLPar().apply(this);
+        }
+        if(node.getCatch() != null)
+        {
+            node.getCatch().apply(this);
+        }
+        outACatchBlock(node);
     }
 
     public void inANewExpr(ANewExpr node)

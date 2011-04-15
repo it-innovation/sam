@@ -74,7 +74,9 @@ declare mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target).
 declare didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild).
 declare hasConstructor(?ChildType, ?Method).
 declare didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue).
+declare didGetException(?Caller, ?CallerInvocation, ?CallSite, ?Exception).
 declare mayReturn(?Target, ?TargetInvocation, ?Method, ?ResultValue).
+declare mayThrow(?Target, ?TargetInvocation, ?Method, ?Exception).
 declare didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue).
 declare maySend(?Target, ?TargetInvocation, ?Method, ?ArgValue).
 declare maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue).
@@ -160,9 +162,14 @@ class Unknown {
 	}
 
 	public Object *(Object args*) {
-		ref = args;
-		ref = this;
-		ref = ref.*(ref);
-		return ref;
+		try {
+			ref = args;
+			ref = this;
+			ref = ref.*(ref);
+			return ref;
+			throw ref;
+		} catch (Throwable ex) {
+			ref = ex;
+		}
 	}
 }

@@ -48,7 +48,10 @@ public interface Analysis extends Switch
     void caseAAssign(AAssign node);
     void caseAAssignStatement(AAssignStatement node);
     void caseADeclStatement(ADeclStatement node);
+    void caseATryStatement(ATryStatement node);
+    void caseAThrowStatement(AThrowStatement node);
     void caseAReturnStatement(AReturnStatement node);
+    void caseACatchBlock(ACatchBlock node);
     void caseANewExpr(ANewExpr node);
     void caseACallExpr(ACallExpr node);
     void caseACopyExpr(ACopyExpr node);
@@ -65,6 +68,7 @@ public interface Analysis extends Switch
     void caseTPrivateTok(TPrivateTok node);
     void caseTExtendsTok(TExtendsTok node);
     void caseTNew(TNew node);
+    void caseTThrow(TThrow node);
     void caseTReturn(TReturn node);
     void caseTClassTok(TClassTok node);
     void caseTLBrace(TLBrace node);
@@ -87,6 +91,8 @@ public interface Analysis extends Switch
     void caseTDot(TDot node);
     void caseTDeclareTok(TDeclareTok node);
     void caseTImportTok(TImportTok node);
+    void caseTTry(TTry node);
+    void caseTCatch(TCatch node);
     void caseTName(TName node);
     void caseEOF(EOF node);
 }

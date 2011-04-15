@@ -17,12 +17,12 @@ A type may be defined using the "class" keyword. The syntax is::
 
     // Zero or more constructors, of the form:
     public TYPE(PARAMS) {
-      METHOD-BODY
+      CODE
     }
 
     // Zero or more methods, of the form:
     public TYPE NAME(PARAMS) {
-      METHOD-BODY
+      CODE
     }
   }
 
@@ -33,12 +33,14 @@ Types are currently ignored (and treated safely as "Object").
 
 `PARAMS` is a comma-separated list of "TYPE NAME" pairs, as in Java.
 
-`METHOD-BODY` is a list of statements, each of which is one of these::
+`CODE` is a list of statements, each of which is one of these::
 
   [TYPE] NAME = new TYPE(ARGS);
   [TYPE] NAME = NAME.METHOD(ARGS);
   [TYPE] NAME = NAME;
   return NAME;
+  throw NAME;
+  try { CODE } catch (TYPE NAME) { CODE }
 
 Where `NAME` is a variable name, `TYPE` is a class name, `METHOD` is a method name,
 and `ARGS` is a comma-separated list of variable names.

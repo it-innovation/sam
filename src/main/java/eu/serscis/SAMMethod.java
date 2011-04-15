@@ -70,9 +70,16 @@ class SAMMethod {
 	private Set<String> locals = new HashSet<String>();
 	private SAMClass parent;
 	private String localPrefix;
+	private AMethod method;
+	private ITerm methodNameFull;
+	private int nextCallSite = 1;
 
-	public SAMMethod(SAMClass parent) throws Exception {
+
+	public SAMMethod(SAMClass parent, AMethod m, ITerm methodNameFull) throws Exception {
 		this.parent = parent;
+		this.method = m;
+		this.methodNameFull = methodNameFull;
+		this.localPrefix = methodNameFull.getValue() + ".";
 	}
 
 	private String parsePattern(PPattern parsed) {
@@ -83,10 +90,7 @@ class SAMMethod {
 		}
 	}
 
-	public void addDatalog(AMethod m, ITerm methodNameFull) throws Exception {
-		this.localPrefix = methodNameFull.getValue() + ".";
-
-		AMethod method = (AMethod) m;
+	public void addDatalog() throws Exception {
 		ACode code = (ACode) method.getCode();
 
 		// mayAccept(type, param)
@@ -101,9 +105,11 @@ class SAMMethod {
 			}
 		}
 
-		int nextCallSite = 1;
+		processCode(code.getStatement());
+	}
 
-		for (PStatement ps : code.getStatement()) {
+	private void processCode(List<PStatement> statements) throws Exception {
+		for (PStatement ps : statements) {
 			if (ps instanceof AAssignStatement) {
 				AAssignStatement s = (AAssignStatement) ps;
 
@@ -207,35 +213,72 @@ class SAMMethod {
 				ADeclStatement decl = (ADeclStatement) ps;
 				declareLocal(decl.getType(), decl.getName());
 			} else if (ps instanceof AReturnStatement) {
-				AReturnStatement s = (AReturnStatement) ps;
+				returnOrThrow(mayReturnP, methodNameFull, ((AReturnStatement) ps).getName());
+			} else if (ps instanceof AThrowStatement) {
+				returnOrThrow(mayThrowP, methodNameFull, ((AThrowStatement) ps).getName());
+			} else if (ps instanceof ATryStatement) {
+				ATryStatement ts = (ATryStatement) ps;
+				processCode(ts.getStatement());
+				for (PCatchBlock c : ts.getCatchBlock()) {
+					ACatchBlock cb = (ACatchBlock) c;
+					declareLocal(cb.getType(), cb.getName());
 
-				// mayReturn(?Target, ?TargetInvocation, ?Method, ?Value) :-
-				//	isA(?Target, name),
-				//	live(?Target, ?TargetInvocation),
-				//	(value)
-				ITuple tuple = BASIC.createTuple(
-						// XXX: badly named: should be Target, but getValue uses "Caller"
-						TERM.createVariable("Caller"),
-						TERM.createVariable("CallerInvocation"),
-						methodNameFull,
-						TERM.createVariable("Value"));
+					// local(?Object, ?Innovation, name, ?Exception) :-
+					//	didGetException(?Object, ?Invocation, ?CallSite, ?Exception),
+					//	hasCallSite(?Method, ?CallSite).
+					// (note: we currently catch all exceptions from this method, not just those in the try block)
+					ILiteral head = BASIC.createLiteral(true, BASIC.createAtom(localP,
+								BASIC.createTuple(
+									TERM.createVariable("Object"),
+									TERM.createVariable("Invocation"),
+									TERM.createString(cb.getName().getText()),
+									TERM.createVariable("Exception"))));
+					ILiteral didGetException = BASIC.createLiteral(true, BASIC.createAtom(didGetExceptionP,
+								BASIC.createTuple(
+									TERM.createVariable("Object"),
+									TERM.createVariable("Invocation"),
+									TERM.createVariable("CallSite"),
+									TERM.createVariable("Exception"))));
+					ILiteral hasCallSite = BASIC.createLiteral(true, BASIC.createAtom(hasCallSiteP,
+								BASIC.createTuple(
+									methodNameFull,
+									TERM.createVariable("CallSite"))));
+					IRule rule = BASIC.createRule(makeList(head), makeList(didGetException, hasCallSite));
+					System.out.println(rule);
+					parent.model.rules.add(rule);
 
-				ILiteral head = BASIC.createLiteral(true, BASIC.createAtom(mayReturnP, tuple));
-
-				ILiteral isA = BASIC.createLiteral(true, BASIC.createAtom(isAP, BASIC.createTuple(
-							TERM.createVariable("Caller"),
-							TERM.createString(this.parent.name))));
-				ILiteral live = BASIC.createLiteral(true, BASIC.createAtom(live2P, BASIC.createTuple(
-							TERM.createVariable("Caller"),
-							TERM.createVariable("CallerInvocation"))));
-
-				IRule rule = BASIC.createRule(makeList(head), makeList(isA, live, getValue(s.getName())));
-				//System.out.println(rule);
-				parent.model.rules.add(rule);
+					processCode(cb.getStatement());
+				}
 			} else {
 				throw new RuntimeException("Unknown statement type: " + ps);
 			}
 		}
+	}
+
+	private void returnOrThrow(IPredicate pred, ITerm methodNameFull, TName name) throws ParserException {
+		// mayReturn(?Target, ?TargetInvocation, ?Method, ?Value) :-
+		//	isA(?Target, name),
+		//	live(?Target, ?TargetInvocation),
+		//	(value)
+		ITuple tuple = BASIC.createTuple(
+				// XXX: badly named: should be Target, but getValue uses "Caller"
+				TERM.createVariable("Caller"),
+				TERM.createVariable("CallerInvocation"),
+				methodNameFull,
+				TERM.createVariable("Value"));
+
+		ILiteral head = BASIC.createLiteral(true, BASIC.createAtom(pred, tuple));
+
+		ILiteral isA = BASIC.createLiteral(true, BASIC.createAtom(isAP, BASIC.createTuple(
+					TERM.createVariable("Caller"),
+					TERM.createString(this.parent.name))));
+		ILiteral live = BASIC.createLiteral(true, BASIC.createAtom(live2P, BASIC.createTuple(
+					TERM.createVariable("Caller"),
+					TERM.createVariable("CallerInvocation"))));
+
+		IRule rule = BASIC.createRule(makeList(head), makeList(isA, live, getValue(name)));
+		//System.out.println(rule);
+		parent.model.rules.add(rule);
 	}
 
 	private void declareLocal(AAssign assign) {

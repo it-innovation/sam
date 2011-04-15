@@ -27,6 +27,7 @@ Tokens
   private_tok = 'private';
   extends_tok = 'extends';
   new = 'new';
+  throw = 'throw';
   return = 'return';
   class_tok = 'class';
   l_brace = '{';
@@ -50,6 +51,9 @@ Tokens
   dot = '.';
   declare_tok = 'declare';
   import_tok = 'import';
+
+  try = 'try';
+  catch = 'catch';
 
   // must be last
   name = char(char|digit|underscode)*;
@@ -98,7 +102,10 @@ Productions
   assign = type? name eq;
   statement = {assign} assign? expr semi
             | {decl} type name semi
+	    | {try} try l_brace statement* r_brace catch_block*
+            | {throw} throw name semi
 	    | {return} return name semi;
+  catch_block = catch l_par type name r_par l_brace statement* r_brace;
   expr = {new} new type l_par args? r_par
        | {call} name dot [method]:pattern l_par args? r_par
        | {copy} name;

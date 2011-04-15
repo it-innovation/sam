@@ -77,6 +77,17 @@ didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	mayReturn(?Target, ?TargetInvocation, ?Method, ?ResultValue).
 
+/* (might not have caught it, though) */
+didGetException(?Caller, ?CallerInvocation, ?CallSite, ?Exception) :-
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	mayThrow(?Target, ?TargetInvocation, ?Method, ?Exception).
+
+/* (auto re-throw) */
+mayThrow(?Caller, ?CallerInvocation, ?CallerMethod, ?Exception) :-
+	hasCallSite(?CallerMethod, ?CallerCallSite),
+	didCall(?Caller, ?CallerInvocation, ?CallerCallSite, ?Target, ?TargetInvocation, ?TargetMethod),
+	didGetException(?Target, ?TargetInvocation, ?TargetCallSite, ?Exception).
+
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
 	maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue),
 	isA(?Target, ?TargetType),

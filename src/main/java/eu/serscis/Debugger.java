@@ -481,6 +481,11 @@ public class Debugger {
 				String callSite = tuple.get(2).getValue().toString();
 				String result = tuple.get(3).getValue().toString();
 				msg = "" + caller + ": got " + result;
+			} else if (p.equals(didGetExceptionP)) {
+				String caller = getInvocation(tuple, 0);
+				String callSite = tuple.get(2).getValue().toString();
+				String result = tuple.get(3).getValue().toString();
+				msg = "" + caller + ": got exception " + result;
 			} else if (p.equals(didCreate)) {
 				String actor = getInvocation(tuple, 0);
 				//String resultVar = tuple.get(2).getValue().toString();
@@ -520,6 +525,7 @@ public class Debugger {
 
 			if (p.equals(didCall) ||
 			    p.equals(didGet) ||
+			    p.equals(didGetExceptionP) ||
 			    p.equals(didCreate) ||
 			    p.equals(getsAccess) ||
 			    p.getPredicateSymbol().equals("error") ||

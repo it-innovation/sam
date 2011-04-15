@@ -146,8 +146,8 @@ class SAMClass {
 				methodNameRel.add(BASIC.createTuple(methodNameFull, TERM.createString(methodName)));
 			}
 
-			SAMMethod sm = new SAMMethod(this);
-			sm.addDatalog(method, methodNameFull);
+			SAMMethod sm = new SAMMethod(this, method, methodNameFull);
+			sm.addDatalog();
 		}
 	}
 }
