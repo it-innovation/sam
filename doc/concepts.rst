@@ -151,3 +151,14 @@ otherClients itself cannot either.
 
 The dashed arrow from each invocation to the factory represents the "this" variable, giving
 the invocation access to its object's fields.
+
+Further reading
+---------------
+SAM was heavily inspired by the `Scollar <http://www.scoll.evoluware.eu/>`_ tool.
+The theory behind it is described in `Patterns of Safe Collaboration
+<http://www.evoluware.eu/fsp_thesis.pdf>`_ (Alfred Spiessens, 2007).
+
+For a more expressive approach, based on CSP, see `Analysing the Security Properties
+of Object-Capability Patterns
+<http://www.comlab.ox.ac.uk/files/3080/thesis-FINAL-25-05-10.pdf>`_ (Toby
+Murray , 2010).
