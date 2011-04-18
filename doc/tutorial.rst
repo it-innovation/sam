@@ -125,8 +125,8 @@ as a sanity check that the model isn't too restrictive.
 
 For example, we can require that no other clients can get access to a's tasks::
 
-  denyAccess('otherClients', 'aTask').
-  requireAccess('clientA', 'aTask').
+  denyAccess("otherClients", "aTask").
+  requireAccess("clientA", "aTask").
 
 Unconfined clients
 ------------------
@@ -172,6 +172,9 @@ You can read this as:
       * `clientA` had called `factory.newInstance` and
       * `factory` had created `aTask`.
 
+.. note:: There is another problem with this model, which we will cover in the next section.
+          SAM may report this (less obvious) problem instead of the example above.
+
 The red arrow in the diagram corresponds to this problem, and the orange arrows show the
 calls in the debugger's example:
 
@@ -190,8 +193,11 @@ factory, "factory" is the factory, and "ref" will represent all other fields (ag
   
     public void run() {
       myTask = factory.newInstance();
+      myTask = myTask.invoke(myTask);
     }
   }
+  initialObject("clientA", "ClientA").
+  field("clientA", "factory", "factory").
 
 This model is safe, though it puts rather strict limits on what clientA can do:
 
@@ -214,11 +220,14 @@ we find that the required properties can't be verified::
   
     public void run() {
       myTask = factory.newInstance();
-      ref = ref.invoke(ref);
+      myTask = myTask.invoke(myTask);
+      ref.invoke(ref);
     }
   }
 
-Turning on display of invocations shows the reason:
+Turning on display of invocations shows the reason::
+
+  showInvocation("factory", ?Invocation) :- isInvocation(?Invocation).
 
 .. image:: _images/factory4.png
 
@@ -228,9 +237,9 @@ The example reported is::
      <= getsAccess('otherClients', 'aTask')
         <= otherClients: got aTask
            <= otherClients: factory.newInstance()
-              <= clientA: otherClients.invoke()
+              <= clientA: otherClients.*()
+           <= clientA: factory.newInstance()
            <= factory: new aTask()
-              <= clientA: factory.newInstance()
 
 * `otherClients` got `aTask` because:
   
@@ -271,7 +280,7 @@ gets access to `aTask`, but which real tasks are in `aTask` now, and which are i
 We can state our goal more explicitly by saying that `otherClients` must not get access to any
 reference that `clientA` may store in `myTask`::
 
-  denyAccess('otherClients', ?Value) :- field('clientA', 'myTask', ?Value).
+  denyAccess("otherClients", ?Value) :- field("clientA", "myTask", ?Value).
 
 This means that if there is some way that `clientA` could create a new task, aggregated under
 `otherTask`, and store it in `myTask` then we would still detect the problem.
