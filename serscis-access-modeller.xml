@@ -12,7 +12,7 @@ systems (e.g. modelling factories).</description>
 
   <implementation arch="*-src" id="." version="0.1-pre" compile:min-version='0.23'>
     <command name='compile' shell-command='make -f ${SRCDIR}/src/Makefile'>
-      <compile:implementation arch='*-*'>
+      <compile:implementation arch='*-*' main='sam'>
 	<environment name='CLASSPATH' insert='.'/>
 	<requires interface="http://repo.roscidus.com/utils/graphviz"/>
 	<command name='run'>

@@ -67,7 +67,7 @@ public class Eval {
 
 	public static void main(String[] args) throws Exception {
 		if (args.length != 1) {
-			throw new Exception("usage: Eval scenario.dl");
+			throw new Exception("usage: sam scenario.sam");
 		}
 		new Eval(new File(args[0]));
 	}

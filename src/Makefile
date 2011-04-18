@@ -11,6 +11,7 @@ JAVA_SOURCES = $(wildcard ${SRCDIR}/src/main/java/eu/serscis/*.java) \
 
 code:
 	cp ${SRCDIR}/src/main/datalog/*.dl ${DISTDIR}/
+	cp ${SRCDIR}/src/main/bin/sam ${DISTDIR}/
 	mkdir -p ${DISTDIR}/eu/serscis/sam/lexer/
 	mkdir -p ${DISTDIR}/eu/serscis/sam/parser/
 	cp ${SRCDIR}/src/main/java/eu/serscis/sam/lexer/lexer.dat ${DISTDIR}/eu/serscis/sam/lexer/
