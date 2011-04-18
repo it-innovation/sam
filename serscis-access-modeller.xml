@@ -1,4 +1,5 @@
 <?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='interface.xsl'?>
 <interface xmlns="http://zero-install.sourceforge.net/2004/injector/interface" xmlns:compile="http://zero-install.sourceforge.net/2006/namespaces/0compile">
   <name>serscis-access-modeller</name>
   <summary>modelling access propagation in capability systems</summary>
@@ -10,21 +11,21 @@ systems (e.g. modelling factories).</description>
   <category>Development</category>
   <feed-for interface="http://www.serscis.eu/0install/serscis-access-modeller"/>
 
-  <implementation arch="*-src" id="." version="0.1-pre" compile:min-version='0.23'>
-    <command name='compile' shell-command='make -f ${SRCDIR}/src/Makefile'>
-      <compile:implementation arch='*-*' main='sam'>
-	<environment name='CLASSPATH' insert='.'/>
+  <implementation arch="*-src" compile:min-version="0.23" id="." released="2011-04-18" version="0.1">
+    <command name="compile" shell-command="make -f ${SRCDIR}/src/Makefile">
+      <compile:implementation arch="*-*" main="sam">
+	<environment insert="." name="CLASSPATH"/>
 	<requires interface="http://repo.roscidus.com/utils/graphviz"/>
-	<command name='run'>
-	  <runner interface='http://repo.roscidus.com/java/openjdk-6-jre'/>
+	<command name="run">
+	  <runner interface="http://repo.roscidus.com/java/openjdk-6-jre"/>
 	  <arg>eu.serscis.Eval</arg>
 	</command>
       </compile:implementation>
     </command>
     <requires interface="http://repo.roscidus.com/python/sphinx"/>
-    <requires interface="http://repo.roscidus.com/java/iris" compile:include-binary='true'/>
+    <requires compile:include-binary="true" interface="http://repo.roscidus.com/java/iris"/>
     <requires interface="http://repo.roscidus.com/java/openjdk-6-jdk">
-      <environment name='PATH' insert='bin'/>
+      <environment insert="bin" name="PATH"/>
     </requires>
   </implementation>
 </interface>
