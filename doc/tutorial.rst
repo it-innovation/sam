@@ -1,3 +1,5 @@
+.. _tutorial:
+
 Tutorial
 ========
 
@@ -97,6 +99,8 @@ Putting these together gives this complete model file (examples/factory1.sam)::
 You can run the model like this::
 
   $ sam factory1.sam
+
+See :ref:`install` for more information about running SAM.
 
 You should find you now have an output file called "access.dot.png":
 

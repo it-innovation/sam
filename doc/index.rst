@@ -14,6 +14,7 @@ User Guide
 
    introduction
    concepts
+   install
    tutorial
    examples
 
