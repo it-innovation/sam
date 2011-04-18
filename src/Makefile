@@ -1,6 +1,6 @@
 VPATH = ${SRCDIR}
 
-SAM = 0launch ${DISTDIR}/0install/serscis-access-modeller.xml
+SAM = 0launch ${BINARYFEED}
 
 SBUILDDIR      = ${DISTDIR}/doc
 ALLSPHINXOPTS   = -d $(SBUILDDIR)/doctrees
