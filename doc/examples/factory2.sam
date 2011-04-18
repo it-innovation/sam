@@ -25,12 +25,12 @@ initialInvocation("otherClients", "other").
 
 field("clientA", "ref", "otherClients").
 
-invocationObject("otherClients", "A", "anycallsite", "other").
-
 /* Goals */
 
 denyAccess("otherClients", "aTask").
 requireAccess("clientA", "aTask").
 
-?- debugEdge(?Source, ?SourceInvocation, ?CS, ?Target, ?TargetInvocation).
+
+/* (force SAM to find the obvious problem first) */
+invocationObject("otherClients", "a", "Unknown.*-3", "other").
 

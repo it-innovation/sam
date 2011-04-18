@@ -505,9 +505,14 @@ public class Debugger {
 			}
 			System.out.println(indent + msg);
 
+			Set<ILiteral> seen = new HashSet<ILiteral>();	// avoid duplicates
+
 			indent += "   ";
 			for (Step child : children) {
-				child.show(indent, debugEdges);
+				if (!seen.contains(child.problem)) {
+					seen.add(child.problem);
+					child.show(indent, debugEdges);
+				}
 			}
 		}
 	}

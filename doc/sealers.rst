@@ -24,10 +24,10 @@ We can augment the Unsealer's code with some Datalog::
       return value;
     }
   }
-  local(?Unsealer, ?Invocation, "value", ?Value) :-
-  	isA(?Unsealer, "Unsealer"),
-  	local(?Unsealer, ?Invocation, "box", ?Box),
-  	field(?Box, "precious", ?Value).
+  local(?Unsealer, ?Invocation, "Unsealer.unseal.value", ?Value) :-
+	  isA(?Unsealer, "Unsealer"),
+	  local(?Unsealer, ?Invocation, "Unsealer.unseal.box", ?Box),
+	  field(?Box, "precious", ?Value).
 
 This says that `Unsealer.unseal`'s local variable `value` may have a particular
 value if the `box` passed as an input parameter has a field called `precious`

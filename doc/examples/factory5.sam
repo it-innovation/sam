@@ -18,6 +18,7 @@ class ClientA {
 
   public void run() {
     myTask = factory.newInstance();
+    myTask = myTask.invoke(myTask);
     ref = ref.invoke(ref);
   }
 }

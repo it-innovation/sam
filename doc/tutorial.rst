@@ -138,7 +138,7 @@ Unconfined clients
 So far, we have assumed that the clients are *confined*. That is, we do not know their
 behaviour but we know they don't start with access to anything except the factory. If
 the clients are objects in a capability-based programming language then this may be
-a reasonable assumption. If there are objects hosted by other parties then we should assume
+a reasonable assumption. If they are objects hosted by other parties then we should assume
 that they have access to the Internet too.
 
 We could add an explicit `internet` object to our model, but since there's no point having
@@ -152,13 +152,12 @@ When we model this, SAM will detect that our safety goal is not met, and prints 
 example of how the problem can occur::
 
   debug()
-     <= getsAccess('otherClients', 'aTask')
-        <= otherClients: received aTask (as an argument)
-           <= clientA: otherClients.invoke()
-           <= clientA: got aTask
-              <= clientA: factory.newInstance()
-              <= factory: new aTask()
-                 <= clientA: factory.newInstance()
+    <= getsAccess('otherClients', 'aTask')
+      <= otherClients: received aTask (arg to Unknown.*)
+         <= clientA: otherClients.*()
+         <= clientA: got aTask
+            <= clientA: factory.newInstance()
+            <= factory: new aTask()
 
   === Errors detected after applying propagation rules ===
 
