@@ -244,7 +244,7 @@ class SAMMethod {
 									methodNameFull,
 									TERM.createVariable("CallSite"))));
 					IRule rule = BASIC.createRule(makeList(head), makeList(didGetException, hasCallSite));
-					System.out.println(rule);
+					//System.out.println(rule);
 					parent.model.rules.add(rule);
 
 					processCode(cb.getStatement());
