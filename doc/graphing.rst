@@ -7,20 +7,20 @@ Two graphs are created: "initial" is produced after all the "initial"
 imports are processed and then "access" is produced once the "final"
 imports have also been processed.
 
-.. function:: graphNode(?NodeId, ?Attributes)
+.. function:: graphNode(?Node, ?Attrs)
 
    Specify the GraphViz attributes for a node. For example::
 
      graphNode("store", "color=red").
 
-.. function:: graphEdge(?Source, ?Target, ?Attributes)
+.. function:: graphEdge(?Source, ?Target, ?Attrs)
 
    Specify that there is an edge from `Source` to `Target` with the given
    attributes. For example::
 
      graphEdge("user", "store", "style=dashed").
 
-.. function:: showInvocation(?Object, ?InvocationContext)
+.. function:: showInvocation(?Object, ?Invocation)
 
    Configuration setting that causes the access graph to show these
    invocations of Object explicitly on the graph. If false, these

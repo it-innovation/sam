@@ -48,7 +48,7 @@ and `ARGS` is a comma-separated list of variable names.
 
 Classes
 -------
-.. function:: hasField(?Type, ?VarName)
+.. function:: hasField(?Type, ?FieldName)
 
    There is a field on `Type` named `VarName`.
 
@@ -67,6 +67,11 @@ Methods
 -------
 (and also constructors)
 
+.. function:: methodName(?Method, ?MethodName)
+
+   The name of the method. Usually, `Method` is fully-qualified (e.g. "Type.invoke") whereas `MethodName`
+   is just the name ("invoke").
+
 .. function:: mayAccept(?Method, ?ParamVar)
 
    Objects of this type accept an argument value and store it in a variable namd ParamVar.
@@ -84,6 +89,10 @@ Methods
 
    This method invocation may return `Value` to its callers.
 
+.. function:: mayThrow(?Object, ?Invocation, ?Method, ?Exception)
+
+   This method invocation may throw `Exception` to its callers.
+
 .. _CallSite:
 
 Call-sites
@@ -100,10 +109,10 @@ Call-sites
 
    This call-site may call methods with any name.
 
-.. function:: maySend(?Target, ?TargetInvocation, ?Method, [?Pos,] ?ArgValue),
+.. function:: maySend(?Target, ?TargetInvocation, ?Method, [?Pos,] ?ArgValue)
 
    Target.method may get called with `ArgValue` as parameter number `Pos` (or as any
-   parameter in the version without `Pos`.
+   parameter in the version without `Pos`). The position is currently ignored.
 
 .. function:: mayCreate(?CallSite, ?ChildType)
 

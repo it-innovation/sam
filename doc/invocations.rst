@@ -15,13 +15,14 @@ with its parent object.
 Aggregation
 -----------
 
-.. function:: newObject(?Object, ?Invocation, ?Type, ?NewObject).
+.. function:: newObject(?Object, ?Invocation, ?ChildType, ?NewObject)
 
    Aggregate all new objects of type `Type` created by `Object` the context
    `Invocation` into a single object `NewObject`. For example::
 
      newObject("factory", "clientA", "Proxy", "newProxiesForA").
      newObject("factory", "otherClients", "Proxy", "newProxiesForOthers").
+
 
 .. function:: invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation)
 
@@ -34,3 +35,23 @@ Aggregation
    some call "callsite1" into the "A" group::
 
      invocationObject("clientA", "Other", "callsite1", "A").
+
+.. function:: methodMatches(?CallSite, ?Target, ?Method)
+
+   When `CallSite` invokes `Target`, `Method` is a method that could be invoked. Normally this
+   is true when the method name in `CallSite` equals the name of `Method`, but there are extra
+   cases to support unknown caller and target types.
+
+Generated predicates
+--------------------
+
+.. function:: realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild)
+
+   The `realNewObject` relation is copied from `newObject`, but has a suitable
+   default whenever `newObject` wasn't defined.
+
+.. function:: realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation)
+
+   The `realInvocationObject` relation is copied from `invocationObject`, but
+   has a suitable default whenever `invocationObject` wasn't defined.
+

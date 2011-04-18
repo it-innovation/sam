@@ -1,0 +1,60 @@
+/* vim: set syntax=prolog : */
+
+/////////////////////////////////////////////////////////////////////////
+//
+// © University of Southampton IT Innovation Centre, 2011
+//
+// Copyright in this library belongs to the University of Southampton
+// University Road, Highfield, Southampton, UK, SO17 1BJ
+//
+// This software may not be used, sold, licensed, transferred, copied
+// or reproduced in whole or in part in any manner or form or in or
+// on any media by any person other than in accordance with the terms
+// of the Licence Agreement supplied with the software, or otherwise
+// without the prior written consent of the copyright owners.
+//
+// This software is distributed WITHOUT ANY WARRANTY, without even the
+// implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+// PURPOSE, except where stated in the Licence Agreement supplied with
+// the software.
+//
+//	Created By :			Thomas Leonard
+//	Created Date :			2011-04-18
+//	Created for Project :		SERSCIS
+//
+/////////////////////////////////////////////////////////////////////////
+//
+//  License : GNU Lesser General Public License, version 2.1
+//
+/////////////////////////////////////////////////////////////////////////
+
+declare objectHasField(?Object, ?Field).
+declare hasRef(?Object, ?Invocation, ?Value).
+
+/* If an Invocation has direct access to an object (via a local variable or a field on its object) */
+hasRef(?Object, ?Invocation, ?Value) :- value(?Object, ?Invocation, ?AnyVar, ?Value).
+
+/* Error checking */
+
+error("Not an object (no type!)", ?Object) :- hasRef(?AnyObject, ?X, ?Object), !isObject(?Object).
+
+error("Live invocation for non-alive object", ?Invocation, ?Object) :-
+	live(?Object, ?Invocation), !live(?Object).
+
+getsAccess(?SourceObject, ?TargetObject) :-
+	hasRef(?SourceObject, ?AnyInvocation, ?TargetObject).
+
+haveBadAccess(?SourceObject, ?TargetObject) :-
+	denyAccess(?SourceObject, ?TargetObject),
+	getsAccess(?SourceObject, ?TargetObject).
+
+error("unsafe access may be possible", ?SourceObject, ?TargetObject) :-
+	haveBadAccess(?SourceObject, ?TargetObject).
+
+error("Local on non-invocation", ?Invocation, ?Var, ?Value) :- local(?Object, ?Invocation, ?Var, ?Value), !isInvocation(?Invocation).
+
+objectHasField(?Object, ?Field) :- isA(?Object, ?Type), hasField(?Type, ?Field).
+error("Undeclared field", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !objectHasField(?Object, ?Var).
+error("Field on non-object", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !isObject(?Object).
+
+error("Object has undefined type", ?Object, ?Type) :- isA(?Object, ?Type), !isType(?Type).

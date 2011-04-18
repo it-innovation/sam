@@ -99,6 +99,7 @@ public class Eval {
 		ClassLoader loader = Eval.class.getClassLoader();
 
 		parseResource("base.dl");
+		parseResource("checks.dl");
 		parseResource("graph.dl");
 
 		SAMParser parser = new SAMParser(model, scenario);

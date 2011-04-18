@@ -5,13 +5,13 @@ Configuration
 
 These predicates are used to describe the initial configuration of the system being modelled:
 
-.. function:: initialObject(?ObjectName, ?Type)
+.. function:: initialObject(?Object, ?Type)
 
-   There is an object named `ObjectName` which :func:`isA` `Type`.
+   There is an object named `Object` which :func:`isA` `Type`.
 
-.. function:: initialInvocation(?ObjectName, ?InvocationContextName)
+.. function:: initialInvocation(?Object, ?Invocation)
 
-   Object `ObjectName` is initially active (does not need to be invoked by something else
+   Object `Object` is initially active (does not need to be invoked by something else
    before it can take actions). The initial actions should be grouped under the named
    invocation context. By default, any invocations of other objects called from this one
    will be grouped using the same context name.

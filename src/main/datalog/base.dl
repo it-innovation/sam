@@ -30,28 +30,26 @@
 
 /* declarations */
 
-declare field(?Object, ?VarName, ?Value).
+declare field(?Object, ?FieldName, ?Value).
 declare getsAccess(?SourceObject, ?TargetObject).
-declare hasRef(?Object, ?Invocation, ?Value).
 declare haveBadAccess(?SourceObject, ?TargetObject).
 declare isA(?Object, ?Type).
 declare isInvocation(?Invocation).
-declare isObject(?X).
+declare isObject(?Object).
 declare live(?Object).
 declare live(?Object, ?Invocation).
 declare local(?Object, ?Invocation, ?VarName, ?Value).
-declare objectHasField(?Object, ?Field).
 declare realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
 declare invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
-declare value(?Object, ?Invocation, ?Var, ?Value).
+declare value(?Object, ?Invocation, ?VarName, ?Value).
 declare hasMethod(?Type, ?Method).
-declare hasCallSite(?Type, ?Method).
+declare hasCallSite(?Method, ?CallSite).
 declare initialObject(?Object, ?Type).
 declare initialInvocation(?Object, ?Invocation).
 declare realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild).
 declare denyAccess(?Object, ?Target).
 declare requireAccess(?Object, ?Target).
-declare hasField(?Type, ?Name).
+declare hasField(?Type, ?FieldName).
 declare isType(?Type).
 declare missingGoodAccess(?SourceObject, ?TargetObject).
 
@@ -72,16 +70,16 @@ declare methodName(?Method, ?MethodName).
 declare callsAnyMethod(?CallSite).
 declare mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target).
 declare didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild).
-declare hasConstructor(?ChildType, ?Method).
+declare hasConstructor(?Type, ?Method).
 declare didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue).
 declare didGetException(?Caller, ?CallerInvocation, ?CallSite, ?Exception).
-declare mayReturn(?Target, ?TargetInvocation, ?Method, ?ResultValue).
-declare mayThrow(?Target, ?TargetInvocation, ?Method, ?Exception).
+declare mayReturn(?Object, ?Invocation, ?Method, ?Value).
+declare mayThrow(?Object, ?Invocation, ?Method, ?Exception).
 declare didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue).
 declare maySend(?Target, ?TargetInvocation, ?Method, ?ArgValue).
 declare maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue).
 declare mayCreate(?CallSite, ?ChildType).
-declare newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
+declare newObject(?Object, ?Invocation, ?ChildType, ?NewObject).
 declare debug.
 
 
@@ -117,9 +115,6 @@ live(?Object, ?Invocation) :- initialInvocation(?Object, ?Invocation).
 isInvocation(?Invocation) :- initialInvocation(?Object, ?Invocation).
 isInvocation(?Invocation) :- invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?Invocation).
 
-/* If an Invocation has direct access to an object (via a local variable or a field on its object) */
-hasRef(?Object, ?Invocation, ?Value) :- value(?Object, ?Invocation, ?AnyVar, ?Value).
-
 /* Every invocation has a "this" variable with a reference to its object. */
 local(?Object, ?Invocation, "this", ?Object) :- isObject(?Object), live(?Object, ?Invocation).
 
@@ -127,31 +122,6 @@ local(?Object, ?Invocation, "this", ?Object) :- isObject(?Object), live(?Object,
 value(?Object, ?Invocation, ?Var, ?Value) :- local(?Object, ?Invocation, ?Var, ?Value).
 value(?Object, ?Invocation, ?Var, ?Value) :- field(?Object, ?Var, ?Value), isInvocation(?Invocation).
 
-
-/* Error checking */
-
-error("Not an object (no type!)", ?Object) :- hasRef(?AnyObject, ?X, ?Object), !isObject(?Object).
-
-error("Live invocation for non-alive object", ?Invocation, ?Object) :-
-	live(?Object, ?Invocation), !live(?Object).
-
-getsAccess(?SourceObject, ?TargetObject) :-
-	hasRef(?SourceObject, ?AnyInvocation, ?TargetObject).
-
-haveBadAccess(?SourceObject, ?TargetObject) :-
-	denyAccess(?SourceObject, ?TargetObject),
-	getsAccess(?SourceObject, ?TargetObject).
-
-error("unsafe access may be possible", ?SourceObject, ?TargetObject) :-
-	haveBadAccess(?SourceObject, ?TargetObject).
-
-error("Local on non-invocation", ?Invocation, ?Var, ?Value) :- local(?Object, ?Invocation, ?Var, ?Value), !isInvocation(?Invocation).
-
-objectHasField(?Object, ?Field) :- isA(?Object, ?Type), hasField(?Type, ?Field).
-error("Undeclared field", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !objectHasField(?Object, ?Var).
-error("Field on non-object", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !isObject(?Object).
-
-error("Object has undefined type", ?Object, ?Type) :- isA(?Object, ?Type), !isType(?Type).
 
 /* Unknown behaviour */
 class Unknown {
