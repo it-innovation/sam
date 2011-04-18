@@ -11,7 +11,7 @@ systems (e.g. modelling factories).</description>
   <category>Development</category>
   <feed-for interface="http://www.serscis.eu/0install/serscis-access-modeller"/>
 
-  <implementation arch="*-src" compile:min-version="0.23" id="." released="2011-04-18" version="0.1">
+  <implementation arch="*-src" compile:min-version="0.23" id="." version="0.1-post">
     <command name="compile" shell-command="make -f ${SRCDIR}/src/Makefile">
       <compile:implementation arch="*-*" main="sam">
 	<environment insert="." name="CLASSPATH"/>
