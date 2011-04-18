@@ -1,2 +1,5 @@
 #!/bin/sh
+# Note: This file is designed to be run by 0install.
+# If you want to run it manually, you'll have to set CLASSPATH yourself.
+
 exec java eu.serscis.Eval "$@"
