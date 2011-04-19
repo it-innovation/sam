@@ -63,6 +63,7 @@ declare mayAccept(?Method, ?ParamVar).
 declare mayAccept(?Method, ?ParamVar, ?Value).
 
 declare accessControlOn.
+declare accessAllowed(?Caller, ?Target).
 declare accessAllowed(?Caller, ?Target, ?Method).
 declare methodMatches(?CallSite, ?Target, ?Method).
 declare callsMethod(?CallSite, ?MethodName).
@@ -143,3 +144,6 @@ class Unknown {
 		}
 	}
 }
+
+accessAllowed(?Source, ?Target, ?Method) :-
+	accessAllowed(?Source, ?Target), hasMethod(?CallSite, ?Method).

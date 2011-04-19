@@ -13,3 +13,6 @@ model identity-based access control systems.
 
    Indicates that the access control system should allow `Caller` to invoke `Target.Method`.
 
+.. function:: accessAllowed(?Caller, ?Target)
+
+   Indicates that the access control system should allow `Caller` to invoke any method on `Target`.

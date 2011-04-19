@@ -1,0 +1,51 @@
+// The access control policy:
+accessControlOn.
+accessAllowed("alice", "compiler").
+accessAllowed("compiler", "billing").
+accessAllowed("compiler", "output").
+
+class Compiler {
+    private Object myLog;
+
+    public void exec(Object target) {
+        myLog.append();
+        target.write();
+    }
+}
+
+class File {
+    public void write() {
+    }
+
+    public void append() {
+    }
+}
+
+initialObject("alice", "Unknown").
+initialObject("billing", "File").
+initialObject("compiler", "Compiler").
+initialObject("output", "File").
+
+field("alice", "ref", "compiler").
+field("alice", "ref", "output").
+field("alice", "ref", "billing").
+field("compiler", "myLog", "billing").
+
+initialInvocation("alice", "alice").
+
+missingGoodAccess("compiler", "output") :-
+    !didCall("compiler", "alice", ?CallSite, "output", "alice", "File.write").
+
+// Flag an error if an interaction caused by alice (but not involving alice)
+// happens that isn't in desiredAuthority.
+declare desiredAuthority(?Source, ?Target, ?Method).
+haveBadAccess(?Caller, ?Target) :-
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+    ?Caller != "alice", ?Target != "alice",
+    !desiredAuthority(?Caller, ?Target, ?Method).
+
+// The only things that should be able to happen which don't involve Alice are:
+// 1. compiler invokes output.write()
+// 2. compiler invokes billing.append()
+desiredAuthority("compiler", "output", "File.write").
+desiredAuthority("compiler", "billing", "File.append").

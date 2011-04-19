@@ -22,7 +22,7 @@ htmldoc: code examples
 	diff ${BUILDDIR}/failed-models ${SRCDIR}/src/failed-models.expected
 	sphinx-build -b html ${ALLSPHINXOPTS} ${SRCDIR}/doc ${SBUILDDIR}
 
-examples: factory.png factory-showing-invocations.png factory1.png factory2.png factory3.png factory4.png factory5.png sealers.png sealers2.png compose.png
+examples: factory.png factory-showing-invocations.png factory1.png factory2.png factory3.png factory4.png factory5.png sealers.png sealers2.png compose.png confused.png
 
 clearfailures:
 	rm -f ${BUILDDIR}/failed-models
