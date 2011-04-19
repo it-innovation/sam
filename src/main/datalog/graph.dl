@@ -39,15 +39,16 @@ declare problemEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode).
 declare shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation).
 declare uncalledEdge(?Source, ?Target).
 declare problemEdge(?Source, ?Target).
+declare errorEdge(?Source, ?Target).
 
 /* Graphing */
 
 graphNode(?Object, "fontcolor=red") :- live(?Object), isA(?Object, "Unknown").
 graphNode(?Object, "") :- live(?Object), isObject(?Object), !isA(?Object, "Unknown").
 
-graphEdge(?Object, ?Target, "color=red") :- haveBadAccess(?Object, ?Target).
 graphEdge(?Object, ?Target, "color=red,style=dashed") :- missingGoodAccess(?Object, ?Target).
 
+errorEdge(?Object, ?Target) :- haveBadAccess(?Object, ?Target).
 
 /* There are all the edges that logically exist, even if we might not show all of them. */
 
@@ -103,27 +104,33 @@ uncalledEdge(?Source, ?Target) :-
 
 /* Hide arrows that have higher-priority replacements. */
 
+graphEdge(?Object, ?Target, "color=red") :- errorEdge(?Object, ?Target).
+
 /* Problem field */
 graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=orange") :-
 	?GraphSourceNode != ?GraphTargetNode,
+	!errorEdge(?GraphSourceNode, ?GraphTargetNode),
 	problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
 
 /* Problem local */
 graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=orange,style=dashed") :-
 	?GraphSourceNode != ?GraphTargetNode,
 	problemEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode),
+	!errorEdge(?GraphSourceNode, ?GraphTargetNode),
 	!problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
 
 /* Called field */
 graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=green") :-
 	?GraphSourceNode != ?GraphTargetNode,
 	calledEdgeViaField(?GraphSourceNode, ?GraphTargetNode),
+	!errorEdge(?GraphSourceNode, ?GraphTargetNode),
 	!problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
 
 /* Called local */
 graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=green,style=dashed") :-
 	?GraphSourceNode != ?GraphTargetNode,
 	calledEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode),
+	!errorEdge(?GraphSourceNode, ?GraphTargetNode),
 	!calledEdgeViaField(?GraphSourceNode, ?GraphTargetNode),
 	!problemEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode),
 	!problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
