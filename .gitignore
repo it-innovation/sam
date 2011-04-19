@@ -1,8 +1,8 @@
-*.dot
-*.png
-.gitignore
-*.dl
-*.sam
-build
-*.jar
-serscis-access-modeller-any-any
+/*.dot
+/*.png
+/.gitignore
+/*.dl
+/*.sam
+/build
+/*.jar
+/serscis-access-modeller-any-any
