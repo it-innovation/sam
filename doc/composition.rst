@@ -18,7 +18,8 @@ The `owner` creates a new Directory and gives a logging, read-only reference to
 
         delegate.read(loggedReadOnly);
 
-Analysing this model reveals that it is not safe: `delegate` can bypass the logger:
+Analysing this model reveals that it is not safe: `delegate` can bypass the
+logger (:example:`compose`):
 
 .. image:: _images/compose.png
 

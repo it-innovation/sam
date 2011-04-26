@@ -73,7 +73,7 @@ See :ref:`Configuration` for more information.
 
 Running the scenario
 --------------------
-Putting these together gives this complete model file (examples/factory1.sam)::
+Putting these together gives this complete model file (:example:`factory1`)::
 
   /* Behaviour */
   class Factory {
@@ -148,7 +148,7 @@ that they have access to the Internet too.
 We could add an explicit `internet` object to our model, but since there's no point having
 two Unknown objects connected together (they'll share everything anyway), we'll just give
 `clientA` a direct reference to `otherClients` and treat `otherClients` as including the
-rest of the Internet too::
+rest of the Internet too (:example:`factory2`)::
 
   field("clientA", "ref", "otherClients").
 
@@ -208,7 +208,8 @@ factory, "factory" is the factory, and "ref" will represent all other fields (ag
   initialObject("clientA", "ClientA").
   field("clientA", "factory", "factory").
 
-This model is safe, though it puts rather strict limits on what clientA can do:
+This model (:example:`factory3`) is safe, though it puts rather strict limits
+on what clientA can do:
 
 .. image:: _images/factory3.png
 
@@ -234,7 +235,7 @@ we find that the required properties can't be verified::
     }
   }
 
-Turning on display of invocations shows the reason::
+Turning on display of invocations shows the reason (:example:`factory4`)::
 
   showInvocation("factory", ?Invocation) :- isInvocation(?Invocation).
 
@@ -279,7 +280,7 @@ tell SAM to put only the `factory.invoke()` invocation under "a"::
 The third argument to `invocationObject` identifies the call: the first call in the `ClientA.run` method.
 
 With this division, the desired propery can be proved. `clientA` can now get access to tasks created
-by other parties, but others still can't get access to the tasks by `clientA`.
+by other parties, but others still can't get access to the tasks by `clientA`  (:example:`factory5`):
 
 .. image:: _images/factory5.png
 

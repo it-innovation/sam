@@ -39,14 +39,14 @@ Notice that we could not implement a real unsealer this way, because it wouldn't
 have access to the box's private field. However, having created this unsealer, we
 can now use it in larger patterns.
 
-For example, in the `sealers.dl` example, `sender` seals a value (`precious`)
+For example, in the :example:`sealers` example, `sender` seals a value (`precious`)
 in a box and passes the box to various other objects. Those with access to the
 unsealer (aggregated as `withUnsealer`) are able to get access to the value,
 while those without it can't:
 
 .. image:: _images/sealers.png
 
-The `sealers2.dl` example has `sender` seal two different values and give them to
+The :example:`sealers2` example has `sender` seal two different values and give them to
 different objects, which all have access to the unsealer. Each object can only
 unseal the correct value:
 

@@ -49,7 +49,7 @@ Following Authodox, we define the actions we think should be possible as a resul
   desiredAuthority("compiler", "output", "File.write").
   desiredAuthority("compiler", "billing", "File.append").
 
-Running this example (examples/confused.sam) shows that it is not safe:
+Running this example (:example:`confused`) shows that it is not safe:
 
 .. image:: _images/confused.png
 

@@ -192,3 +192,14 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+from sphinx.util.compat import Directive
+from docutils import nodes
+
+def example_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+	name = text + '.sam'
+	node = nodes.reference(rawtext, name, refuri = 'examples/' + name)
+	return ([node], [])
+
+def setup(app):
+	app.add_role('example', example_role)

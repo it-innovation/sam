@@ -1,5 +1,3 @@
-/* vim: set syntax=prolog : */
-
 class Task {}
 
 class Factory {
