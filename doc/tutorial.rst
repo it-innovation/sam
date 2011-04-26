@@ -1,5 +1,7 @@
 .. _tutorial:
 
+.. highlight:: java
+
 Tutorial
 ========
 
@@ -96,7 +98,9 @@ Putting these together gives this complete model file (examples/factory1.sam)::
   initialInvocation("clientA", "a").
   initialInvocation("otherClients", "other").
 
-You can run the model like this::
+You can run the model like this:
+
+.. code-block:: sh
 
   $ sam factory1.sam
 
@@ -149,7 +153,9 @@ rest of the Internet too::
   field("clientA", "ref", "otherClients").
 
 When we model this, SAM will detect that our safety goal is not met, and prints a simple
-example of how the problem can occur::
+example of how the problem can occur:
+
+.. code-block:: none
 
   debug()
     <= getsAccess('otherClients', 'aTask')
@@ -234,7 +240,9 @@ Turning on display of invocations shows the reason::
 
 .. image:: _images/factory4.png
 
-The example reported is::
+The example reported is:
+
+.. code-block:: none
 
   debug()
      <= getsAccess('otherClients', 'aTask')

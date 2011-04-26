@@ -1,3 +1,5 @@
+.. highlight:: java
+
 Composition problem
 ===================
 
@@ -20,7 +22,9 @@ Analysing this model reveals that it is not safe: `delegate` can bypass the logg
 
 .. image:: _images/compose.png
 
-The debug example is::
+The debug example is:
+
+.. code-block:: none
 
   debug()
      <= getsAccess('delegate', 'aReadOnly')

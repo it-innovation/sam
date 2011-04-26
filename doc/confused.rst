@@ -1,3 +1,5 @@
+.. highlight:: java
+
 The Confused Deputy
 ===================
 
@@ -51,7 +53,9 @@ Running this example (examples/confused.sam) shows that it is not safe:
 
 .. image:: _images/confused.png
 
-The debug example is::
+The debug example is:
+
+.. code-block:: none
 
   debug()
      <= compiler: billing.write()
