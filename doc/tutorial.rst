@@ -55,6 +55,11 @@ We can now define the initial configuration. We'll model two client objects: cli
   initialInvocation("clientA", "a").
   initialInvocation("otherClients", "other").
 
+.. note::
+	SAM uses `Datalog <http://en.wikipedia.org/wiki/Datalog>`_ syntax to
+	state facts and rules. Literal strings must be in double-quotes.
+	Variable names (not used yet) are preceded by "?".
+
 The :func:`initialObject` lines define the three objects and their types.
 
 The :func:`initialInvocation` lines say that we assume both clients may be active by default (they
