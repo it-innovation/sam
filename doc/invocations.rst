@@ -31,10 +31,10 @@ Aggregation
    the `TargetInvocation` context. If not specified, the default is to use
    `CallerInvocation` for `TargetInvocation`.
    
-   For example, to group all invocations by clientA's "Other" context of
-   some call "callsite1" into the "A" group::
+   For example, to group all invocations by clientA's "other" context of
+   the first call in the "ClientA.run" method into the "a" group::
 
-     invocationObject("clientA", "Other", "callsite1", "A").
+     invocationObject("clientA", "other", "ClientA.run-1", "a").
 
 .. function:: methodMatches(?CallSite, ?Target, ?Method)
 

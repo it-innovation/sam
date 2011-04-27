@@ -195,7 +195,7 @@ calls in the debugger's example:
 .. image:: _images/factory2.png
 
 This says that if we can't rely on clientA's behaviour then we can't be sure that
-other client's won't get access to its tasks. To fix this, we must restrict clientA's
+other clients won't get access to its tasks. To fix this, we must restrict clientA's
 behaviour. For example, we can model clientA as having three separate fields:
 "myTask", "ref" and "factory". "myTask" will be the task(s) clientA created explicitly using
 factory, "factory" is the factory, and "ref" will represent all other fields (aggregated)::
@@ -282,10 +282,10 @@ tell SAM to put only the `factory.invoke()` invocation under "a"::
   initialInvocation("clientA", "other").
   invocationObject("clientA", "other", "ClientA.run-1", "a").
 
-The third argument to `invocationObject` identifies the call: the first call in the `ClientA.run` method.
+The third argument to :func:`invocationObject` identifies the call: the first call in the `ClientA.run` method.
 
 With this division, the desired propery can be proved. `clientA` can now get access to tasks created
-by other parties, but others still can't get access to the tasks by `clientA`  (:example:`factory5`):
+by other parties, but others still can't get access to the tasks created by `clientA`  (:example:`factory5`):
 
 .. image:: _images/factory5.png
 
