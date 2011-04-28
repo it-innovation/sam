@@ -3,7 +3,8 @@
 The Confused Deputy
 ===================
 
-This is the classic example of a problem that is hard to solve without capabilities. This
+This is the classic example of a problem that is hard to solve without capabilities (see
+http://en.wikipedia.org/wiki/Confused_deputy_problem for more details). This
 model is based on the example in the `Authodox <http://web.comlab.ox.ac.uk/people/toby.murray/tools/authodox>`_ tutorial.
 
 1. Alice (an untrusted user) has access to a compiler.

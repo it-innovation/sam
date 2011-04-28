@@ -1,6 +1,6 @@
-.. _tutorial:
-
 .. highlight:: java
+
+.. _tutorial:
 
 Tutorial
 ========
