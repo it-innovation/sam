@@ -16,7 +16,7 @@ systems (e.g. modelling factories).</description>
     <release:action phase="commit-release">sed -i &quot;s/^\(version\|release\) = '.*'$/\1 = '$RELEASE_VERSION'/&quot; doc/conf.py</release:action>
   </release:management>
 
-  <implementation arch="*-src" compile:min-version="0.23" id="." released="2011-04-28" version="0.2">
+  <implementation arch="*-src" compile:min-version="0.23" id="." version="0.2-post">
     <command name="compile" shell-command="make -f ${SRCDIR}/src/Makefile">
       <compile:implementation arch="*-*" main="sam">
 	<environment insert="." name="CLASSPATH"/>
