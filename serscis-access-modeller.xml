@@ -11,6 +11,11 @@ systems (e.g. modelling factories).</description>
   <category>Development</category>
   <feed-for interface="http://www.serscis.eu/0install/serscis-access-modeller"/>
 
+  <release:management xmlns:release="http://zero-install.sourceforge.net/2007/namespaces/0release">
+    <!-- Update the copy of the version number -->
+    <release:action phase="commit-release">sed -i &quot;s/^\(version\|release\) = '.*'$/\1 = '$RELEASE_VERSION'/&quot; doc/conf.py</release:action>
+  </release:management>
+
   <implementation arch="*-src" compile:min-version="0.23" id="." version="0.1-post">
     <command name="compile" shell-command="make -f ${SRCDIR}/src/Makefile">
       <compile:implementation arch="*-*" main="sam">
