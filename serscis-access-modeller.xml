@@ -20,7 +20,9 @@ systems (e.g. modelling factories).</description>
     <command name="compile" shell-command="make -f ${SRCDIR}/src/Makefile">
       <compile:implementation arch="*-*" main="sam">
 	<environment insert="." name="CLASSPATH"/>
-	<requires interface="http://repo.roscidus.com/utils/graphviz"/>
+	<requires interface="http://repo.roscidus.com/utils/graphviz">
+	  <environment insert="." name="GRAPHVIZ_HOME"/>
+	</requires>
 	<command name="run">
 	  <runner interface="http://repo.roscidus.com/java/openjdk-6-jre"/>
 	  <arg>eu.serscis.Eval</arg>

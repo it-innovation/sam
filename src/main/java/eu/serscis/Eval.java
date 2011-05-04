@@ -295,7 +295,20 @@ public class Eval {
 		writer.write("}\n");
 		writer.close();
 
-		Process proc = Runtime.getRuntime().exec(new String[] {"dot", "-O", "-Tpng", dotFile.getAbsolutePath()});
+		String dotBinary = "dot";
+		String graphvizHome = System.getenv("GRAPHVIZ_HOME");
+		if (graphvizHome != null) {
+			File bin = new File(graphvizHome, "bin");
+			File dotBinaryFile = new File(bin, "dot.exe");
+			if (bin.exists()) {
+				dotBinary = dotBinaryFile.toString();
+			} else {
+				dotBinaryFile = new File(bin, "dot");
+				dotBinary = dotBinaryFile.toString();
+			}
+		}
+
+		Process proc = Runtime.getRuntime().exec(new String[] {dotBinary, "-O", "-Tpng", dotFile.getAbsolutePath()});
 		int result = proc.waitFor();
 		if (result != 0) {
 			throw new RuntimeException("dot failed to run: exit status = " + result);
