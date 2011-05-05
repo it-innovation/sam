@@ -20,14 +20,17 @@ imports have also been processed.
 
      graphEdge("user", "store", "style=dashed").
 
+.. function:: showAllInvocations(?Object)
+
+   Configuration setting that causes the access graph to show all
+   invocations of Object explicitly on the graph. If false, these
+   invocations are aggregated with their object.
+
 .. function:: showInvocation(?Object, ?Invocation)
 
    Configuration setting that causes the access graph to show these
-   invocations of Object explicitly on the graph. If false, these
-   invocations are aggregated with their object. To graph all invocations,
-   use::
-
-     showInvocation(?Object, ?Invocation) :- live(?Object, ?Invocation).
+   specific invocations of Object explicitly on the graph. If false, these
+   invocations are aggregated with their object.
 
 Notation
 --------

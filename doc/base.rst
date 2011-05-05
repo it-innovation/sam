@@ -30,9 +30,9 @@ Objects
 Invocations
 -----------
 
-.. function:: live(?Object, ?Invocation)
+.. function:: liveMethod(?Object, ?Invocation, ?Method)
 
-   It is possible for `Object` to be invoked in the context `Invocation`.
+   It is possible for `Object.Method` to be invoked in the context `Invocation`.
 
 .. function:: isInvocation(?Invocation)
 

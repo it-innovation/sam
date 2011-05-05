@@ -69,8 +69,8 @@ didCall(?Caller, ?Invocation, ?CallSite, ?NewChild, ?Invocation, ?Method) :-
 	isA(?NewChild, ?ChildType),
 	hasConstructor(?ChildType, ?Method).
 
-live(?Target, ?TargetInvocation) :-
-	didCall(?AnyCaller, ?AnyCallerInvocation, ?AnyCallSite, ?Target, ?TargetInvocation, ?AnyMethod).
+liveMethod(?Target, ?TargetInvocation, ?Method) :-
+	didCall(?AnyCaller, ?AnyCallerInvocation, ?AnyCallSite, ?Target, ?TargetInvocation, ?Method).
 
 /* Caller might call some target which may return Value. */
 didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue) :-
@@ -104,9 +104,7 @@ local(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
 	didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue).
 
 didCreate(?Caller, ?Invocation, ?CallSite, ?Child) :-
-	live(?Caller, ?Invocation),
-	isA(?Caller, ?Type),
-	hasMethod(?Type, ?Method),
+	liveMethod(?Caller, ?Invocation, ?Method),
 	hasCallSite(?Method, ?CallSite),
 	mayCreate(?CallSite, ?ChildType),
 	realNewObject(?Caller, ?Invocation, ?ChildType, ?Child).

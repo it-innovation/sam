@@ -37,7 +37,7 @@ declare isA(?Object, ?Type).
 declare isInvocation(?Invocation).
 declare isObject(?Object).
 declare live(?Object).
-declare live(?Object, ?Invocation).
+declare liveMethod(?Object, ?Invocation, ?Method).
 declare local(?Object, ?Invocation, ?VarName, ?Value).
 declare realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
 declare invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
@@ -56,6 +56,7 @@ declare missingGoodAccess(?SourceObject, ?TargetObject).
 declare graphNode(?Node, ?Attrs).
 declare graphEdge(?Source, ?Target, ?Attrs).
 declare debugEdge(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation).
+declare showAllInvocations(?Object).
 declare showInvocation(?Object, ?Invocation).
 
 declare didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
@@ -112,12 +113,16 @@ isA(?NewObject, ?Type) :- realNewObject(?Object, ?Invocation, ?Type, ?NewObject)
 
 /* predicates on invocations */
 
-live(?Object, ?Invocation) :- initialInvocation(?Object, ?Invocation).
+liveMethod(?Object, ?Invocation, ?Method) :-
+	isA(?Object, ?Type),
+	hasMethod(?Type, ?Method),
+	initialInvocation(?Object, ?Invocation).
+
 isInvocation(?Invocation) :- initialInvocation(?Object, ?Invocation).
 isInvocation(?Invocation) :- invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?Invocation).
 
 /* Every invocation has a "this" variable with a reference to its object. */
-local(?Object, ?Invocation, "this", ?Object) :- isObject(?Object), live(?Object, ?Invocation).
+local(?Object, ?Invocation, "this", ?Object) :- liveMethod(?Object, ?Invocation, ?AnyMethod).
 
 /* Local or field */
 value(?Object, ?Invocation, ?Var, ?Value) :- local(?Object, ?Invocation, ?Var, ?Value).

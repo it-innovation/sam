@@ -39,7 +39,7 @@ hasRef(?Object, ?Invocation, ?Value) :- value(?Object, ?Invocation, ?AnyVar, ?Va
 error("Not an object (no type!)", ?Object) :- hasRef(?AnyObject, ?X, ?Object), !isObject(?Object).
 
 error("Live invocation for non-alive object", ?Invocation, ?Object) :-
-	live(?Object, ?Invocation), !live(?Object).
+	liveMethod(?Object, ?Invocation, ?Method), !live(?Object).
 
 getsAccess(?SourceObject, ?TargetObject) :-
 	hasRef(?SourceObject, ?AnyInvocation, ?TargetObject).

@@ -48,4 +48,4 @@ error("otherClient may access some clientA.myTask") :-
 
 /* Graphing */
 
-showInvocation("factory", ?Invocation) :- isInvocation(?Invocation).
+showAllInvocations("factory").

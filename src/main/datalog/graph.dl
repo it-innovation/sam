@@ -152,20 +152,22 @@ graphEdge(?GraphSourceNode, ?GraphTargetNode, "style=dashed") :-
 
 /* Show invocation objects */
 
+showInvocation(?Object, ?Invocation) :- showAllInvocations(?Object), liveMethod(?Object, ?Invocation, ?AnyMethod).
+
 graphNode(?InvocationNode, "color=green,fontcolor=green") :-
-	live(?Object, ?Invocation),
+	liveMethod(?Object, ?Invocation, ?AnyMethod),
 	showInvocation(?Object, ?Invocation),
 	graphInvocation(?Object, ?Invocation, ?InvocationNode).
 
-shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation) :- live(?Target, ?TargetInvocation), showInvocation(?Source, ?SourceInvocation).
-shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation) :- live(?Source, ?SourceInvocation), showInvocation(?Target, ?TargetInvocation).
+shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation) :- liveMethod(?Target, ?TargetInvocation, ?AnyMethod), showInvocation(?Source, ?SourceInvocation).
+shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation) :- liveMethod(?Source, ?SourceInvocation, ?AnyMethod), showInvocation(?Target, ?TargetInvocation).
 
 /* Which graph object is used to represent this invocation. */
 graphInvocation(?Object, ?Invocation, ?Str) :-
 	showInvocation(?Object, ?Invocation),
 	STRING_CONCAT(?Object, "#", ?Prefix),
 	STRING_CONCAT(?Prefix, ?Invocation, ?Str).
-graphInvocation(?Object, ?Invocation, ?Object) :- live(?Object, ?Invocation), !showInvocation(?Object, ?Invocation).
+graphInvocation(?Object, ?Invocation, ?Object) :- liveMethod(?Object, ?Invocation, ?AnyMethod), !showInvocation(?Object, ?Invocation).
 
 graphInvocationEdge(?GraphSourceNode, ?GraphTargetNode) :-
 	shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation),

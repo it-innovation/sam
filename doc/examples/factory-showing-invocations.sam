@@ -31,7 +31,7 @@ newObject("factory", "other", "Task", "newTasksOthers").
 
 /* Graphing */
 
-showInvocation("factory", ?Invocation) :- live("factory", ?Invocation).
+showAllInvocations("factory").
 
 
 /* Goals */

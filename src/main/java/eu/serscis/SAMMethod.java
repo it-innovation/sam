@@ -130,10 +130,7 @@ class SAMMethod {
 
 					// mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Value) :-
 					//	isA(?Caller, ?Type),
-					//	live(?Caller, ?CallerInvocation),
-					//	hasMethod(?Type, ?Method),
-					//	hasCallSite(?Method, ?CallSite),
-					//	mayCall(?CallSite, ?TargetVar),
+					//	liveMethod(?Caller, ?CallerInvocation, method),
 					//	value(?Caller, ?CallerInvocation, ?TargetVar, ?Value).
 
 					ITuple tuple = BASIC.createTuple(
@@ -147,11 +144,12 @@ class SAMMethod {
 					ILiteral isA = BASIC.createLiteral(true, BASIC.createAtom(isAP, BASIC.createTuple(
 								TERM.createVariable("Caller"),
 								TERM.createString(this.parent.name))));
-					ILiteral live = BASIC.createLiteral(true, BASIC.createAtom(live2P, BASIC.createTuple(
+					ILiteral liveMethod = BASIC.createLiteral(true, BASIC.createAtom(liveMethodP, BASIC.createTuple(
 								TERM.createVariable("Caller"),
-								TERM.createVariable("CallerInvocation"))));
+								TERM.createVariable("CallerInvocation"),
+								methodNameFull)));
 
-					IRule rule = BASIC.createRule(makeList(head), makeList(isA, live, getValue(callExpr.getName())));
+					IRule rule = BASIC.createRule(makeList(head), makeList(isA, liveMethod, getValue(callExpr.getName())));
 					//System.out.println(rule);
 					parent.model.rules.add(rule);
 
@@ -258,7 +256,7 @@ class SAMMethod {
 	private void returnOrThrow(IPredicate pred, ITerm methodNameFull, TName name) throws ParserException {
 		// mayReturn(?Target, ?TargetInvocation, ?Method, ?Value) :-
 		//	isA(?Target, name),
-		//	live(?Target, ?TargetInvocation),
+		//	liveMethod(?Target, ?TargetInvocation, ?Method),
 		//	(value)
 		ITuple tuple = BASIC.createTuple(
 				// XXX: badly named: should be Target, but getValue uses "Caller"
@@ -272,9 +270,10 @@ class SAMMethod {
 		ILiteral isA = BASIC.createLiteral(true, BASIC.createAtom(isAP, BASIC.createTuple(
 					TERM.createVariable("Caller"),
 					TERM.createString(this.parent.name))));
-		ILiteral live = BASIC.createLiteral(true, BASIC.createAtom(live2P, BASIC.createTuple(
+		ILiteral live = BASIC.createLiteral(true, BASIC.createAtom(liveMethodP, BASIC.createTuple(
 					TERM.createVariable("Caller"),
-					TERM.createVariable("CallerInvocation"))));
+					TERM.createVariable("CallerInvocation"),
+					methodNameFull)));
 
 		IRule rule = BASIC.createRule(makeList(head), makeList(isA, live, getValue(name)));
 		//System.out.println(rule);

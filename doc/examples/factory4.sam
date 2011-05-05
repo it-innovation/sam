@@ -42,4 +42,4 @@ requireAccess("clientA", "aTask").
 
 /* Graphing */
 
-showInvocation("factory", ?Invocation) :- isInvocation(?Invocation).
+showAllInvocations("factory").
