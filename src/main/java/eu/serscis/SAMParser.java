@@ -143,11 +143,6 @@ public class SAMParser {
 		return queries;
 	}
 
-	private String getString(TStringLiteral literal) {
-		String str = literal.getText();
-		return str.substring(1, str.length() - 1);	// TODO: ignores escapes
-	}
-
 	private ITerm parseTerm(PTerm parsed) {
 		if (parsed instanceof AStringTerm) {
 			String str = getString(((AStringTerm) parsed).getStringLiteral());

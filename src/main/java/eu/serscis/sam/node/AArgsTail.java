@@ -8,7 +8,7 @@ import eu.serscis.sam.analysis.*;
 public final class AArgsTail extends PArgsTail
 {
     private TComma _comma_;
-    private TName _name_;
+    private PExpr _expr_;
 
     public AArgsTail()
     {
@@ -17,12 +17,12 @@ public final class AArgsTail extends PArgsTail
 
     public AArgsTail(
         @SuppressWarnings("hiding") TComma _comma_,
-        @SuppressWarnings("hiding") TName _name_)
+        @SuppressWarnings("hiding") PExpr _expr_)
     {
         // Constructor
         setComma(_comma_);
 
-        setName(_name_);
+        setExpr(_expr_);
 
     }
 
@@ -31,7 +31,7 @@ public final class AArgsTail extends PArgsTail
     {
         return new AArgsTail(
             cloneNode(this._comma_),
-            cloneNode(this._name_));
+            cloneNode(this._expr_));
     }
 
     public void apply(Switch sw)
@@ -64,16 +64,16 @@ public final class AArgsTail extends PArgsTail
         this._comma_ = node;
     }
 
-    public TName getName()
+    public PExpr getExpr()
     {
-        return this._name_;
+        return this._expr_;
     }
 
-    public void setName(TName node)
+    public void setExpr(PExpr node)
     {
-        if(this._name_ != null)
+        if(this._expr_ != null)
         {
-            this._name_.parent(null);
+            this._expr_.parent(null);
         }
 
         if(node != null)
@@ -86,7 +86,7 @@ public final class AArgsTail extends PArgsTail
             node.parent(this);
         }
 
-        this._name_ = node;
+        this._expr_ = node;
     }
 
     @Override
@@ -94,7 +94,7 @@ public final class AArgsTail extends PArgsTail
     {
         return ""
             + toString(this._comma_)
-            + toString(this._name_);
+            + toString(this._expr_);
     }
 
     @Override
@@ -107,9 +107,9 @@ public final class AArgsTail extends PArgsTail
             return;
         }
 
-        if(this._name_ == child)
+        if(this._expr_ == child)
         {
-            this._name_ = null;
+            this._expr_ = null;
             return;
         }
 
@@ -126,9 +126,9 @@ public final class AArgsTail extends PArgsTail
             return;
         }
 
-        if(this._name_ == oldChild)
+        if(this._expr_ == oldChild)
         {
-            setName((TName) newChild);
+            setExpr((PExpr) newChild);
             return;
         }
 

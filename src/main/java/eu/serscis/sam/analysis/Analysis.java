@@ -54,6 +54,7 @@ public interface Analysis extends Switch
     void caseACatchBlock(ACatchBlock node);
     void caseANewExpr(ANewExpr node);
     void caseACallExpr(ACallExpr node);
+    void caseAStringExpr(AStringExpr node);
     void caseACopyExpr(ACopyExpr node);
     void caseAArgs(AArgs node);
     void caseAArgsTail(AArgsTail node);

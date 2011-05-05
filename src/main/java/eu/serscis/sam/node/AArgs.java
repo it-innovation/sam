@@ -8,7 +8,7 @@ import eu.serscis.sam.analysis.*;
 @SuppressWarnings("nls")
 public final class AArgs extends PArgs
 {
-    private TName _name_;
+    private PExpr _expr_;
     private final LinkedList<PArgsTail> _argsTail_ = new LinkedList<PArgsTail>();
 
     public AArgs()
@@ -17,11 +17,11 @@ public final class AArgs extends PArgs
     }
 
     public AArgs(
-        @SuppressWarnings("hiding") TName _name_,
+        @SuppressWarnings("hiding") PExpr _expr_,
         @SuppressWarnings("hiding") List<PArgsTail> _argsTail_)
     {
         // Constructor
-        setName(_name_);
+        setExpr(_expr_);
 
         setArgsTail(_argsTail_);
 
@@ -31,7 +31,7 @@ public final class AArgs extends PArgs
     public Object clone()
     {
         return new AArgs(
-            cloneNode(this._name_),
+            cloneNode(this._expr_),
             cloneList(this._argsTail_));
     }
 
@@ -40,16 +40,16 @@ public final class AArgs extends PArgs
         ((Analysis) sw).caseAArgs(this);
     }
 
-    public TName getName()
+    public PExpr getExpr()
     {
-        return this._name_;
+        return this._expr_;
     }
 
-    public void setName(TName node)
+    public void setExpr(PExpr node)
     {
-        if(this._name_ != null)
+        if(this._expr_ != null)
         {
-            this._name_.parent(null);
+            this._expr_.parent(null);
         }
 
         if(node != null)
@@ -62,7 +62,7 @@ public final class AArgs extends PArgs
             node.parent(this);
         }
 
-        this._name_ = node;
+        this._expr_ = node;
     }
 
     public LinkedList<PArgsTail> getArgsTail()
@@ -89,7 +89,7 @@ public final class AArgs extends PArgs
     public String toString()
     {
         return ""
-            + toString(this._name_)
+            + toString(this._expr_)
             + toString(this._argsTail_);
     }
 
@@ -97,9 +97,9 @@ public final class AArgs extends PArgs
     void removeChild(@SuppressWarnings("unused") Node child)
     {
         // Remove child
-        if(this._name_ == child)
+        if(this._expr_ == child)
         {
-            this._name_ = null;
+            this._expr_ = null;
             return;
         }
 
@@ -115,9 +115,9 @@ public final class AArgs extends PArgs
     void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
         // Replace child
-        if(this._name_ == oldChild)
+        if(this._expr_ == oldChild)
         {
-            setName((TName) newChild);
+            setExpr((PExpr) newChild);
             return;
         }
 

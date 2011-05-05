@@ -28,6 +28,7 @@
 
 package eu.serscis;
 
+import eu.serscis.sam.node.TStringLiteral;
 import java.util.List;
 import java.util.Arrays;
 import org.deri.iris.api.basics.IPredicate;
@@ -62,4 +63,10 @@ public class Constants {
 	static <X> List<X> makeList(X... items) {
 		return Arrays.asList(items);
 	}
+
+	static String getString(TStringLiteral literal) {
+		String str = literal.getText();
+		return str.substring(1, str.length() - 1);	// TODO: ignores escapes
+	}
+
 }

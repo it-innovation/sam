@@ -346,15 +346,7 @@ class SAMMethod {
 	 * 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	 *	local|field,
 	 */
-	private void addArg(String callSite, int pos, TName varName) throws ParserException {
-		ILiteral head = BASIC.createLiteral(true, maySendP, BASIC.createTuple(
-					TERM.createVariable("Target"),
-					TERM.createVariable("TargetInvocation"),
-					TERM.createVariable("Method"),
-					CONCRETE.createInt(pos),
-					TERM.createVariable("Value")
-					));
-		
+	private void addArg(String callSite, int pos, PExpr expr) throws ParserException {
 		ILiteral didCall = BASIC.createLiteral(true, didCallP, BASIC.createTuple(
 					TERM.createVariable("Caller"),
 					TERM.createVariable("CallerInvocation"),
@@ -364,7 +356,31 @@ class SAMMethod {
 					TERM.createVariable("Method")
 					));
 
-		IRule rule = BASIC.createRule(makeList(head), makeList(didCall, getValue(varName)));
+		IRule rule;
+
+		if (expr instanceof AStringExpr) {
+			ILiteral head = BASIC.createLiteral(true, maySendP, BASIC.createTuple(
+						TERM.createVariable("Target"),
+						TERM.createVariable("TargetInvocation"),
+						TERM.createVariable("Method"),
+						CONCRETE.createInt(pos),
+						TERM.createString(getString(((AStringExpr) expr).getStringLiteral()))
+						));
+
+			rule = BASIC.createRule(makeList(head), makeList(didCall));
+		} else {
+			TName varName = ((ACopyExpr) expr).getName();
+			ILiteral head = BASIC.createLiteral(true, maySendP, BASIC.createTuple(
+						TERM.createVariable("Target"),
+						TERM.createVariable("TargetInvocation"),
+						TERM.createVariable("Method"),
+						CONCRETE.createInt(pos),
+						TERM.createVariable("Value")
+						));
+
+			rule = BASIC.createRule(makeList(head), makeList(didCall, getValue(varName)));
+		}
+
 		parent.model.rules.add(rule);
 		//System.out.println(rule);
 	}
@@ -374,13 +390,13 @@ class SAMMethod {
 			return;
 		}
 		int pos = 0;
-		TName arg0 = args.getName();
+		PExpr arg0 = args.getExpr();
 
 		addArg(callSite, pos, arg0);
 
 		for (PArgsTail tail : args.getArgsTail()) {
 			pos += 1;
-			TName arg = ((AArgsTail) tail).getName();
+			PExpr arg = ((AArgsTail) tail).getExpr();
 			addArg(callSite, pos, arg);
 		}
 	}

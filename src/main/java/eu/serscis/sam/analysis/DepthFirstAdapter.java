@@ -1237,6 +1237,27 @@ public class DepthFirstAdapter extends AnalysisAdapter
         outACallExpr(node);
     }
 
+    public void inAStringExpr(AStringExpr node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAStringExpr(AStringExpr node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAStringExpr(AStringExpr node)
+    {
+        inAStringExpr(node);
+        if(node.getStringLiteral() != null)
+        {
+            node.getStringLiteral().apply(this);
+        }
+        outAStringExpr(node);
+    }
+
     public void inACopyExpr(ACopyExpr node)
     {
         defaultIn(node);
@@ -1272,9 +1293,9 @@ public class DepthFirstAdapter extends AnalysisAdapter
     public void caseAArgs(AArgs node)
     {
         inAArgs(node);
-        if(node.getName() != null)
+        if(node.getExpr() != null)
         {
-            node.getName().apply(this);
+            node.getExpr().apply(this);
         }
         {
             List<PArgsTail> copy = new ArrayList<PArgsTail>(node.getArgsTail());
@@ -1304,9 +1325,9 @@ public class DepthFirstAdapter extends AnalysisAdapter
         {
             node.getComma().apply(this);
         }
-        if(node.getName() != null)
+        if(node.getExpr() != null)
         {
-            node.getName().apply(this);
+            node.getExpr().apply(this);
         }
         outAArgsTail(node);
     }

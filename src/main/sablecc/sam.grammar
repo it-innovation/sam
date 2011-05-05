@@ -108,9 +108,10 @@ Productions
   catch_block = catch l_par type name r_par l_brace statement* r_brace;
   expr = {new} new type l_par args? r_par
        | {call} name dot [method]:pattern l_par args? r_par
+       | {string} string_literal
        | {copy} name;
-  args = name args_tail*;
-  args_tail = comma name;
+  args = expr args_tail*;
+  args_tail = comma expr;
   param = type name;
   params = param params_tail*;
   params_tail = comma param;

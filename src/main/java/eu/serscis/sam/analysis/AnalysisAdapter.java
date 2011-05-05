@@ -279,6 +279,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseAStringExpr(AStringExpr node)
+    {
+        defaultCase(node);
+    }
+
     public void caseACopyExpr(ACopyExpr node)
     {
         defaultCase(node);
