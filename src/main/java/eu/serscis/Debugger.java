@@ -191,6 +191,7 @@ public class Debugger {
 
 			long bestTrue = -1;
 			List<ILiteral> bestLiterals = null;
+			List<ILiteral> bestNegatives = null;
 
 			for (int t = 0; t < internalAssignments.size(); ++t ) {
 				ITuple resultTuple = internalAssignments.get(t);
@@ -233,6 +234,7 @@ public class Debugger {
 				if (bestTrue == -1 || lastTrue < bestTrue) {
 					bestTrue = lastTrue;
 					bestLiterals = newLiterals;
+					bestNegatives = negatives;
 				}
 			}
 
@@ -242,8 +244,40 @@ public class Debugger {
 			for (ILiteral lit : bestLiterals) {
 				showGraph(lit, indent, seen, reporter);
 			}
+			for (ILiteral lit : bestNegatives) {
+				explainNegative(lit, indent);
+			}
 		} finally {
 			reporter.leave(problem);
+		}
+	}
+
+	/* Why was this false? */
+	private void explainNegative(ILiteral lit, String indent) throws Exception {
+		boolean needHeader = true;
+
+		IPredicate targetPred = lit.getAtom().getPredicate();
+
+		for (IRule rule : rules) {
+			List<ILiteral> heads = rule.getHead();
+			if (heads.size() != 1) {
+				throw new RuntimeException("Multiple heads!");
+			}
+			ILiteral head = heads.get(0);
+			IPredicate pred = head.getAtom().getPredicate();
+			if (pred.equals(targetPred)) {
+				if (needHeader) {
+					System.out.println(indent + lit + "; none of these was true:");
+					needHeader = false;
+				}
+
+				System.out.println(indent + "   " + rule);
+				System.out.println(indent + "   " + unify(rule, lit));
+			}
+		}
+
+		if (needHeader) {
+			System.out.println(indent + lit + "; no rules for this predicate");
 		}
 	}
 
