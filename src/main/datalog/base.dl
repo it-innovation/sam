@@ -96,10 +96,8 @@ declare debug.
 realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation) :-
 	invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
 realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?CallerInvocation) :-
-	isA(?Caller, ?CallerType),
-	hasMethod(?CallerType, ?Method),
+	liveMethod(?Caller, ?CallerInvocation, ?Method),
 	hasCallSite(?Method, ?CallSite),
-	isInvocation(?CallerInvocation),
 	!invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?AnyTargetInvocation).
 
 
