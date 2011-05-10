@@ -134,7 +134,12 @@ public class Debugger {
 		recorder.showImportantSteps(edges);
 	}
 
-	private IQuery unify(IRule rule, ILiteral problem) throws Exception {
+	/* Replace the variables in rule, where the variables in the head have the values in problem.
+	 * Returns the transformed body of the rule if possible.
+	 * If not possible (e.g. there are literals in the head that don't match) then
+	 * throw an exception, or return null (if not strict).
+	 */
+	private IQuery unify(IRule rule, ILiteral problem, boolean strict) throws Exception {
 		Map<IVariable,ITerm> varMap = new HashMap<IVariable,ITerm>();
 
 		List<ILiteral> heads = rule.getHead();
@@ -144,7 +149,11 @@ public class Debugger {
 		ILiteral head = heads.get(0);
 
 		if (!TermMatchingAndSubstitution.unify(problem.getAtom().getTuple(), head.getAtom().getTuple(), varMap)) {
-			throw new RuntimeException("Failed to unify: " + problem);
+			if (strict) {
+				throw new RuntimeException("Failed to unify: " + problem);
+			} else {
+				return null;
+			}
 		}
 
 		List<ILiteral> newLiterals = new LinkedList<ILiteral>();
@@ -179,7 +188,7 @@ public class Debugger {
 				return;		// initial fact
 			}
 
-			IQuery ruleQ = unify(rule, problem);
+			IQuery ruleQ = unify(rule, problem, true);
 			System.out.println(indent + ruleQ);
 
 			/* Check internal variable assignments that make this rule true, and select the
@@ -266,13 +275,17 @@ public class Debugger {
 			ILiteral head = heads.get(0);
 			IPredicate pred = head.getAtom().getPredicate();
 			if (pred.equals(targetPred)) {
-				if (needHeader) {
-					System.out.println(indent + lit + "; none of these was true:");
-					needHeader = false;
-				}
+				IQuery unified = unify(rule, lit, false);
 
-				System.out.println(indent + "   " + rule);
-				System.out.println(indent + "   " + unify(rule, lit));
+				if (unified != null) {
+					if (needHeader) {
+						System.out.println(indent + lit + "; none of these was true:");
+						needHeader = false;
+					}
+
+					System.out.println(indent + "   " + rule);
+					System.out.println(indent + "   " + unified);
+				}
 			}
 		}
 
