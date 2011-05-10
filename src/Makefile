@@ -42,4 +42,5 @@ parser:
 	java -jar ${SRCDIR}/sablecc.jar -d ${SRCDIR}/src/main/java ${SRCDIR}/src/main/sablecc/sam.grammar
 
 tests:
-	${SAM} ${SRCDIR}/src/test/TestUnknown.sam
+	${SAM} ${SRCDIR}/src/test/testUnknown.sam
+	${SAM} ${SRCDIR}/src/test/testMatching.sam

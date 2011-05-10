@@ -1,0 +1,18 @@
+class Any {
+    public void *(Object foo) {
+        foo.*(this);
+    }
+}
+
+class Runner2 {
+    public void test() {
+        Object matcher = new Any();
+        Object target = new Unknown();
+        matcher.foo(target);
+    }
+}
+
+initialObject("runner2", "Runner2").
+initialInvocation("runner2", "test").
+
+requireAccess("testUnknown", "testAny").
