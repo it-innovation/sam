@@ -4,7 +4,7 @@ SAM = 0launch ${BINARYFEED}
 
 SBUILDDIR      = ${DISTDIR}/doc
 ALLSPHINXOPTS   = -d $(SBUILDDIR)/doctrees
-all: htmldoc
+all: htmldoc tests
 
 JAVA_SOURCES = $(wildcard ${SRCDIR}/src/main/java/eu/serscis/*.java) \
 	       $(wildcard ${SRCDIR}/src/main/java/eu/serscis/sam/*/*.java)
@@ -40,3 +40,6 @@ parser:
 	rm -rf ${SRCDIR}/src/main/java/eu/serscis/sam/analysis/*
 	rm -rf ${SRCDIR}/src/main/java/eu/serscis/sam/node/*
 	java -jar ${SRCDIR}/sablecc.jar -d ${SRCDIR}/src/main/java ${SRCDIR}/src/main/sablecc/sam.grammar
+
+tests:
+	${SAM} ${SRCDIR}/src/test/TestUnknown.sam

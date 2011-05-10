@@ -1,0 +1,28 @@
+class Diode {
+    private Object myValue;
+
+    public Diode(Object value) {
+        myValue = value;
+    }
+
+    public void invoke() {
+        myValue.*();
+    }
+}
+
+class Target extends Unknown {}
+
+class Runner {
+    public void test() {
+        Object x = new Target();
+        Object diode = new Diode(x);
+        Object y = new Unknown(diode);
+    }
+}
+
+initialObject("runner", "Runner").
+initialInvocation("runner", "test").
+
+debug :- isA(?X, "Unknown"),
+    getsAccess(?X, ?Y),
+    !field(?X, "ref", ?Y).

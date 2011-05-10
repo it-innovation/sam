@@ -229,7 +229,7 @@ class SAMMethod {
 								BASIC.createTuple(
 									TERM.createVariable("Object"),
 									TERM.createVariable("Invocation"),
-									TERM.createString(cb.getName().getText()),
+									TERM.createString(expandLocal(cb.getName().getText())),
 									TERM.createVariable("Exception"))));
 					ILiteral didGetException = BASIC.createLiteral(true, BASIC.createAtom(didGetExceptionP,
 								BASIC.createTuple(
