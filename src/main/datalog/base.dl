@@ -46,6 +46,7 @@ declare hasMethod(?Type, ?Method).
 declare hasCallSite(?Method, ?CallSite).
 declare initialObject(?Object, ?Type).
 declare initialInvocation(?Object, ?Invocation).
+declare realInitialInvocation(?Object, ?Invocation).
 declare realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild).
 declare denyAccess(?Object, ?Target).
 declare requireAccess(?Object, ?Target).
@@ -114,10 +115,17 @@ isA(?NewObject, ?Type) :- realNewObject(?Object, ?Invocation, ?Type, ?NewObject)
 liveMethod(?Object, ?Invocation, ?Method) :-
 	isA(?Object, ?Type),
 	hasMethod(?Type, ?Method),
-	initialInvocation(?Object, ?Invocation).
+	realInitialInvocation(?Object, ?Invocation).
 
-isInvocation(?Invocation) :- initialInvocation(?Object, ?Invocation).
+isInvocation(?Invocation) :- realInitialInvocation(?Object, ?Invocation).
 isInvocation(?Invocation) :- invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?Invocation).
+
+
+/* assume Unknown objects are initially active in the "unknown" context, unless the user specified
+ * a separate context.
+ */
+realInitialInvocation(?Object, ?Invocation) :- initialInvocation(?Object, ?Invocation).
+realInitialInvocation(?Object, "unknown") :- initialObject(?Object, "Unknown"), !initialInvocation(?Object, ?AnyInvocation).
 
 /* Every invocation has a "this" variable with a reference to its object. */
 local(?Object, ?Invocation, "this", ?Object) :- liveMethod(?Object, ?Invocation, ?AnyMethod).

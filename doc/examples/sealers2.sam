@@ -18,6 +18,15 @@ field("withUnsealer2", "ref", "unsealer").
 
 initialInvocation("sender", "A").
 
+/* Define different initial invocation contexts for these,
+ * otherwise they both get aggregated into the "unknown" context by default.
+ */
+initialInvocation("precious1", "1").
+initialInvocation("withUnsealer1", "1").
+
+initialInvocation("precious2", "2").
+initialInvocation("withUnsealer2", "2").
+
 showAllInvocations("unsealer").
 
 invocationObject("sender", "A", "Sender.test-1", "1").
