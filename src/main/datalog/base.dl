@@ -30,6 +30,7 @@
 
 /* declarations */
 
+declare definedType(?Type).
 declare field(?Object, ?FieldName, ?Value).
 declare getsAccess(?SourceObject, ?TargetObject).
 declare haveBadAccess(?SourceObject, ?TargetObject).
@@ -108,6 +109,8 @@ isObject(?X) :- isA(?X, ?Type).
 live(?Object) :- initialObject(?Object, ?Type).
 isA(?Object, ?Type) :- initialObject(?Object, ?Type).
 isA(?NewObject, ?Type) :- realNewObject(?Object, ?Invocation, ?Type, ?NewObject).
+isType(?Type) :- definedType(?Type).
+isA(?Object, "Unknown") :- isA(?Object, ?Type), !definedType(?Type).
 
 
 /* predicates on invocations */

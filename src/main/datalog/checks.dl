@@ -56,5 +56,3 @@ error("Local on non-invocation", ?Invocation, ?Var, ?Value) :- local(?Object, ?I
 objectHasField(?Object, ?Field) :- isA(?Object, ?Type), hasField(?Type, ?Field).
 error("Undeclared field", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !objectHasField(?Object, ?Var).
 error("Field on non-object", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !isObject(?Object).
-
-error("Object has undefined type", ?Object, ?Type) :- isA(?Object, ?Type), !isType(?Type).

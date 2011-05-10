@@ -81,8 +81,8 @@ class SAMClass {
 	}
 
 	public void addDatalog() throws Exception {
-		IRelation isType = model.getRelation(isTypeP);
-		isType.add(BASIC.createTuple(TERM.createString(name)));
+		IRelation definedType = model.getRelation(definedTypeP);
+		definedType.add(BASIC.createTuple(TERM.createString(name)));
 
 		AExtends extend = (AExtends) behaviour.getExtends();
 		if (extend != null) {
