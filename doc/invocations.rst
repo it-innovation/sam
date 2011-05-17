@@ -55,3 +55,7 @@ Generated predicates
    The `realInvocationObject` relation is copied from `invocationObject`, but
    has a suitable default whenever `invocationObject` wasn't defined.
 
+.. function:: realInitialInvocation(?Object, ?Invocation)
+
+   Usually the same as :func:`initialInvocation`, but if `Object` is of type `Unknown` and has
+   no initialInvocation defined, then it gets an "unknown" context assigned to it.

@@ -8,6 +8,14 @@ Types
 
    True if `Type` is the type of some object.
 
+.. function:: definedType(?Type)
+
+   A type whose behaviour was defined in the model file. This is used to give
+   undefined types the Unknown behaviour, rather than no behaviour::
+
+     isA(?Object, "Unknown") :- isA(?Object, ?Type), !definedType(?Type).
+
+
 Objects
 -------
 
