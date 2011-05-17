@@ -3,3 +3,7 @@ div.highlight-none div.highlight pre {
 	background: #666;
 	border: none;
 }
+
+table th {
+	background-color: white;
+}
