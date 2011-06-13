@@ -57,8 +57,11 @@ methodMatches(?CallSite, ?Target, ?Method) :-	/* Any call matches a "*" method *
 	isObject(?Target).
 
 /* Assume caller did a call if caller might do "Object resultVar = targetObject.do(argValue)" */
+/* note: can't rely on accessAllowed's hasMethod, becauser use may provide their own */
 didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method) :-
 	mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target),
+	isA(?Target, ?TargetType),
+	hasMethod(?TargetType, ?Method),
 	methodMatches(?CallSite, ?Target, ?Method),
 	accessAllowed(?Caller, ?Target, ?Method),
 	realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
