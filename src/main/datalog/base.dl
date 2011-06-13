@@ -84,6 +84,7 @@ declare maySend(?Target, ?TargetInvocation, ?Method, ?ArgValue).
 declare maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue).
 declare mayCreate(?CallSite, ?ChildType).
 declare newObject(?Object, ?Invocation, ?ChildType, ?NewObject).
+declare isPublic(?Object).
 declare debug.
 
 

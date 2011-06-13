@@ -38,6 +38,7 @@ Notation
 .. graphviz::
 
    digraph notation {
+     Public [shape=record];
      node [shape=plaintext];
      A -> B [label="field"];
      C [label="C\n(unknown behaviour)",fontcolor=red];
@@ -50,6 +51,8 @@ Notation
      invocationOfA -> A [style=bold,label="this",style=dashed];
      invocationOfB -> B [style=bold,label="this",style=dashed];
      invocationOfB -> C [label="local",style=dashed];
+
+     Public -> A;
    }
 
 This diagram shows:
@@ -61,3 +64,5 @@ This diagram shows:
   behaviour.
 * `A` has access to `D`, but shouldn't.
 * `B` should be able to get access to `A`, but can't.
+* `Public` has been marked as public; see :func:`isPublic`. References to it are not shown, to avoid
+  cluttering up the graph.

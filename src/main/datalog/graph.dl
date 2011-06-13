@@ -40,9 +40,17 @@ declare shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvoca
 declare uncalledEdge(?Source, ?Target).
 declare problemEdge(?Source, ?Target).
 declare errorEdge(?Source, ?Target).
+declare isBoring(?Source, ?Target).
+
+/* Every unknown object knows the address of every public object, so don't bother showing that. */
+isBoring(?Source, ?Target) :-
+	isA(?Source, "Unknown"),
+	isPublic(?Target),
+	!accessAllowed(?Source, ?Target).
 
 /* Graphing */
 
+graphNode(?Object, "shape=record") :- live(?Object), isPublic(?Object).
 graphNode(?Object, "fontcolor=red") :- live(?Object), isA(?Object, "Unknown").
 graphNode(?Object, "") :- live(?Object), isObject(?Object), !isA(?Object, "Unknown").
 
@@ -66,12 +74,14 @@ calledEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode) :-
 	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
 	graphInvocation(?Target, ?TargetInvocation, ?GraphTargetNode),
 	didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	!isBoring(?Source, ?Target),
 	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target).
 
 calledEdgeViaField(?GraphSourceNode, ?GraphTargetNode) :-
 	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
 	graphInvocation(?Target, ?TargetInvocation, ?GraphTargetNode),
 	didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	!isBoring(?Source, ?Target),
 	field(?Source, ?AnyVar, ?Target).
 
 /* (invocation to invocation) */
@@ -97,10 +107,13 @@ uncalledEdge(?GraphSourceNode, ?Target) :-
 	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target),
 	!didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
 
-/* (object to object) */
+/* (object to object)
+ * Ignores public objects to avoid cluttering the graph.
+ */
 uncalledEdge(?Source, ?Target) :-
 	field(?Source, ?AnyLocal, ?Target),
-	!didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
+	!didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	!isBoring(?Source, ?Target).
 
 /* Hide arrows that have higher-priority replacements. */
 
