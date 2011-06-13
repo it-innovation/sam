@@ -1,4 +1,7 @@
-class Task {}
+class Task {
+  public void use() {
+  }
+}
 
 class Factory {
   public Task newInstance() {
