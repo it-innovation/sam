@@ -38,6 +38,11 @@ Assertions
 
    Fail the model and indicate the problem with a dotted red arrow on the graph.
 
+.. function:: expectFailure
+
+   Indicates that this scenario is expected to fail. Normally, SAM exits with a status
+   code of 0 if the model passes, or 1 on failure. This reverses the test.
+
 Debugging
 ---------
 

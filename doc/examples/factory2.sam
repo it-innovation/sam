@@ -32,3 +32,5 @@ requireAccess("clientA", "aTask").
 /* (force SAM to find the obvious problem first) */
 invocationObject("otherClients", "a", "Unknown.*-3", "other").
 
+
+expectFailure.

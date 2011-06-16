@@ -65,3 +65,6 @@ field("owner", "delegate", "delegate").
 initialInvocation("owner", "a").
 
 denyAccess("delegate", "aReadOnly").
+
+
+expectFailure.

@@ -49,3 +49,6 @@ haveBadAccess(?Caller, ?Target) :-
 // 2. compiler invokes billing.append()
 desiredAuthority("compiler", "output", "File.write").
 desiredAuthority("compiler", "billing", "File.append").
+
+
+expectFailure.

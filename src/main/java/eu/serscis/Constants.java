@@ -35,6 +35,7 @@ import org.deri.iris.api.basics.IPredicate;
 import static org.deri.iris.factory.Factory.*;
 
 public class Constants {
+	static public IPredicate expectFailureP = BASIC.createPredicate("expectFailure", 0);
 	static public IPredicate importP = BASIC.createPredicate("import", 2);
 	static public IPredicate definedTypeP = BASIC.createPredicate("definedType", 1);
 	static public IPredicate isAP = BASIC.createPredicate("isA", 2);

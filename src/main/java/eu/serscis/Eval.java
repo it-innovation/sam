@@ -66,10 +66,12 @@ public class Eval {
 	private Model model = new Model(createDefaultConfiguration());
 
 	public static void main(String[] args) throws Exception {
-		if (args.length != 1) {
+		if (args.length < 1) {
 			throw new Exception("usage: sam scenario.sam");
 		}
-		new Eval(new File(args[0]));
+		for (String arg : args) {
+			new Eval(new File(arg));
+		}
 	}
 
 	public static Configuration createDefaultConfiguration() {
@@ -106,16 +108,37 @@ public class Eval {
 		List<IQuery> queries = parser.getQueries();
 
 		IKnowledgeBase initialKnowledgeBase = model.createKnowledgeBase();
-		//graph(initialKnowledgeBase, new File("initial.dot"));
+		//graph(initialKnowledgeBase, new File("initial.png"));
 
-		checkForErrors(initialKnowledgeBase, "in initial configuration");
+		boolean expectFailure = expectingFailure(initialKnowledgeBase);
+		boolean initialProblem = checkForErrors(initialKnowledgeBase, "in initial configuration");
+
+		if (initialProblem) {
+			if (expectFailure) {
+				return;
+			}
+			System.exit(1);
+		}
+
 		parseResource("system.dl");
+
+		String stem = scenario.getName();
+		if (stem.endsWith(".sam")) {
+			stem = stem.substring(0, stem.length() - 4);
+		}
 
 		IKnowledgeBase finalKnowledgeBase = model.createKnowledgeBase();
 		finalKnowledgeBase = doDebugging(finalKnowledgeBase);
-		graph(finalKnowledgeBase, new File("access.dot"));
+		graph(finalKnowledgeBase, new File(stem + ".png"));
 		doQueries(finalKnowledgeBase, queries);
-		checkForErrors(finalKnowledgeBase, "after applying propagation rules");
+		boolean finalProblem = checkForErrors(finalKnowledgeBase, "after applying propagation rules");
+
+		if (finalProblem != expectFailure) {
+			if (expectFailure) {
+				System.out.println("Expecting model to fail ('expectFailure' is set), but passed");
+			}
+			System.exit(1);
+		}
 	}
 
 	private void parseResource(String resource) throws Exception {
@@ -155,7 +178,7 @@ public class Eval {
 		}
 	}
 
-	static private void graph(IKnowledgeBase knowledgeBase, File outputDotFile) throws Exception {
+	static private void graph(IKnowledgeBase knowledgeBase, File outputPngFile) throws Exception {
 		ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
 
 		IPredicate graphNodePredicate = BASIC.createPredicate("graphNode", 2);
@@ -176,10 +199,18 @@ public class Eval {
 		IQuery graphEdgeLabelQuery = BASIC.createQuery(graphEdgeLabelLiteral);
 		IRelation graphEdgeLabelResults = knowledgeBase.execute(graphEdgeLabelQuery);
 
-		graph(graphNodeResults, graphEdgeResults, graphEdgeLabelResults, outputDotFile);
+		graph(graphNodeResults, graphEdgeResults, graphEdgeLabelResults, outputPngFile);
 	}
 
-	private void checkForErrors(IKnowledgeBase knowledgeBase, String when) throws Exception {
+	private boolean expectingFailure(IKnowledgeBase knowledgeBase) throws Exception {
+		ILiteral expectFailureL = BASIC.createLiteral(true, Constants.expectFailureP, BASIC.createTuple());
+		IQuery expectFailureQ = BASIC.createQuery(expectFailureL);
+		IRelation expectFailureResults = knowledgeBase.execute(expectFailureQ);
+		return (expectFailureResults.size() != 0);
+	}
+
+	/* Returns true if an error was detected */
+	private boolean checkForErrors(IKnowledgeBase knowledgeBase, String when) throws Exception {
 		List<ITerm> terms = new LinkedList<ITerm>();
 		boolean problem = false;
 
@@ -200,9 +231,7 @@ public class Eval {
 			terms.add(newTerm);
 		}
 
-		if (problem) {
-			System.exit(1);
-		}
+		return problem;
 	}
 
 	private IKnowledgeBase doDebugging(IKnowledgeBase knowledgeBase) throws Exception {
@@ -234,7 +263,9 @@ public class Eval {
 		return "\"" + term.getValue().toString() + "\"";
 	}
 
-	static private void graph(IRelation nodes, IRelation edges, IRelation labelledEdges, File dotFile) throws Exception {
+	static private void graph(IRelation nodes, IRelation edges, IRelation labelledEdges, File pngFile) throws Exception {
+		File dotFile = new File("SAM-tmp.dot");
+
 		FileWriter writer = new FileWriter(dotFile);
 		writer.write("digraph a {\n");
 		//writer.write("  concentrate=true;\n");
@@ -308,7 +339,7 @@ public class Eval {
 			}
 		}
 
-		Process proc = Runtime.getRuntime().exec(new String[] {dotBinary, "-O", "-Tpng", dotFile.getAbsolutePath()});
+		Process proc = Runtime.getRuntime().exec(new String[] {dotBinary, "-o" + pngFile.getAbsolutePath(), "-Tpng", dotFile.getAbsolutePath()});
 		int result = proc.waitFor();
 		if (result != 0) {
 			throw new RuntimeException("dot failed to run: exit status = " + result);

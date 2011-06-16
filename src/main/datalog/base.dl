@@ -33,7 +33,6 @@
 declare definedType(?Type).
 declare field(?Object, ?FieldName, ?Value).
 declare getsAccess(?SourceObject, ?TargetObject).
-declare haveBadAccess(?SourceObject, ?TargetObject).
 declare isA(?Object, ?Type).
 declare isInvocation(?Invocation).
 declare isObject(?Object).
@@ -53,6 +52,9 @@ declare denyAccess(?Object, ?Target).
 declare requireAccess(?Object, ?Target).
 declare hasField(?Type, ?FieldName).
 declare isType(?Type).
+
+declare expectFailure.
+declare haveBadAccess(?SourceObject, ?TargetObject).
 declare missingGoodAccess(?SourceObject, ?TargetObject).
 
 declare graphNode(?Node, ?Attrs).

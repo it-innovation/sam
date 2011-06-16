@@ -43,3 +43,6 @@ requireAccess("clientA", "aTask").
 /* Graphing */
 
 showAllInvocations("factory").
+
+
+expectFailure.

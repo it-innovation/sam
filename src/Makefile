@@ -9,6 +9,8 @@ all: htmldoc tests
 JAVA_SOURCES = $(wildcard ${SRCDIR}/src/main/java/eu/serscis/*.java) \
 	       $(wildcard ${SRCDIR}/src/main/java/eu/serscis/sam/*/*.java)
 
+SAM_EXAMPLES = $(wildcard ${SRCDIR}/doc/examples/*.sam)
+
 code:
 	cp ${SRCDIR}/src/main/datalog/*.dl ${DISTDIR}/
 	cp ${SRCDIR}/src/main/bin/sam ${DISTDIR}/
@@ -18,24 +20,19 @@ code:
 	cp ${SRCDIR}/src/main/java/eu/serscis/sam/parser/parser.dat ${DISTDIR}/eu/serscis/sam/parser/
 	javac -d ${DISTDIR} -cp ${CLASSPATH} ${JAVA_SOURCES}
 
-htmldoc: code examples
-	diff ${BUILDDIR}/failed-models ${SRCDIR}/src/failed-models.expected
+htmldoc: code images examples
 	sphinx-build -b html ${ALLSPHINXOPTS} ${SRCDIR}/doc ${SBUILDDIR}
 
 htmlonly:
 	sphinx-build -b html ${ALLSPHINXOPTS} ${SRCDIR}/doc ${SBUILDDIR}
 
-examples: factory.png factory-showing-invocations.png factory1.png factory2.png factory3.png factory4.png factory5.png sealers.png sealers2.png compose.png confused.png
+examples:
 	mkdir -p ${DISTDIR}/doc/examples
 	cp ${SRCDIR}/doc/examples/*.sam ${DISTDIR}/doc/examples/
 
-clearfailures:
-	rm -f ${BUILDDIR}/failed-models
-
-%.png: doc/examples/%.sam clearfailures
+images: ${SAM_EXAMPLES}
 	mkdir -p ${DISTDIR}/doc/_images
-	${SAM} $< || basename $< >> ${BUILDDIR}/failed-models
-	mv access.dot.png ${DISTDIR}/doc/_images/$@
+	(cd ${DISTDIR}/doc/_images && ${SAM} ${SAM_EXAMPLES})
 
 parser:
 	rm -rf ${SRCDIR}/src/main/java/eu/serscis/sam/parser/*
@@ -45,5 +42,4 @@ parser:
 	java -jar ${SRCDIR}/sablecc.jar -d ${SRCDIR}/src/main/java ${SRCDIR}/src/main/sablecc/sam.grammar
 
 tests:
-	${SAM} ${SRCDIR}/src/test/testUnknown.sam
-	${SAM} ${SRCDIR}/src/test/testMatching.sam
+	${SAM} ${SRCDIR}/src/test/*.sam

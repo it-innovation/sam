@@ -111,7 +111,7 @@ You can run the model like this:
 
 See :ref:`install` for more information about running SAM.
 
-You should find you now have an output file called "access.dot.png":
+You should find you now have an output file called "factory1.png":
 
 .. image:: _images/factory1.png
 
