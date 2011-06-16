@@ -53,7 +53,7 @@ Notation
 
 This diagram shows:
 
-* P is flagged as Pubic (it has a border). All unknown objects know its address.
+* P is flagged as Public (it has a border). All unknown objects know its address.
 * A has a field which may point to B.
 * Some method of A has a local variable which may point to C.
 * C has unknown behaviour (it will try to do anything it is able to do).
