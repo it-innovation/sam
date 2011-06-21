@@ -117,6 +117,7 @@ public class Eval {
 			if (expectFailure) {
 				return;
 			}
+			System.out.println("Unexpected error in " + scenario);
 			System.exit(1);
 		}
 
@@ -135,7 +136,9 @@ public class Eval {
 
 		if (finalProblem != expectFailure) {
 			if (expectFailure) {
-				System.out.println("Expecting model to fail ('expectFailure' is set), but passed");
+				System.out.println("Expecting model to fail ('expectFailure' is set), but passed, in " + scenario);
+			} else {
+				System.out.println("Unexpected error in " + scenario);
 			}
 			System.exit(1);
 		}
