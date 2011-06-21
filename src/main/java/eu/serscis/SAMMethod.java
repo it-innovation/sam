@@ -211,7 +211,12 @@ class SAMMethod {
 				ADeclStatement decl = (ADeclStatement) ps;
 				declareLocal(decl.getType(), decl.getName());
 			} else if (ps instanceof AReturnStatement) {
-				returnOrThrow(mayReturnP, methodNameFull, ((AReturnStatement) ps).getName());
+				boolean returnsVoid = "void".equals(((AType) method.getType()).getName().getText());
+				TName expr = ((AReturnStatement) ps).getName();
+				if (returnsVoid && expr.getText() != null) {
+					throw new ParserException(expr, "Return with a value in method declared to return void!");
+				}
+				returnOrThrow(mayReturnP, methodNameFull, expr);
 			} else if (ps instanceof AThrowStatement) {
 				returnOrThrow(mayThrowP, methodNameFull, ((AThrowStatement) ps).getName());
 			} else if (ps instanceof ATryStatement) {
