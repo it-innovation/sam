@@ -28,6 +28,7 @@
 
 declare objectHasField(?Object, ?Field).
 declare hasRef(?Object, ?Invocation, ?Value).
+declare hasMethodWithName(?Method, ?MethodName).
 
 /* If an Invocation has direct access to an object (via a local variable or a field on its object) */
 hasRef(?Object, ?Invocation, ?Value) :- value(?Object, ?Invocation, ?AnyVar, ?Value).
@@ -55,3 +56,12 @@ error("Local on non-invocation", ?Invocation, ?Var, ?Value) :- local(?Object, ?I
 objectHasField(?Object, ?Field) :- isA(?Object, ?Type), hasField(?Type, ?Field).
 error("Undeclared field", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !objectHasField(?Object, ?Var).
 error("Field on non-object", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !isObject(?Object).
+
+hasMethodWithName(?Type, ?MethodName) :-
+	hasMethod(?Type, ?Method),
+	methodName(?Method, ?MethodName).
+
+error("Unknown method in initialInvocation", ?Object, ?MethodName) :-
+	initialInvocation(?Object, ?Invocation, ?MethodName),
+	isA(?Object, ?Type),
+	!hasMethodWithName(?Type, ?MethodName).
