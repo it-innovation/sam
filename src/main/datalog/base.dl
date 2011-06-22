@@ -46,7 +46,8 @@ declare hasMethod(?Type, ?Method).
 declare hasCallSite(?Method, ?CallSite).
 declare initialObject(?Object, ?Type).
 declare initialInvocation(?Object, ?Invocation).
-declare realInitialInvocation(?Object, ?Invocation).
+declare initialInvocation(?Object, ?Invocation, ?MethodName).
+declare realInitialInvocation(?Object, ?Invocation, ?Method).
 declare realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild).
 declare denyAccess(?Object, ?Target).
 declare requireAccess(?Object, ?Target).
@@ -119,19 +120,31 @@ isA(?Object, "Unknown") :- isA(?Object, ?Type), !definedType(?Type).
 /* predicates on invocations */
 
 liveMethod(?Object, ?Invocation, ?Method) :-
-	isA(?Object, ?Type),
-	hasMethod(?Type, ?Method),
-	realInitialInvocation(?Object, ?Invocation).
+	realInitialInvocation(?Object, ?Invocation, ?Method).
 
-isInvocation(?Invocation) :- realInitialInvocation(?Object, ?Invocation).
+isInvocation(?Invocation) :- realInitialInvocation(?Object, ?Invocation, ?Method).
 isInvocation(?Invocation) :- invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?Invocation).
 
 
 /* assume Unknown objects are initially active in the "unknown" context, unless the user specified
  * a separate context.
  */
-realInitialInvocation(?Object, ?Invocation) :- initialInvocation(?Object, ?Invocation).
-realInitialInvocation(?Object, "unknown") :- initialObject(?Object, "Unknown"), !initialInvocation(?Object, ?AnyInvocation).
+realInitialInvocation(?Object, ?Invocation, ?Method) :-
+	initialInvocation(?Object, ?Invocation, ?MethodName),
+	isA(?Object, ?Type),
+	hasMethod(?Type, ?Method),
+	methodName(?Method, ?MethodName).
+
+realInitialInvocation(?Object, "unknown", ?Method) :-
+	initialObject(?Object, "Unknown"),
+	hasMethod("Unknown", ?Method),
+	!initialInvocation(?Object, ?AnyInvocation, ?AnyMethod),
+	!initialInvocation(?Object, ?AnyInvocation).
+
+realInitialInvocation(?Object, ?Invocation, ?Method) :-
+	initialInvocation(?Object, ?Invocation),
+	isA(?Object, ?Type),
+	hasMethod(?Type, ?Method).
 
 /* Every invocation has a "this" variable with a reference to its object. */
 local(?Object, ?Invocation, "this", ?Object) :- liveMethod(?Object, ?Invocation, ?AnyMethod).
