@@ -62,6 +62,6 @@ hasMethodWithName(?Type, ?MethodName) :-
 	methodName(?Method, ?MethodName).
 
 error("Unknown method in initialInvocation", ?Object, ?MethodName) :-
-	initialInvocation(?Object, ?Invocation, ?MethodName),
+	initialInvocation(?Object, ?MethodName, ?Invocation),
 	isA(?Object, ?Type),
 	!hasMethodWithName(?Type, ?MethodName).

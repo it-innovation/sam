@@ -46,8 +46,8 @@ declare hasMethod(?Type, ?Method).
 declare hasCallSite(?Method, ?CallSite).
 declare initialObject(?Object, ?Type).
 declare initialInvocation(?Object, ?Invocation).
-declare initialInvocation(?Object, ?Invocation, ?MethodName).
-declare realInitialInvocation(?Object, ?Invocation, ?Method).
+declare initialInvocation(?Object, ?MethodName, ?Invocation).
+declare realInitialInvocation(?Object, ?Method, ?Invocation).
 declare realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild).
 declare denyAccess(?Object, ?Target).
 declare requireAccess(?Object, ?Target).
@@ -120,28 +120,28 @@ isA(?Object, "Unknown") :- isA(?Object, ?Type), !definedType(?Type).
 /* predicates on invocations */
 
 liveMethod(?Object, ?Invocation, ?Method) :-
-	realInitialInvocation(?Object, ?Invocation, ?Method).
+	realInitialInvocation(?Object, ?Method, ?Invocation).
 
-isInvocation(?Invocation) :- realInitialInvocation(?Object, ?Invocation, ?Method).
+isInvocation(?Invocation) :- realInitialInvocation(?Object, ?Method, ?Invocation).
 isInvocation(?Invocation) :- invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?Invocation).
 
 
 /* assume Unknown objects are initially active in the "unknown" context, unless the user specified
  * a separate context.
  */
-realInitialInvocation(?Object, ?Invocation, ?Method) :-
-	initialInvocation(?Object, ?Invocation, ?MethodName),
+realInitialInvocation(?Object, ?Method, ?Invocation) :-
+	initialInvocation(?Object, ?MethodName, ?Invocation),
 	isA(?Object, ?Type),
 	hasMethod(?Type, ?Method),
 	methodName(?Method, ?MethodName).
 
-realInitialInvocation(?Object, "unknown", ?Method) :-
+realInitialInvocation(?Object, ?Method, "unknown") :-
 	initialObject(?Object, "Unknown"),
 	hasMethod("Unknown", ?Method),
-	!initialInvocation(?Object, ?AnyInvocation, ?AnyMethod),
+	!initialInvocation(?Object, ?AnyMethod, ?AnyInvocation),
 	!initialInvocation(?Object, ?AnyInvocation).
 
-realInitialInvocation(?Object, ?Invocation, ?Method) :-
+realInitialInvocation(?Object, ?Method, ?Invocation) :-
 	initialInvocation(?Object, ?Invocation),
 	isA(?Object, ?Type),
 	hasMethod(?Type, ?Method).

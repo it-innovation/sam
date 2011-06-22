@@ -9,7 +9,7 @@ These predicates are used to describe the initial configuration of the system be
 
    There is an object named `Object` which :func:`isA` `Type`.
 
-.. function:: initialInvocation(?Object, ?Invocation, ?MethodName)
+.. function:: initialInvocation(?Object, ?MethodName, ?Invocation)
 
    The method named `MethodName` on `Object` is initially active (does not need
    to be invoked by something else before it can take actions). The initial

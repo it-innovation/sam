@@ -62,7 +62,7 @@ initialObject("delegate", "Unknown").
 
 field("owner", "delegate", "delegate").
 
-initialInvocation("owner", "a", "test").
+initialInvocation("owner", "test", "a").
 
 denyAccess("delegate", "aReadOnly").
 
