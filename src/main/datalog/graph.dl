@@ -46,7 +46,7 @@ declare isBoring(?Source, ?Target).
 isBoring(?Source, ?Target) :-
 	isA(?Source, "Unknown"),
 	isPublic(?Target),
-	!accessAllowed(?Source, ?Target).
+	!didCall(?Source, ?C1, ?CallSite, ?Target, ?C2, ?Method).
 
 /* Graphing */
 
@@ -105,7 +105,8 @@ problemEdge(?Source, ?Target) :- problemEdgeViaLocal(?Source, ?Target).
 uncalledEdge(?GraphSourceNode, ?Target) :-
 	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
 	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target),
-	!didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
+	!didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	!isBoring(?Source, ?Target).
 
 /* (object to object)
  * Ignores public objects to avoid cluttering the graph.
