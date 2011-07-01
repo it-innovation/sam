@@ -224,6 +224,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseAAnnotation(AAnnotation node)
+    {
+        defaultCase(node);
+    }
+
     public void caseAMethod(AMethod node)
     {
         defaultCase(node);
@@ -360,6 +365,11 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseTClassTok(TClassTok node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTAtTok(TAtTok node)
     {
         defaultCase(node);
     }

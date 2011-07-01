@@ -1,0 +1,30 @@
+class Foo {
+    private Object myValue;
+
+    @Reader
+    public Object read() {
+        return myValue;
+    }
+
+    @Writer
+    public void write(Object value) {
+        myValue = value;
+    }
+}
+
+initialObject("foo", "Foo").
+
+declare Reader(?Method).
+declare Writer(?Method).
+
+declare shouldBeReader(?Method).
+shouldBeReader("Foo.read").
+
+declare shouldBeWriter(?Method).
+shouldBeWriter("Foo.write").
+
+error("Reader", ?Method) :- Reader(?Method), !shouldBeReader(?Method).
+error("!Reader", ?Method) :- !Reader(?Method), shouldBeReader(?Method).
+
+error("Writer", ?Method) :- Writer(?Method), !shouldBeWriter(?Method).
+error("!Writer", ?Method) :- !Writer(?Method), shouldBeWriter(?Method).

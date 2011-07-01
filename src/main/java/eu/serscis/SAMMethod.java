@@ -91,6 +91,10 @@ class SAMMethod {
 	}
 
 	public void addDatalog() throws Exception {
+		for (PAnnotation a : method.getAnnotation()) {
+			processAnnotation((AAnnotation) a);
+		}
+
 		ACode code = (ACode) method.getCode();
 
 		// mayAccept(type, param)
@@ -106,6 +110,15 @@ class SAMMethod {
 		}
 
 		processCode(code.getStatement());
+	}
+
+	private void processAnnotation(AAnnotation annotation) throws Exception {
+		String name = annotation.getName().getText();
+		IPredicate pred = BASIC.createPredicate(name, 1);
+		parent.model.requireDeclared(annotation.getName(), pred);
+		IRelation rel = parent.model.getRelation(pred);
+
+		rel.add(BASIC.createTuple(methodNameFull));
 	}
 
 	private void processCode(List<PStatement> statements) throws Exception {

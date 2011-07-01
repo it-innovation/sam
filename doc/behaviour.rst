@@ -21,6 +21,7 @@ A type may be defined using the "class" keyword. The syntax is::
     }
 
     // Zero or more methods, of the form:
+    ANNOTATION*
     public TYPE NAME(PARAMS) {
       CODE
     }
@@ -44,6 +45,18 @@ Types are currently ignored (and treated safely as "Object").
 
 Where `NAME` is a variable name, `TYPE` is a class name, `METHOD` is a method name,
 and `ARGS` is a comma-separated list of variable names.
+
+Each `ANNOTATION` is of the form "@NAME", where NAME is the name of a datalog predicate, and
+asserts a fact for this method. For example, this code::
+
+  class Foo {
+    @restricted
+    public void destroy() {}
+  }
+
+has the same effect as::
+
+  restricted("Foo.destroy").
 
 
 Classes

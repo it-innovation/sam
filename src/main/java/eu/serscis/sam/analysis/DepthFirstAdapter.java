@@ -838,6 +838,31 @@ public class DepthFirstAdapter extends AnalysisAdapter
         outAType(node);
     }
 
+    public void inAAnnotation(AAnnotation node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAAnnotation(AAnnotation node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAAnnotation(AAnnotation node)
+    {
+        inAAnnotation(node);
+        if(node.getAtTok() != null)
+        {
+            node.getAtTok().apply(this);
+        }
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        outAAnnotation(node);
+    }
+
     public void inAMethod(AMethod node)
     {
         defaultIn(node);
@@ -852,6 +877,13 @@ public class DepthFirstAdapter extends AnalysisAdapter
     public void caseAMethod(AMethod node)
     {
         inAMethod(node);
+        {
+            List<PAnnotation> copy = new ArrayList<PAnnotation>(node.getAnnotation());
+            for(PAnnotation e : copy)
+            {
+                e.apply(this);
+            }
+        }
         if(node.getPublicTok() != null)
         {
             node.getPublicTok().apply(this);

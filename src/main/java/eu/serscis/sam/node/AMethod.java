@@ -2,11 +2,13 @@
 
 package eu.serscis.sam.node;
 
+import java.util.*;
 import eu.serscis.sam.analysis.*;
 
 @SuppressWarnings("nls")
 public final class AMethod extends PMethod
 {
+    private final LinkedList<PAnnotation> _annotation_ = new LinkedList<PAnnotation>();
     private TPublicTok _publicTok_;
     private PType _type_;
     private PPattern _name_;
@@ -24,6 +26,7 @@ public final class AMethod extends PMethod
     }
 
     public AMethod(
+        @SuppressWarnings("hiding") List<PAnnotation> _annotation_,
         @SuppressWarnings("hiding") TPublicTok _publicTok_,
         @SuppressWarnings("hiding") PType _type_,
         @SuppressWarnings("hiding") PPattern _name_,
@@ -36,6 +39,8 @@ public final class AMethod extends PMethod
         @SuppressWarnings("hiding") TRBrace _rBrace_)
     {
         // Constructor
+        setAnnotation(_annotation_);
+
         setPublicTok(_publicTok_);
 
         setType(_type_);
@@ -62,6 +67,7 @@ public final class AMethod extends PMethod
     public Object clone()
     {
         return new AMethod(
+            cloneList(this._annotation_),
             cloneNode(this._publicTok_),
             cloneNode(this._type_),
             cloneNode(this._name_),
@@ -77,6 +83,26 @@ public final class AMethod extends PMethod
     public void apply(Switch sw)
     {
         ((Analysis) sw).caseAMethod(this);
+    }
+
+    public LinkedList<PAnnotation> getAnnotation()
+    {
+        return this._annotation_;
+    }
+
+    public void setAnnotation(List<PAnnotation> list)
+    {
+        this._annotation_.clear();
+        this._annotation_.addAll(list);
+        for(PAnnotation e : list)
+        {
+            if(e.parent() != null)
+            {
+                e.parent().removeChild(e);
+            }
+
+            e.parent(this);
+        }
     }
 
     public TPublicTok getPublicTok()
@@ -333,6 +359,7 @@ public final class AMethod extends PMethod
     public String toString()
     {
         return ""
+            + toString(this._annotation_)
             + toString(this._publicTok_)
             + toString(this._type_)
             + toString(this._name_)
@@ -349,6 +376,11 @@ public final class AMethod extends PMethod
     void removeChild(@SuppressWarnings("unused") Node child)
     {
         // Remove child
+        if(this._annotation_.remove(child))
+        {
+            return;
+        }
+
         if(this._publicTok_ == child)
         {
             this._publicTok_ = null;
@@ -416,6 +448,24 @@ public final class AMethod extends PMethod
     void replaceChild(@SuppressWarnings("unused") Node oldChild, @SuppressWarnings("unused") Node newChild)
     {
         // Replace child
+        for(ListIterator<PAnnotation> i = this._annotation_.listIterator(); i.hasNext();)
+        {
+            if(i.next() == oldChild)
+            {
+                if(newChild != null)
+                {
+                    i.set((PAnnotation) newChild);
+                    newChild.parent(this);
+                    oldChild.parent(null);
+                    return;
+                }
+
+                i.remove();
+                oldChild.parent(null);
+                return;
+            }
+        }
+
         if(this._publicTok_ == oldChild)
         {
             setPublicTok((TPublicTok) newChild);

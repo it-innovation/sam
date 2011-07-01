@@ -28,6 +28,7 @@
 
 package eu.serscis;
 
+import eu.serscis.sam.parser.ParserException;
 import eu.serscis.sam.node.Token;
 import java.io.BufferedReader;
 import java.util.Set;
@@ -92,5 +93,15 @@ public class Model {
 		}
 
 		return KnowledgeBaseFactory.createKnowledgeBase(workingFacts, rules, configuration);
+	}
+
+	public void requireDeclared(Token tok, IPredicate pred) throws ParserException {
+		if ("error".equals(pred.getPredicateSymbol())) {
+			return;
+		}
+
+		if (!declared.contains(pred)) {
+			throw new ParserException(tok, "Predicate not declared: " + pred + "/" + pred.getArity());
+		}
 	}
 }

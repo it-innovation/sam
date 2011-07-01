@@ -30,6 +30,7 @@ Tokens
   throw = 'throw';
   return = 'return';
   class_tok = 'class';
+  at_tok = '@';
   l_brace = '{';
   r_brace = '}';
   eq = '=';
@@ -97,7 +98,8 @@ Productions
   class_body = field* method*;
   field = private_tok type name semi;
   type = name;
-  method = public_tok type? [name]:pattern l_par params? star? r_par l_brace code r_brace;
+  annotation = at_tok name;
+  method = annotation* public_tok type? [name]:pattern l_par params? star? r_par l_brace code r_brace;
   code = statement*;
   assign = type? name eq;
   statement = {assign} assign? expr semi

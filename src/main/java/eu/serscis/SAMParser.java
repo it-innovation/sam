@@ -184,7 +184,7 @@ public class SAMParser {
 				if (declaration) {
 					declare(predicate);
 				} else {
-					requireDeclared(atom.getName(), predicate);
+					model.requireDeclared(atom.getName(), predicate);
 				}
 
 				return BASIC.createAtom(predicate, terms);
@@ -205,7 +205,7 @@ public class SAMParser {
 			if (declaration) {
 				declare(predicate);
 			} else {
-				requireDeclared(atom.getName(), predicate);
+				model.requireDeclared(atom.getName(), predicate);
 			}
 
 			return BASIC.createAtom(predicate, BASIC.createTuple());
@@ -281,16 +281,6 @@ public class SAMParser {
 
 		//System.out.println("Declare " + pred + "/" + pred.getArity());
 		model.declared.add(pred);
-	}
-
-	private void requireDeclared(Token tok, IPredicate pred) throws ParserException {
-		if ("error".equals(pred.getPredicateSymbol())) {
-			return;
-		}
-
-		if (!model.declared.contains(pred)) {
-			throw new ParserException(tok, "Predicate not declared: " + pred + "/" + pred.getArity());
-		}
 	}
 
 	private void addImport(AImport aImport) throws Exception {
