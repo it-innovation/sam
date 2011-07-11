@@ -224,7 +224,12 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
-    public void caseAAnnotation(AAnnotation node)
+    public void caseANoargsAnnotation(ANoargsAnnotation node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAArgsAnnotation(AArgsAnnotation node)
     {
         defaultCase(node);
     }
@@ -290,6 +295,16 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseACopyExpr(ACopyExpr node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAStringArgs(AStringArgs node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAStringArgsTail(AStringArgsTail node)
     {
         defaultCase(node);
     }

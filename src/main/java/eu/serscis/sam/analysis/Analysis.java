@@ -43,7 +43,8 @@ public interface Analysis extends Switch
     void caseAClassBody(AClassBody node);
     void caseAField(AField node);
     void caseAType(AType node);
-    void caseAAnnotation(AAnnotation node);
+    void caseANoargsAnnotation(ANoargsAnnotation node);
+    void caseAArgsAnnotation(AArgsAnnotation node);
     void caseAMethod(AMethod node);
     void caseACode(ACode node);
     void caseAAssign(AAssign node);
@@ -57,6 +58,8 @@ public interface Analysis extends Switch
     void caseACallExpr(ACallExpr node);
     void caseAStringExpr(AStringExpr node);
     void caseACopyExpr(ACopyExpr node);
+    void caseAStringArgs(AStringArgs node);
+    void caseAStringArgsTail(AStringArgsTail node);
     void caseAArgs(AArgs node);
     void caseAArgsTail(AArgsTail node);
     void caseAParam(AParam node);

@@ -843,20 +843,20 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         outAType(node);
     }
 
-    public void inAAnnotation(AAnnotation node)
+    public void inANoargsAnnotation(ANoargsAnnotation node)
     {
         defaultIn(node);
     }
 
-    public void outAAnnotation(AAnnotation node)
+    public void outANoargsAnnotation(ANoargsAnnotation node)
     {
         defaultOut(node);
     }
 
     @Override
-    public void caseAAnnotation(AAnnotation node)
+    public void caseANoargsAnnotation(ANoargsAnnotation node)
     {
-        inAAnnotation(node);
+        inANoargsAnnotation(node);
         if(node.getName() != null)
         {
             node.getName().apply(this);
@@ -865,7 +865,44 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         {
             node.getAtTok().apply(this);
         }
-        outAAnnotation(node);
+        outANoargsAnnotation(node);
+    }
+
+    public void inAArgsAnnotation(AArgsAnnotation node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAArgsAnnotation(AArgsAnnotation node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAArgsAnnotation(AArgsAnnotation node)
+    {
+        inAArgsAnnotation(node);
+        if(node.getRPar() != null)
+        {
+            node.getRPar().apply(this);
+        }
+        if(node.getStringArgs() != null)
+        {
+            node.getStringArgs().apply(this);
+        }
+        if(node.getLPar() != null)
+        {
+            node.getLPar().apply(this);
+        }
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        if(node.getAtTok() != null)
+        {
+            node.getAtTok().apply(this);
+        }
+        outAArgsAnnotation(node);
     }
 
     public void inAMethod(AMethod node)
@@ -1319,6 +1356,60 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
             node.getName().apply(this);
         }
         outACopyExpr(node);
+    }
+
+    public void inAStringArgs(AStringArgs node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAStringArgs(AStringArgs node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAStringArgs(AStringArgs node)
+    {
+        inAStringArgs(node);
+        {
+            List<PStringArgsTail> copy = new ArrayList<PStringArgsTail>(node.getStringArgsTail());
+            Collections.reverse(copy);
+            for(PStringArgsTail e : copy)
+            {
+                e.apply(this);
+            }
+        }
+        if(node.getStringLiteral() != null)
+        {
+            node.getStringLiteral().apply(this);
+        }
+        outAStringArgs(node);
+    }
+
+    public void inAStringArgsTail(AStringArgsTail node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAStringArgsTail(AStringArgsTail node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAStringArgsTail(AStringArgsTail node)
+    {
+        inAStringArgsTail(node);
+        if(node.getStringLiteral() != null)
+        {
+            node.getStringLiteral().apply(this);
+        }
+        if(node.getComma() != null)
+        {
+            node.getComma().apply(this);
+        }
+        outAStringArgsTail(node);
     }
 
     public void inAArgs(AArgs node)

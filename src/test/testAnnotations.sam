@@ -1,3 +1,6 @@
+declare Modifies(?Method, ?Field).
+declare Assigns(?Method, ?Target, ?Source).
+
 class Foo {
     private Object myValue;
 
@@ -7,6 +10,8 @@ class Foo {
     }
 
     @Writer
+    @Modifies("myValue")
+    @Assigns("myValue", "value")
     public void write(Object value) {
         myValue = value;
     }
@@ -23,8 +28,17 @@ shouldBeReader("Foo.read").
 declare shouldBeWriter(?Method).
 shouldBeWriter("Foo.write").
 
+declare shouldAssign(?Method, ?X, ?Y).
+shouldAssign("Foo.write", "myValue", "value").
+
 error("Reader", ?Method) :- Reader(?Method), !shouldBeReader(?Method).
 error("!Reader", ?Method) :- !Reader(?Method), shouldBeReader(?Method).
 
 error("Writer", ?Method) :- Writer(?Method), !shouldBeWriter(?Method).
 error("!Writer", ?Method) :- !Writer(?Method), shouldBeWriter(?Method).
+
+error("Modifies missing") :- !Modifies("Foo.write", "myValue").
+error("Modifies other") :- Modifies("Foo.write", ?X), ?X != "myValue".
+
+error("Assigns", ?Method) :- Assigns(?Method, ?X, ?Y), !shouldAssign(?Method, ?X, ?Y).
+error("!Assigns", ?Method) :- !Assigns(?Method, ?X, ?Y), shouldAssign(?Method, ?X, ?Y).

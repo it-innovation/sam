@@ -98,7 +98,8 @@ Productions
   class_body = field* method*;
   field = private_tok type name semi;
   type = name;
-  annotation = at_tok name;
+  annotation = {noargs} at_tok name
+             | {args} at_tok name l_par string_args? r_par;
   method = annotation* public_tok type? [name]:pattern l_par params? star? r_par l_brace code r_brace;
   code = statement*;
   assign = type? name eq;
@@ -112,6 +113,8 @@ Productions
        | {call} name dot [method]:pattern l_par args? r_par
        | {string} string_literal
        | {copy} name;
+  string_args = string_literal string_args_tail*;
+  string_args_tail = comma string_literal;
   args = expr args_tail*;
   args_tail = comma expr;
   param = type name;

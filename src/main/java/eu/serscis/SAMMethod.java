@@ -92,7 +92,7 @@ class SAMMethod {
 
 	public void addDatalog() throws Exception {
 		for (PAnnotation a : method.getAnnotation()) {
-			processAnnotation((AAnnotation) a);
+			processAnnotation(a);
 		}
 
 		ACode code = (ACode) method.getCode();
@@ -112,13 +112,25 @@ class SAMMethod {
 		processCode(code.getStatement());
 	}
 
-	private void processAnnotation(AAnnotation annotation) throws Exception {
-		String name = annotation.getName().getText();
-		IPredicate pred = BASIC.createPredicate(name, 1);
-		parent.model.requireDeclared(annotation.getName(), pred);
+	private void processAnnotation(PAnnotation a) throws Exception {
+		TName name;
+		AStringArgs args = null;
+
+		if (a instanceof ANoargsAnnotation) {
+			ANoargsAnnotation annotation = (ANoargsAnnotation) a;
+			name = annotation.getName();
+		} else {
+			AArgsAnnotation annotation = (AArgsAnnotation) a;
+			name = annotation.getName();
+			args = (AStringArgs) annotation.getStringArgs();
+		}
+
+		ITerm[] values = getAnnotationArgs(methodNameFull, args);
+		IPredicate pred = BASIC.createPredicate(name.getText(), values.length);
+		parent.model.requireDeclared(name, pred);
 		IRelation rel = parent.model.getRelation(pred);
 
-		rel.add(BASIC.createTuple(methodNameFull));
+		rel.add(BASIC.createTuple(values));
 	}
 
 	private void processCode(List<PStatement> statements) throws Exception {
@@ -417,6 +429,28 @@ class SAMMethod {
 			PExpr arg = ((AArgsTail) tail).getExpr();
 			addArg(callSite, pos, arg);
 		}
+	}
+
+	private ITerm[] getAnnotationArgs(ITerm methodName, AStringArgs args) throws ParserException {
+		if (args == null) {
+			return new ITerm[] {methodName};
+		}
+
+		int n = args.getStringArgsTail().size() + 2;
+		ITerm[] values = new ITerm[n];
+
+		values[0] = methodName;
+
+		int pos = 1;
+		values[pos] = TERM.createString(getString(args.getStringLiteral()));
+
+		for (PStringArgsTail tail : args.getStringArgsTail()) {
+			pos += 1;
+			String value = getString(((AStringArgsTail) tail).getStringLiteral());
+			values[pos] = TERM.createString(value);
+		}
+
+		return values;
 	}
 
 	/* Returns

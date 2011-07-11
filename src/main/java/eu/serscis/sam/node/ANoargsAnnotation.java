@@ -5,17 +5,17 @@ package eu.serscis.sam.node;
 import eu.serscis.sam.analysis.*;
 
 @SuppressWarnings("nls")
-public final class AAnnotation extends PAnnotation
+public final class ANoargsAnnotation extends PAnnotation
 {
     private TAtTok _atTok_;
     private TName _name_;
 
-    public AAnnotation()
+    public ANoargsAnnotation()
     {
         // Constructor
     }
 
-    public AAnnotation(
+    public ANoargsAnnotation(
         @SuppressWarnings("hiding") TAtTok _atTok_,
         @SuppressWarnings("hiding") TName _name_)
     {
@@ -29,14 +29,14 @@ public final class AAnnotation extends PAnnotation
     @Override
     public Object clone()
     {
-        return new AAnnotation(
+        return new ANoargsAnnotation(
             cloneNode(this._atTok_),
             cloneNode(this._name_));
     }
 
     public void apply(Switch sw)
     {
-        ((Analysis) sw).caseAAnnotation(this);
+        ((Analysis) sw).caseANoargsAnnotation(this);
     }
 
     public TAtTok getAtTok()
