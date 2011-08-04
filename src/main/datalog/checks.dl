@@ -65,3 +65,7 @@ error("Unknown method in initialInvocation", ?Object, ?MethodName) :-
 	initialInvocation(?Object, ?MethodName, ?Invocation),
 	isA(?Object, ?Type),
 	!hasMethodWithName(?Type, ?MethodName).
+
+error("Unknown object in initialInvocation", ?Object) :-
+	initialInvocation(?Object, ?MethodName, ?Invocation),
+	!isObject(?Object).
