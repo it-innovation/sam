@@ -36,6 +36,12 @@ Aggregation
 
      invocationObject("clientA", "other", "ClientA.run-1", "a").
 
+.. function:: invocationObject(?CallSite, ?TargetInvocation)
+
+   As above, but for all callers and invocations. It is necessary to use this if you want
+   to set the context for all callers, since otherwise trying to generate all the possible
+   callers will cause a stratification error.
+
 .. function:: methodMatches(?CallSite, ?Target, ?Method)
 
    When `CallSite` invokes `Target`, `Method` is a method that could be invoked. Normally this

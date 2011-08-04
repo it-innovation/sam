@@ -41,6 +41,7 @@ declare liveMethod(?Object, ?Invocation, ?Method).
 declare local(?Object, ?Invocation, ?VarName, ?Value).
 declare realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
 declare invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
+declare invocationObject(?CallSite, ?TargetInvocation).
 declare value(?Object, ?Invocation, ?VarName, ?Value).
 declare hasMethod(?Type, ?Method).
 declare hasCallSite(?Method, ?CallSite).
@@ -101,10 +102,15 @@ declare debug.
  */
 realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation) :-
 	invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
+realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation) :-
+	liveMethod(?Caller, ?CallerInvocation, ?Method),
+	hasCallSite(?Method, ?CallSite),
+	invocationObject(?CallSite, ?TargetInvocation).
 realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?CallerInvocation) :-
 	liveMethod(?Caller, ?CallerInvocation, ?Method),
 	hasCallSite(?Method, ?CallSite),
-	!invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?AnyTargetInvocation).
+	!invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?AnyTargetInvocation),
+	!invocationObject(?CallSite, ?AnyTargetInvocation).
 
 
 /* predicates on objects */
@@ -112,7 +118,7 @@ realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?CallerInvocation) :
 isObject(?X) :- isA(?X, ?Type).
 live(?Object) :- initialObject(?Object, ?Type).
 isA(?Object, ?Type) :- initialObject(?Object, ?Type).
-isA(?NewObject, ?Type) :- realNewObject(?Object, ?Invocation, ?Type, ?NewObject).
+isA(?NewObject, ?Type) :- realNewObject(?Object, ?Invocation, ?Type, ?NewObject), didCreate(?Caller, ?Invocation, ?CallSite, ?NewObject).
 isType(?Type) :- definedType(?Type).
 isA(?Object, "Unknown") :- isA(?Object, ?Type), !definedType(?Type).
 
@@ -124,6 +130,7 @@ liveMethod(?Object, ?Invocation, ?Method) :-
 
 isInvocation(?Invocation) :- realInitialInvocation(?Object, ?Method, ?Invocation).
 isInvocation(?Invocation) :- invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?Invocation).
+isInvocation(?Invocation) :- invocationObject(?CallSite, ?Invocation).
 
 
 /* assume Unknown objects are initially active in the "unknown" context, unless the user specified
