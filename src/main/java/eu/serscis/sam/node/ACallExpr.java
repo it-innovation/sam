@@ -12,6 +12,7 @@ public final class ACallExpr extends PExpr
     private PPattern _method_;
     private TLPar _lPar_;
     private PArgs _args_;
+    private TStar _star_;
     private TRPar _rPar_;
 
     public ACallExpr()
@@ -25,6 +26,7 @@ public final class ACallExpr extends PExpr
         @SuppressWarnings("hiding") PPattern _method_,
         @SuppressWarnings("hiding") TLPar _lPar_,
         @SuppressWarnings("hiding") PArgs _args_,
+        @SuppressWarnings("hiding") TStar _star_,
         @SuppressWarnings("hiding") TRPar _rPar_)
     {
         // Constructor
@@ -37,6 +39,8 @@ public final class ACallExpr extends PExpr
         setLPar(_lPar_);
 
         setArgs(_args_);
+
+        setStar(_star_);
 
         setRPar(_rPar_);
 
@@ -51,6 +55,7 @@ public final class ACallExpr extends PExpr
             cloneNode(this._method_),
             cloneNode(this._lPar_),
             cloneNode(this._args_),
+            cloneNode(this._star_),
             cloneNode(this._rPar_));
     }
 
@@ -184,6 +189,31 @@ public final class ACallExpr extends PExpr
         this._args_ = node;
     }
 
+    public TStar getStar()
+    {
+        return this._star_;
+    }
+
+    public void setStar(TStar node)
+    {
+        if(this._star_ != null)
+        {
+            this._star_.parent(null);
+        }
+
+        if(node != null)
+        {
+            if(node.parent() != null)
+            {
+                node.parent().removeChild(node);
+            }
+
+            node.parent(this);
+        }
+
+        this._star_ = node;
+    }
+
     public TRPar getRPar()
     {
         return this._rPar_;
@@ -218,6 +248,7 @@ public final class ACallExpr extends PExpr
             + toString(this._method_)
             + toString(this._lPar_)
             + toString(this._args_)
+            + toString(this._star_)
             + toString(this._rPar_);
     }
 
@@ -252,6 +283,12 @@ public final class ACallExpr extends PExpr
         if(this._args_ == child)
         {
             this._args_ = null;
+            return;
+        }
+
+        if(this._star_ == child)
+        {
+            this._star_ = null;
             return;
         }
 
@@ -295,6 +332,12 @@ public final class ACallExpr extends PExpr
         if(this._args_ == oldChild)
         {
             setArgs((PArgs) newChild);
+            return;
+        }
+
+        if(this._star_ == oldChild)
+        {
+            setStar((TStar) newChild);
             return;
         }
 

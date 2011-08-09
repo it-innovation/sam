@@ -14,6 +14,7 @@ public interface Analysis extends Switch
     void caseStart(Start node);
     void caseAProgram(AProgram node);
     void caseABehaviourToplevel(ABehaviourToplevel node);
+    void caseAConfigToplevel(AConfigToplevel node);
     void caseAImportToplevel(AImportToplevel node);
     void caseAFactToplevel(AFactToplevel node);
     void caseARuleToplevel(ARuleToplevel node);
@@ -34,14 +35,18 @@ public interface Analysis extends Switch
     void caseATermTail(ATermTail node);
     void caseAVarTerm(AVarTerm node);
     void caseAStringTerm(AStringTerm node);
+    void caseAIntTerm(AIntTerm node);
     void caseACompositeTerm(ACompositeTerm node);
     void caseAQuery(AQuery node);
     void caseANamedPattern(ANamedPattern node);
     void caseAAnyPattern(AAnyPattern node);
+    void caseAConfig(AConfig node);
     void caseABehaviour(ABehaviour node);
     void caseAExtends(AExtends node);
     void caseAClassBody(AClassBody node);
+    void caseAConfigBody(AConfigBody node);
     void caseAField(AField node);
+    void caseAConfigField(AConfigField node);
     void caseAType(AType node);
     void caseANoargsAnnotation(ANoargsAnnotation node);
     void caseAArgsAnnotation(AArgsAnnotation node);
@@ -65,6 +70,7 @@ public interface Analysis extends Switch
     void caseAParam(AParam node);
     void caseAParams(AParams node);
     void caseAParamsTail(AParamsTail node);
+    void caseANamedblock(ANamedblock node);
 
     void caseTNumber(TNumber node);
     void caseTLPar(TLPar node);
@@ -97,6 +103,7 @@ public interface Analysis extends Switch
     void caseTDot(TDot node);
     void caseTDeclareTok(TDeclareTok node);
     void caseTImportTok(TImportTok node);
+    void caseTConfigTok(TConfigTok node);
     void caseTTry(TTry node);
     void caseTCatch(TCatch node);
     void caseTName(TName node);

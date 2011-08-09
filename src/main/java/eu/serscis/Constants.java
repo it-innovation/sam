@@ -49,8 +49,8 @@ public class Constants {
 	static public IPredicate callsMethodP = BASIC.createPredicate("callsMethod", 2);
 	static public IPredicate callsAnyMethodP = BASIC.createPredicate("callsAnyMethod", 1);
 	static public IPredicate maySendP = BASIC.createPredicate("maySend", 5);
-	static public IPredicate mayCreateP = BASIC.createPredicate("mayCreate", 2);
-	static public IPredicate mayAcceptP = BASIC.createPredicate("mayAccept", 2);
+	static public IPredicate mayCreateP = BASIC.createPredicate("mayCreate", 3);
+	static public IPredicate mayAccept3P = BASIC.createPredicate("mayAccept", 3);
 	static public IPredicate mayReturnP = BASIC.createPredicate("mayReturn", 4);
 	static public IPredicate mayThrowP = BASIC.createPredicate("mayThrow", 4);
 	static public IPredicate hasFieldP = BASIC.createPredicate("hasField", 2);
@@ -60,6 +60,10 @@ public class Constants {
 	static public IPredicate localP = BASIC.createPredicate("local", 4);
 	static public IPredicate fieldP = BASIC.createPredicate("field", 3);
 	static public IPredicate debugEdgeP = BASIC.createPredicate("debugEdge", 5);
+	static public IPredicate initialObjectP = BASIC.createPredicate("initialObject", 2);
+	static public IPredicate initialInvocation2P = BASIC.createPredicate("initialInvocation", 2);
+	static public IPredicate initialInvocationP = BASIC.createPredicate("initialInvocation", 3);
+	static public IPredicate phaseP = BASIC.createPredicate("phase", 1);
 
 	static <X> List<X> makeList(X... items) {
 		return Arrays.asList(items);

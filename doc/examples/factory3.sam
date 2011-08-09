@@ -6,35 +6,41 @@ class Factory {
   }
 }
 
-class Task extends Unknown {
-}
-
 class ClientA {
-  private Object factory;
+  private Object myFactory;
   private Object myTask;
-  private Object ref;
+  private Object myOtherRefs;
+
+  public ClientA(Object factory, Object otherRefs) {
+    myFactory = factory;
+    myOtherRefs = otherRefs;
+  }
 
   public void run() {
-    myTask = factory.newInstance();
+    myTask = myFactory.newInstance();
     myTask = myTask.invoke(myTask);
   }
 }
 
-/* Config */
+config {
+    Factory factory;
+    Object otherClients;
 
-initialObject("clientA", "ClientA").
-initialObject("otherClients", "Unknown").
-initialObject("factory", "Factory").
+    setup {
+        factory = new Factory();
+    }
 
-field("clientA", "factory", "factory").
-field("otherClients", "ref", "factory").
+    test "A" {
+        Object clientA = new ClientA(factory, otherClients);
+        clientA.run();
+    }
 
-initialInvocation("clientA", "a").
-initialInvocation("otherClients", "other").
-
-field("clientA", "ref", "otherClients").
+    test "Other" {
+        otherClients = new Unknown(factory);
+    }
+}
 
 /* Goals */
 
-denyAccess("otherClients", "aTask").
-requireAccess("clientA", "aTask").
+denyAccess("otherClients", "taskA").
+requireAccess("clientA", "taskA").

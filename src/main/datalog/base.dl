@@ -54,6 +54,7 @@ declare denyAccess(?Object, ?Target).
 declare requireAccess(?Object, ?Target).
 declare hasField(?Type, ?FieldName).
 declare isType(?Type).
+declare phase(?Phase).
 
 declare expectFailure.
 declare haveBadAccess(?SourceObject, ?TargetObject).
@@ -64,10 +65,12 @@ declare graphEdge(?Source, ?Target, ?Attrs).
 declare debugEdge(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation).
 declare showAllInvocations(?Object).
 declare showInvocation(?Object, ?Invocation).
+declare isHidden(?Source).
 
 declare didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
-declare mayAccept(?Method, ?ParamVar).
-declare mayAccept(?Method, ?ParamVar, ?Value).
+declare didCall(?Caller, ?Target, ?Method).
+declare mayAccept(?Method, ?ParamVar, ?Pos).
+declare mayAccept(?Method, ?ParamVar, ?Pos, ?Value).
 
 declare accessControlOn.
 declare accessAllowed(?Caller, ?Target).
@@ -84,9 +87,8 @@ declare didGetException(?Caller, ?CallerInvocation, ?CallSite, ?Exception).
 declare mayReturn(?Object, ?Invocation, ?Method, ?Value).
 declare mayThrow(?Object, ?Invocation, ?Method, ?Exception).
 declare didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue).
-declare maySend(?Target, ?TargetInvocation, ?Method, ?ArgValue).
 declare maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue).
-declare mayCreate(?CallSite, ?ChildType).
+declare mayCreate(?CallSite, ?ChildType, ?NameHint).
 declare newObject(?Object, ?Invocation, ?ChildType, ?NewObject).
 declare isPublic(?Object).
 declare debug.
@@ -118,7 +120,7 @@ realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?CallerInvocation) :
 isObject(?X) :- isA(?X, ?Type).
 live(?Object) :- initialObject(?Object, ?Type).
 isA(?Object, ?Type) :- initialObject(?Object, ?Type).
-isA(?NewObject, ?Type) :- realNewObject(?Object, ?Invocation, ?Type, ?NewObject), didCreate(?Caller, ?Invocation, ?CallSite, ?NewObject).
+isA(?NewObject, ?Type) :- mayCreate(?CallSite, ?Type, ?NameHint), didCreate(?Caller, ?Invocation, ?CallSite, ?NewObject).
 isType(?Type) :- definedType(?Type).
 isA(?Object, "Unknown") :- isA(?Object, ?Type), !definedType(?Type).
 
@@ -142,11 +144,13 @@ realInitialInvocation(?Object, ?Method, ?Invocation) :-
 	hasMethod(?Type, ?Method),
 	methodName(?Method, ?MethodName).
 
+/*
 realInitialInvocation(?Object, ?Method, "unknown") :-
 	initialObject(?Object, "Unknown"),
 	hasMethod("Unknown", ?Method),
 	!initialInvocation(?Object, ?AnyMethod, ?AnyInvocation),
 	!initialInvocation(?Object, ?AnyInvocation).
+	*/
 
 realInitialInvocation(?Object, ?Method, ?Invocation) :-
 	initialInvocation(?Object, ?Invocation),
@@ -173,7 +177,7 @@ class Unknown {
 		try {
 			ref = args;
 			ref = this;
-			ref = ref.*(ref);
+			ref = ref.*(ref*);
 			return ref;
 			throw ref;
 		} catch (Throwable ex) {
@@ -184,3 +188,9 @@ class Unknown {
 
 accessAllowed(?Source, ?Target, ?Method) :-
 	accessAllowed(?Source, ?Target), hasMethod(?CallSite, ?Method).
+
+/* A simplified version of didCall/6 useful for writing goals. */
+didCall(?Caller, ?Target, ?Method) :-
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
+
+initialObject("_testDriver", "_TestDriver").

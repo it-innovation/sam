@@ -88,6 +88,10 @@ might happen.
 
    `Caller`'s `CallSite` called `Target`'s `Method`.
 
+.. function:: didCall(?Caller, ?Target, ?Method)
+
+   Simpler version of `didCall/6` with just the caller, target and method.
+
 .. function:: didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild)
 
    The code at `CallSite` created `NewChild` as the result of a constructor call made

@@ -17,7 +17,7 @@
 // the software.
 //
 //	Created By :			Thomas Leonard
-//	Created Date :			2011-04-04
+//	Created Date :			2011-08-09
 //	Created for Project :		SERSCIS
 //
 /////////////////////////////////////////////////////////////////////////
@@ -28,6 +28,7 @@
 
 package eu.serscis;
 
+import eu.serscis.sam.parser.ParserException;
 import java.util.HashSet;
 import java.util.Set;
 import eu.serscis.sam.node.*;
@@ -65,29 +66,75 @@ import eu.serscis.sam.lexer.Lexer;
 import eu.serscis.sam.parser.Parser;
 import static eu.serscis.Constants.*;
 
-abstract class SAMClass {
-	public String name;
-	Set<String> fields = new HashSet<String>();
-	Model model;
+class SAMTestDriver extends SAMClass {
+	private List<ANamedblock> blocks = new LinkedList<ANamedblock>();
+	private int count = 1;
 
-	public SAMClass(Model model, String name) {
-		this.model = model;
-		this.name = name;
+	public SAMTestDriver(Model model) {
+		super(model, "_TestDriver");
 	}
 
 	public void addDatalog() throws Exception {
-		IRelation definedType = model.getRelation(definedTypeP);
-		definedType.add(BASIC.createTuple(TERM.createString(name)));
+		super.addDatalog();
+
+		IRelation hasMethodRel = model.getRelation(hasMethodP);
+		IRelation methodNameRel = model.getRelation(methodNameP);
+
+		for (ANamedblock block : blocks) {
+			addMethod(block);
+		}
 	}
 
-	public void declareField(TName aName) {
-		String fieldName = aName.getText();
-		if (fields.contains(fieldName)) {
-			throw new RuntimeException("Duplicate definition of field " + fieldName);
-		} else {
-			fields.add(fieldName);
-			IRelation rel = model.getRelation(hasFieldP);
-			rel.add(BASIC.createTuple(TERM.createString(this.name), TERM.createString(fieldName)));
-		}
+	private void addMethod(ANamedblock block) throws Exception {
+		String context = block.getContext() != null ? getString(block.getContext()) : "";
+		String phase = block.getName().getText();
+		String methodName = phase + "_" + context + count;
+		count++;
+
+		ITerm methodNameFull = TERM.createString(this.name + "." + methodName);
+
+		IRelation hasMethodRel = model.getRelation(hasMethodP);
+		IRelation methodNameRel = model.getRelation(methodNameP);
+
+		// hasMethod(type, "class.method")
+		hasMethodRel.add(BASIC.createTuple(TERM.createString(this.name), methodNameFull));
+
+		// methodName("class.method", "method")
+		methodNameRel.add(BASIC.createTuple(methodNameFull, TERM.createString(methodName)));
+
+		AMethod method = new AMethod(
+			new LinkedList<PAnnotation>(),
+			null,
+			new AType(),
+			new ANamedPattern(block.getName()),
+			new TLPar(),
+			null,
+			null,
+			new TRPar(),
+			new TLBrace(),
+			block.getCode(),
+			new TRBrace());
+
+		SAMMethod sm = new SAMMethod(this, method, methodNameFull);
+		sm.addDatalog();
+
+		/* initialInvocation("_testDriver", context, method) :- phase(name) */
+		ITuple headTuple = BASIC.createTuple(
+					TERM.createString("_testDriver"),
+					TERM.createString(methodName),
+					TERM.createString(context));
+
+		ILiteral head = BASIC.createLiteral(true, BASIC.createAtom(initialInvocationP, headTuple));
+
+		ILiteral phaseL = BASIC.createLiteral(true, BASIC.createAtom(phaseP, BASIC.createTuple(
+						TERM.createString(phase))));
+
+		IRule rule = BASIC.createRule(makeList(head), makeList(phaseL));
+		//System.out.println(rule);
+		model.rules.add(rule);
+	}
+
+	public void add(ANamedblock block) {
+		blocks.add(block);
 	}
 }

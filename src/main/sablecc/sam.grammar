@@ -20,7 +20,7 @@ Helpers
   string_character = [input_character - ['"' + '\']] | escape_sequence;
 
 Tokens
-  number = ['0' .. '9']+;
+  number = '-'? ['0' .. '9']+;
   l_par = '(';
   r_par = ')';
   public_tok = 'public';
@@ -52,6 +52,7 @@ Tokens
   dot = '.';
   declare_tok = 'declare';
   import_tok = 'import';
+  config_tok = 'config';
 
   try = 'try';
   catch = 'catch';
@@ -65,6 +66,7 @@ Ignored Tokens
 Productions
   program = toplevel+;
   toplevel = {behaviour} behaviour
+  	   | {config} config
 	   | {import} import
   	   | {fact} fact
   	   | {rule} rule
@@ -87,16 +89,20 @@ Productions
   term_tail = comma term;
   term = {var} question name
        | {string} string_literal
+       | {int} number
        | {composite} name l_par terms r_par;
 
   query = query_start literals dot;
 
   pattern = {named} name
           | {any} star;
+  config = config_tok l_brace config_body r_brace;
   behaviour = class_tok name extends? l_brace class_body r_brace;
   extends = extends_tok name;
   class_body = field* method*;
+  config_body = config_field* namedblock+;
   field = private_tok type name semi;
+  config_field = type name semi;
   type = name;
   annotation = {noargs} at_tok name
              | {args} at_tok name l_par string_args? r_par;
@@ -109,8 +115,8 @@ Productions
             | {throw} throw name semi
 	    | {return} return name semi;
   catch_block = catch l_par type name r_par l_brace statement* r_brace;
-  expr = {new} new type l_par args? r_par
-       | {call} name dot [method]:pattern l_par args? r_par
+  expr = {new} new type l_par args? star? r_par
+       | {call} name dot [method]:pattern l_par args? star? r_par
        | {string} string_literal
        | {copy} name;
   string_args = string_literal string_args_tail*;
@@ -120,3 +126,4 @@ Productions
   param = type name;
   params = param params_tail*;
   params_tail = comma param;
+  namedblock = name [context]:string_literal? l_brace code r_brace;

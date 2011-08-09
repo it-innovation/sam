@@ -7,6 +7,10 @@ accessAllowed("compiler", "output").
 class Compiler {
     private Object myLog;
 
+    public Compiler(File log) {
+        myLog = log;
+    }
+
     public void exec(Object target) {
         myLog.append();
         target.write();
@@ -21,20 +25,28 @@ class File {
     }
 }
 
-initialObject("alice", "Unknown").
-initialObject("billing", "File").
-initialObject("compiler", "Compiler").
-initialObject("output", "File").
+config {
+    File billing;
+    Compiler compiler;
+    File output;
+    Unknown alice;
 
-field("alice", "ref", "compiler").
-field("alice", "ref", "output").
-field("alice", "ref", "billing").
-field("compiler", "myLog", "billing").
+    setup {
+        billing = new File();
+        compiler = new Compiler(billing);
+        output = new File();
+        alice = new Unknown(compiler, output);
+    }
 
-initialInvocation("alice", "alice").
+    test {
+        alice.test();
+    }
+}
 
-missingGoodAccess("compiler", "output") :-
-    !didCall("compiler", "alice", ?CallSite, "output", "alice", "File.write").
+field(?X, "ref", ?Y) :- isA(?X, "Unknown"), isObject(?Y), ?Y != "_testDriver".
+
+missingGoodAccess("compiler", "billing") :-
+    !didCall("compiler", ?X, ?CallSite, "billing", ?Y, "File.append").
 
 // Flag an error if an interaction caused by alice (but not involving alice)
 // happens that isn't in desiredAuthority.

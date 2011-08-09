@@ -1,4 +1,3 @@
-/* Behaviour */
 class Factory {
   public Task newInstance() {
     Task task = new Task();
@@ -6,17 +5,18 @@ class Factory {
   }
 }
 
-class Task extends Unknown {
+config {
+    Factory factory;
+
+    setup {
+        factory = new Factory();
+    }
+
+    test "A" {
+        Object clientA = new Unknown(factory);
+    }
+
+    test "Other" {
+        Object otherClients = new Unknown(factory);
+    }
 }
-
-/* Config */
-
-initialObject("clientA", "Unknown").
-initialObject("otherClients", "Unknown").
-initialObject("factory", "Factory").
-
-field("clientA", "ref", "factory").
-field("otherClients", "ref", "factory").
-
-initialInvocation("clientA", "a").
-initialInvocation("otherClients", "other").

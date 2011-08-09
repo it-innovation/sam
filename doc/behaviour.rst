@@ -89,11 +89,13 @@ Methods
    The name of the method. Usually, `Method` is fully-qualified (e.g. "Type.invoke") whereas `MethodName`
    is just the name ("invoke").
 
-.. function:: mayAccept(?Method, ?ParamVar)
+.. function:: mayAccept(?Method, ?ParamVar, ?Pos)
 
-   Objects of this type accept an argument value and store it in a variable namd ParamVar.
+   Objects of this type accept an argument value passes in the given position
+   and store it in a variable namd ParamVar. The first argument has position 0.
+   If `Pos` is -1, then the parameter may accept values passed in any position.
 
-.. function:: mayAccept(?Method, ?ParamVar, ?Value)
+.. function:: mayAccept(?Method, ?ParamVar, ?Pos, ?Value)
 
    Objects of this type accept these argument values and store them in the
    local variable namd ParamVar.
@@ -126,64 +128,19 @@ Call-sites
 
    This call-site may call methods with any name.
 
-.. function:: maySend(?Target, ?TargetInvocation, ?Method, [?Pos,] ?ArgValue)
+.. function:: maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue)
 
    Target.method may get called with `ArgValue` as parameter number `Pos` (or as any
-   parameter in the version without `Pos`). The position is currently ignored.
+   parameter if `Pos` is `-1`).
 
-.. function:: mayCreate(?CallSite, ?ChildType)
+.. function:: mayCreate(?CallSite, ?ChildType, ?NameHint)
 
    This "call" (to the constructor) may create new objects of type ChildType.
    There is no need for a `callsMethod` here; `mayCreate` implies that it may
-   call the constructor(s).
+   call the constructor(s). `NameHint` is used to create a suitable name for the
+   new child object. Usually, this is the name of the variable it will be assigned
+   to.
 
-
-Example
--------
-For example, a Jave class that does::
-
-     class Proxy {
-       public Object invoke(Data msg) {
-         Object result = myTarget.invoke(msg);	// callsite1
-         return result;
-       }
-     }
-
-     class ProxyFactory {
-       public Proxy createProxy(Object target) {
-         Proxy proxy = new Proxy(target);
-         return proxy;
-       }
-     }
-
-could be modelled with::
-
-     hasField("Proxy", "myTarget").
-     hasMethod("Proxy", "Proxy.invoke").
-
-     methodName("Proxy.invoke", "invoke").
-     mayAccept("Proxy.invoke", "msg", msg) :- isData(msg).
-     hasCallSite("Proxy.invoke", "callsite1").
-     mayReturn(?Object, ?Invocation, "Proxy.invoke", ?Result) :-
-       isA(?Object, "Proxy"),
-       live(?Object, ?Invocation),
-       local(?Object, ?Invocation, "result", ?Value).
-
-     mayCall("callsite1", "myTarget").	// FIXME
-     callsMethod("callsite1", "invoke").
-     mayPass("callsite1", "msg").
-     local(?Caller, ?Invocation, "result", ?Value) :- didGet(?Caller, ?Invocation, "callsite1", ?Value).
-
-     mayAccept("ProxyFactory.createProxy", "target").
-     hasCallSite("ProxyFactory.createProxy", "callsite2").
-     mayReturn(?Object, ?Invocation, "ProxyFactory.createProxy", ?Result) :-
-       isA(?Object, "ProxyFactory"),
-       live(?Object, ?Invocation),
-       local(?Object, ?Invocation, "proxy", ?Value).
-
-     mayCreate("callsite2", "Proxy").
-     mayPass("callsite2", "target").
-     local(?Caller, ?Invocation, "proxy", ?Value) :- didCreate(?Caller, ?Invocation, "callsite2", ?Value).
 
 The Unknown type
 ----------------

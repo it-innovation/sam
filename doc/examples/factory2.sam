@@ -6,31 +6,31 @@ class Factory {
   }
 }
 
-class Task extends Unknown {
+config {
+    Factory factory;
+    Object otherClients;
+
+    setup {
+        factory = new Factory();
+    }
+
+    test "A" {
+        Object clientA = new Unknown(factory, otherClients);
+    }
+
+    test "Other" {
+        otherClients = new Unknown(factory);
+    }
 }
-
-/* Config */
-
-initialObject("clientA", "Unknown").
-initialObject("otherClients", "Unknown").
-initialObject("factory", "Factory").
-
-field("clientA", "ref", "factory").
-field("otherClients", "ref", "factory").
-
-initialInvocation("clientA", "a").
-initialInvocation("otherClients", "other").
-
-field("clientA", "ref", "otherClients").
 
 /* Goals */
 
-denyAccess("otherClients", "aTask").
-requireAccess("clientA", "aTask").
+denyAccess("otherClients", "taskA").
+requireAccess("clientA", "taskA").
 
 
 /* (force SAM to find the obvious problem first) */
-invocationObject("otherClients", "a", "Unknown.*-3", "other").
+invocationObject("otherClients", "A", "Unknown.*-3", "Other").
 
 
 expectFailure.

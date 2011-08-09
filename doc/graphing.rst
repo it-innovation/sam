@@ -32,6 +32,10 @@ imports have also been processed.
    specific invocations of Object explicitly on the graph. If false, these
    invocations are aggregated with their object.
 
+.. function:: isHidden(?Source)
+
+   Don't show this object or references from it. Used to hide the `_testDriver` object.
+
 Notation
 --------
 

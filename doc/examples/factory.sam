@@ -10,24 +10,26 @@ class Factory {
   }
 }
 
-/* Config */
+config {
+    Factory factory;
 
-initialObject("clientA", "Unknown").
-initialObject("otherClients", "Unknown").
-initialObject("factory", "Factory").
+    setup {
+        factory = new Factory();
+    }
 
-field("clientA", "ref", "factory").
-field("otherClients", "ref", "factory").
+    test "A" {
+        Object clientA = new Unknown(factory);
+    }
 
-
-initialInvocation("clientA", "A").
-initialInvocation("otherClients", "other").
-
+    test "Other" {
+        Object otherClients = new Unknown(factory);
+    }
+}
 
 /* Aggregation */
 
 newObject("factory", "A", "Task", "newTasksForA").
-newObject("factory", "other", "Task", "newTasksOthers").
+newObject("factory", "Other", "Task", "newTasksOthers").
 
 
 

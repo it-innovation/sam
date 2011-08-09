@@ -40,13 +40,17 @@ class Directory {
     }
 
     public Object readOnly() {
-        ReadOnly ro = new ReadOnly(this);
-        return ro;
+        ReadOnly readOnly = new ReadOnly(this);
+        return readOnly;
     }
 }
 
 class Owner {
     private Object delegate;
+
+    public Owner() {
+        delegate = new Unknown();
+    }
 
     public void test() {
         Directory dir = new Directory();
@@ -57,14 +61,19 @@ class Owner {
     }
 }
 
-initialObject("owner", "Owner").
-initialObject("delegate", "Unknown").
+config {
+    Owner owner;
 
-field("owner", "delegate", "delegate").
+    setup {
+        owner = new Owner();
+    }
 
-initialInvocation("owner", "test", "a").
+    test {
+        owner.test();
+    }
+}
 
-denyAccess("delegate", "aReadOnly").
+denyAccess("delegate", "readOnly").
 
 
 expectFailure.

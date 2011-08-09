@@ -113,6 +113,9 @@ public class Debugger {
 
 	private static String getInvocation(ITuple tuple, int i) {
 		String object = tuple.get(i).getValue().toString();
+		if ("_testDriver".equals(object)) {
+			return "config";
+		}
 		return object;
 		/*
 		String context = tuple.get(i + 1).getValue().toString();

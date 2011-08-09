@@ -73,6 +73,13 @@ public class Model {
 		this.configuration = configuration;
 	}
 
+	public Model(Model source) {
+		this.configuration = source.configuration;
+		this.rules.addAll(source.rules);
+		this.facts.putAll(source.facts);
+		this.declared.addAll(source.declared);
+	}
+
 	public IRelation getRelation(IPredicate pred) {
 		IRelation rel = facts.get(pred);
 		if (rel == null) {

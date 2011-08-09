@@ -30,7 +30,7 @@
 
 
 /* Refinements */
-mayAccept(?Method, ?ParamVar, ?Value) :- mayAccept(?Method, ?ParamVar), isObject(?Value).
+mayAccept(?Method, ?ParamVar, ?Pos, ?Value) :- mayAccept(?Method, ?ParamVar, ?Pos), isObject(?Value).
 
 
 /* Access control */
@@ -40,6 +40,9 @@ accessAllowed(?Caller, ?Target, ?Method) :-
 	isObject(?Caller),
 	isA(?Target, ?TargetType),
 	hasMethod(?TargetType, ?Method).
+
+accessAllowed("_testDriver", ?Target) :-
+	isObject(?Target).
 
 /* Which methods may CallSite invoke on Target */
 methodMatches(?CallSite, ?Target, ?Method) :-	/* Exact match */
@@ -66,7 +69,7 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Meth
 	accessAllowed(?Caller, ?Target, ?Method),
 	realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
 
-/* Parent calls the child"s constructor */
+/* Parent calls the child's constructor */
 didCall(?Caller, ?Invocation, ?CallSite, ?NewChild, ?Invocation, ?Method) :-
 	didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild),
 	isA(?NewChild, ?ChildType),
@@ -91,16 +94,24 @@ mayThrow(?Caller, ?CallerInvocation, ?CallerMethod, ?Exception) :-
 	didCall(?Caller, ?CallerInvocation, ?CallerCallSite, ?Target, ?TargetInvocation, ?TargetMethod),
 	didGetException(?Target, ?TargetInvocation, ?TargetCallSite, ?Exception).
 
+/* (normal call; sender and receiver use fixed args) */
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
 	maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue),
 	isA(?Target, ?TargetType),
-	mayAccept(?Method, ?ParamVar, ?ArgValue).
+	mayAccept(?Method, ?ParamVar, ?Pos, ?ArgValue).
 
-/* (no position information; e.g. Unknown sender) */
+/* (no position information from sender; e.g. Unknown sender,
+ *  OR no position information for either; e.g. Unknown to Unknown) */
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	maySend(?Target, ?TargetInvocation, ?Method, ?ArgValue),
+	maySend(?Target, ?TargetInvocation, ?Method, -1, ?ArgValue),
 	isA(?Target, ?TargetType),
-	mayAccept(?Method, ?ParamVar, ?ArgValue).
+	mayAccept(?Method, ?ParamVar, ?Pos, ?ArgValue).
+
+/* (no position information for receiver; e.g. Unknown receiver) */
+didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
+	maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue),
+	isA(?Target, ?TargetType),
+	mayAccept(?Method, ?ParamVar, -1, ?ArgValue).
 
 /* Target"s parameter variable may contain ArgValue if someone called it with that value. */
 local(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
@@ -109,8 +120,8 @@ local(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
 didCreate(?Caller, ?Invocation, ?CallSite, ?Child) :-
 	liveMethod(?Caller, ?Invocation, ?Method),
 	hasCallSite(?Method, ?CallSite),
-	mayCreate(?CallSite, ?ChildType),
-	realNewObject(?Caller, ?Invocation, ?ChildType, ?Child).
+	mayCreate(?CallSite, ?ChildType, ?NameHint),
+	realNewObject(?Caller, ?Invocation, ?NameHint, ?Child).
 
 live(?NewChild) :-
 	didCreate(?Object, ?Invocation, ?CallSite, ?NewChild).
@@ -118,27 +129,24 @@ live(?NewChild) :-
 
 /* Default aggregation for child objects */
 
-realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild) :- newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
-realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild) :-
+declare typeHasCallSite(?Type, ?CallSite).
+typeHasCallSite(?Type, ?CallSite) :- hasMethod(?Type, ?Method), hasCallSite(?Method, ?CallSite).
+typeHasCallSite(?Type, ?CallSite) :- hasConstructor(?Type, ?Constructor), hasCallSite(?Constructor, ?CallSite).
+	
+
+realNewObject(?Object, ?Invocation, ?NameHint, ?NewChild) :-
 	isA(?Object, ?Type),
-	mayCreate(?CallSite, ?ChildType),
+	typeHasCallSite(?Type, ?CallSite),
+	mayCreate(?CallSite, ?ChildType, ?NameHint),
+	newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
+realNewObject("_testDriver", ?Invocation, ?NameHint, ?NameHint) :-
+	mayCreate(?CallSite, ?ChildType, ?NameHint),
+	isInvocation(?Invocation).
+realNewObject(?Object, ?Invocation, ?NameHint, ?NewChild) :-
+	?Object != "_testDriver",
+	isA(?Object, ?Type),
+	typeHasCallSite(?Type, ?CallSite),
+	mayCreate(?CallSite, ?ChildType, ?NameHint),
 	isInvocation(?Invocation),
 	!newObject(?Object, ?Invocation, ?ChildType, ?AnyChild),
-	STRING_CONCAT(?Invocation, ?ChildType, ?NewChild).
-
-/* Sanity checking */
-
-error("Unknown source object in deny rule", ?A) :- denyAccess(?A, ?B), !isObject(?A).
-error("Unknown target object in deny rule", ?B) :- denyAccess(?A, ?B), !isObject(?B).
-
-
-/* Goal checking (here because we only check after applying the system rules) */
-
-missingGoodAccess(?SourceObject, ?TargetObject) :-
-	requireAccess(?SourceObject, ?TargetObject),
-	!getsAccess(?SourceObject, ?TargetObject).
-
-error("required access is not possible", ?SourceObject, ?TargetObject) :-
-	missingGoodAccess(?SourceObject, ?TargetObject).
-
-debug :- haveBadAccess(?Source, ?Target).
+	STRING_CONCAT(?NameHint, ?Invocation, ?NewChild).

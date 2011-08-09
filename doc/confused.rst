@@ -11,20 +11,32 @@ model is based on the example in the `Authodox <http://web.comlab.ox.ac.uk/peopl
 2. The compiler has access to a billing log.
 3. Alice should be able to cause her output file to be written to and the compiler's log to be appended to (and nothing else).
 
-The four objects are::
+The four objects are configured like this::
 
-  initialObject("alice", "Unknown").
-  initialObject("billing", "File").
-  initialObject("compiler", "Compiler").
-  initialObject("output", "File").
+  config {
+      File billing;
+      Compiler compiler;
+      File output;
+      Unknown alice;
 
-We give Alice a reference to `billing` because in a non-capability system references aren't secret. We want to see whether we can rely on
-the access control rules to protect the billing file::
+      setup {
+          billing = new File();
+          compiler = new Compiler(billing);
+          output = new File();
+          alice = new Unknown(compiler, output);
+      }
 
-  field("alice", "ref", "compiler").
-  field("alice", "ref", "output").
-  field("alice", "ref", "billing").
-  field("compiler", "myLog", "billing").
+      test {
+          alice.test();
+      }
+  }
+
+In a non-capability system, references aren't secret. We want to see whether we can rely on just
+the access control rules to protect the billing file. We therefore give all `Unknown` objects
+access to all other objects (excluding the dummy `_testDriver` object, which performs the `config`
+operations)::
+
+  field(?X, "ref", ?Y) :- isA(?X, "Unknown"), isObject(?Y), ?Y != "_testDriver".
 
 In this system, instead of using only capabilities we also use traditional access control. This must be enabled using :func:`accessControlOn`, after which
 the allowed interactions can be defined using :func:`accessAllowed`::

@@ -114,7 +114,7 @@ public class SAMParser {
 			//System.out.println("Processing " + toplevel);
 
 			if (toplevel instanceof ABehaviourToplevel) {
-				SAMClass klass = new SAMClass(model, (ABehaviour) ((ABehaviourToplevel) toplevel).getBehaviour());
+				SAMClass klass = new SAMDeclaredClass(model, (ABehaviour) ((ABehaviourToplevel) toplevel).getBehaviour());
 				if (classDefinitions.containsKey(klass.name)) {
 					throw new RuntimeException("Duplicate class definition: " + klass.name);
 				}
@@ -129,6 +129,12 @@ public class SAMParser {
 				addDeclare((ADeclare) ((ADeclareToplevel) toplevel).getDeclare());
 			} else if (toplevel instanceof AImportToplevel) {
 				addImport((AImport) ((AImportToplevel) toplevel).getImport());
+			} else if (toplevel instanceof AConfigToplevel) {
+				SAMClass klass = processConfig((AConfig) ((AConfigToplevel) toplevel).getConfig());
+				if (classDefinitions.containsKey(klass.name)) {
+					throw new RuntimeException("Duplicate class definition: " + klass.name);
+				}
+				classDefinitions.put(klass.name, klass);
 			} else {
 				throw new RuntimeException("UNKNOWN " + toplevel + ", " + toplevel.getClass());
 			}
@@ -150,6 +156,9 @@ public class SAMParser {
 		} else if (parsed instanceof AVarTerm) {
 			String name = ((AVarTerm) parsed).getName().getText();
 			return TERM.createVariable(name);
+		} else if (parsed instanceof AIntTerm) {
+			int val = Integer.valueOf(((AIntTerm) parsed).getNumber().getText());
+			return CONCRETE.createInt(val);
 		} else {
 			throw new RuntimeException("Unknown term type:" + parsed);
 		}
@@ -296,5 +305,27 @@ public class SAMParser {
 			  in.readLine();
 		 }
 		 return in.readLine();
+	}
+
+	private SAMClass processConfig(AConfig config) throws ParserException {
+		AConfigBody body = (AConfigBody) config.getConfigBody();
+		SAMTestDriver testDriver = new SAMTestDriver(model);
+
+		for (PConfigField field : body.getConfigField()) {
+			testDriver.declareField(((AConfigField) field).getName());
+		}
+
+		for (PNamedblock block : body.getNamedblock()) {
+			ANamedblock namedBlock = (ANamedblock) block;
+			String name = namedBlock.getName().getText();
+
+			if ("setup".equals(name) || "test".equals(name)) {
+				testDriver.add(namedBlock);
+			} else {
+				throw new ParserException(namedBlock.getName(), "Unknown block '" + name + "'; try 'setup' or 'test'");
+			}
+		}
+
+		return testDriver;
 	}
 }

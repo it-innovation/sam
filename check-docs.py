@@ -21,8 +21,6 @@ def parse_dl(path):
 parse_dl(os.path.join(dldir, 'base.dl'))
 
 undocumented = declared - documented
-undocumented.remove("maySend(?Target, ?TargetInvocation, ?Method, ?ArgValue)")
-undocumented.remove("maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue)")
 if undocumented:
 	print "Undocumented:"
 	for sig in sorted(undocumented):
@@ -30,7 +28,6 @@ if undocumented:
 
 obsolete = documented - declared
 obsolete.remove("error(?Message, ?Args...)")
-obsolete.remove("maySend(?Target, ?TargetInvocation, ?Method, [?Pos,] ?ArgValue)")
 if obsolete:
 	print "\nObsolete:"
 	for sig in sorted(obsolete):

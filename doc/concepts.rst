@@ -5,7 +5,7 @@ Concepts
 
 Objects
 -------
-We assume that the system being modelled is an object-capabilities system. The system contains a set of objects, which hold references to each other.
+Normally, the system being modelled is an object-capabilities system: the system contains a set of objects, which hold references to each other.
 Objects may create other objects. The rules for access propagation are as follows:
 
 * An object A can only invoke (send a message to) another object B if it holds a reference to it:
@@ -36,7 +36,9 @@ Objects may create other objects. The rules for access propagation are as follow
 
        digraph msg { rankdir=LR; A -> B[color=green]; B -> C; A->C [style=dotted] }
 
-These are the only ways to get references.
+These are the only ways to get references in an object-capability system.
+
+However, there is also some support for modelling more traditonal access control systems; see :ref:`access` for details.
 
 
 Modelling

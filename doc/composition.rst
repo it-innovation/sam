@@ -28,12 +28,11 @@ The debug example is:
 .. code-block:: none
 
   debug()
-     <= getsAccess('delegate', 'aReadOnly')
-        <= delegate: got aReadOnly
-           ...
-           <= aLogger: got aReadOnly
-              <= aLogger: aReadOnly.readOnly()
-              ...
+     <= getsAccess('delegate', 'readOnly')
+        <= delegate: got readOnly
+           <= delegate: loggedReadOnly.*()
+           <= loggedReadOnly: got readOnly
+              <= loggedReadOnly: readOnly.readOnly()
 
 The problem here is the implementation of `ReadOnly.readOnly`::
 

@@ -2,20 +2,41 @@
 
 import "sealers-common.sam".
 
-/* Config */
-initialObject("precious", "Unknown").
-initialObject("sender", "Sender").
-initialObject("withUnsealer", "Unknown").
-initialObject("withoutUnsealer", "Unknown").
+class Sender {
+  private Sealer mySealer;
+  private Box myBox;
 
-field("sender", "sealer", "sealer").
-field("sender", "precious", "precious").
-field("sender", "others", "withUnsealer").
-field("sender", "others", "withoutUnsealer").
+  public Sender(Sealer sealer) {
+    mySealer = sealer;
+    Object precious = new Precious();
+    myBox = sealer.seal(precious);
+  }
 
-field("withUnsealer", "ref", "unsealer").
+  public void test(Object a, Object b) {
+    a.accept(myBox);
+    b.accept(myBox);
+  }
+}
 
-initialInvocation("sender", "A").
+config {
+  Object withUnsealer;
+  Object withoutUnsealer;
+  Object sender;
+
+  setup {
+    Object sealer = new Sealer();
+    Object unsealer = sealer.getUnsealer();
+
+    sender = new Sender(sealer);
+    withUnsealer = new Unknown(unsealer);
+    withoutUnsealer = new Unknown();
+  }
+
+  test {
+    sender.test(withUnsealer, withoutUnsealer);
+  }
+}
+
 
 /* Goals */
 

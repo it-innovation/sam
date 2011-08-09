@@ -48,11 +48,13 @@ isBoring(?Source, ?Target) :-
 	isPublic(?Target),
 	!didCall(?Source, ?C1, ?CallSite, ?Target, ?C2, ?Method).
 
+isHidden("_testDriver").
+
 /* Graphing */
 
-graphNode(?Object, "shape=record") :- live(?Object), isPublic(?Object).
-graphNode(?Object, "fontcolor=red") :- live(?Object), isA(?Object, "Unknown").
-graphNode(?Object, "") :- live(?Object), isObject(?Object), !isA(?Object, "Unknown").
+graphNode(?Object, "shape=record") :- live(?Object), isPublic(?Object), !isHidden(?Object).
+graphNode(?Object, "fontcolor=red") :- live(?Object), isA(?Object, "Unknown"), !isHidden(?Object).
+graphNode(?Object, "") :- live(?Object), isObject(?Object), !isA(?Object, "Unknown"), !isHidden(?Object).
 
 graphEdge(?Object, ?Target, "color=red,style=dashed") :- missingGoodAccess(?Object, ?Target).
 
@@ -123,12 +125,14 @@ graphEdge(?Object, ?Target, "color=red") :- errorEdge(?Object, ?Target).
 /* Problem field */
 graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=orange") :-
 	?GraphSourceNode != ?GraphTargetNode,
+	!isHidden(?GraphSourceNode),
 	!errorEdge(?GraphSourceNode, ?GraphTargetNode),
 	problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
 
 /* Problem local */
 graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=orange,style=dashed") :-
 	?GraphSourceNode != ?GraphTargetNode,
+	!isHidden(?GraphSourceNode),
 	problemEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode),
 	!errorEdge(?GraphSourceNode, ?GraphTargetNode),
 	!problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
@@ -136,6 +140,7 @@ graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=orange,style=dashed") :-
 /* Called field */
 graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=green") :-
 	?GraphSourceNode != ?GraphTargetNode,
+	!isHidden(?GraphSourceNode),
 	calledEdgeViaField(?GraphSourceNode, ?GraphTargetNode),
 	!errorEdge(?GraphSourceNode, ?GraphTargetNode),
 	!problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
@@ -143,6 +148,7 @@ graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=green") :-
 /* Called local */
 graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=green,style=dashed") :-
 	?GraphSourceNode != ?GraphTargetNode,
+	!isHidden(?GraphSourceNode),
 	calledEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode),
 	!errorEdge(?GraphSourceNode, ?GraphTargetNode),
 	!calledEdgeViaField(?GraphSourceNode, ?GraphTargetNode),
@@ -152,6 +158,7 @@ graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=green,style=dashed") :-
 /* Uncalled field */
 graphEdge(?GraphSourceNode, ?GraphTargetNode, "") :-
 	?GraphSourceNode != ?GraphTargetNode,
+	!isHidden(?GraphSourceNode),
 	uncalledEdge(?GraphSourceNode, ?GraphTargetNode),
 	fieldEdge(?GraphSourceNode, ?GraphTargetNode),
 	!problemEdge(?GraphSourceNode, ?GraphTargetNode).
@@ -159,6 +166,7 @@ graphEdge(?GraphSourceNode, ?GraphTargetNode, "") :-
 /* Uncalled local */
 graphEdge(?GraphSourceNode, ?GraphTargetNode, "style=dashed") :-
 	?GraphSourceNode != ?GraphTargetNode,
+	!isHidden(?GraphSourceNode),
 	uncalledEdge(?GraphSourceNode, ?GraphTargetNode),
 	localEdge(?GraphSourceNode, ?GraphTargetNode),
 	!fieldEdge(?GraphSourceNode, ?GraphTargetNode),

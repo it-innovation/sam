@@ -2,38 +2,68 @@
 
 import "sealers-common.sam".
 
-/* Config */
-initialObject("precious1", "Unknown").
-initialObject("precious2", "Unknown").
-initialObject("withUnsealer1", "Unknown").
-initialObject("withUnsealer2", "Unknown").
+class Sender {
+  private Sealer mySealer;
+  private Box myBox1;
+  private Box myBox2;
 
-field("sender", "precious", "precious1").
-field("sender", "precious2", "precious2").
-field("sender", "others", "withUnsealer1").
-field("sender", "others2", "withUnsealer2").
+  public Sender(Sealer sealer) {
+    mySealer = sealer;
+  }
 
-field("withUnsealer1", "ref", "unsealer").
-field("withUnsealer2", "ref", "unsealer").
+  public void setup1() {
+    Object precious = new Precious();
+    myBox1 = mySealer.seal(precious);
+  }
 
-initialInvocation("sender", "A").
+  public void setup2() {
+    Object precious = new Precious();
+    myBox2 = mySealer.seal(precious);
+  }
 
-/* Define different initial invocation contexts for these,
- * otherwise they both get aggregated into the "unknown" context by default.
- */
-initialInvocation("precious1", "1").
-initialInvocation("withUnsealer1", "1").
+  public void test1(Object target) {
+    target.accept(myBox1);
+  }
 
-initialInvocation("precious2", "2").
-initialInvocation("withUnsealer2", "2").
+  public void test2(Object target) {
+    target.accept(myBox2);
+  }
+}
 
-showAllInvocations("unsealer").
+config {
+  Object sealer;
+  Object unsealer;
+  Object withUnsealer1;
+  Object withUnsealer2;
+  Object sender;
 
-invocationObject("sender", "A", "Sender.test-1", "1").
-invocationObject("sender", "A", "Sender.test-2", "2").
-invocationObject("sender", "A", "Sender.test-3", "1").
-invocationObject("sender", "A", "Sender.test-4", "2").
+  setup {
+    sealer = new Sealer();
+    unsealer = sealer.getUnsealer();
+    sender = new Sender(sealer);
+  }
 
+  setup "1" {
+    sender.setup1();
+    withUnsealer1 = new Unknown(unsealer);
+  }
+
+  setup "2" {
+    sender.setup2();
+    withUnsealer2 = new Unknown(unsealer);
+  }
+
+  test "1" {
+    sender.test1(withUnsealer1);
+  }
+
+  test "2" {
+    sender.test2(withUnsealer2);
+  }
+}
+
+
+//showAllInvocations("unsealer").
 
 /* Goals */
 

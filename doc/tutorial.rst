@@ -12,8 +12,10 @@ A model contains several sections:
 * The scenerio being modelled, which consists of:
 
   * The objects initially present and their connections.
-  * The goals (security properties to be verified).
-  * Aggregation rules to control the level of detail modelled.
+  * The test cases to be tried.
+
+* Goals (security properties to be verified).
+* Aggregation rules to control the level of detail modelled.
 
 All of these can be placed in a single file.
 
@@ -31,48 +33,44 @@ code::
     }
   }
 
-  class Task extends Unknown {
-  }
-
 .. note::
   SAM uses a small Java-like syntax to define behaviour. The above Java code can be
   used as-is, but more complex code must be simplified.
 
-The `Unknown` class is used for code whose behaviour is unknown or untrusted. Making
-`Task` extend `Unknown` here means that the safety properties we verify for the model will
+Any class which we don't explicity define (e.g. `Task` here) will be given the `Unknown`
+behaviour; we assume that such objects may do anything they are able to do given the references
+they hold. This means that the safety properties we verify for the model will
 be true no matter how `Task` is actually imlemented.
 
 See :ref:`Behaviour` for more information about defining behaviour.
 
 Configuration
 -------------
-We can now define the initial configuration. We'll model two client objects: clientA, representing a single arbitrary client, and otherClients, aggregating all the others::
+We can now define the initial configuration. We'll model two client objects: `clientA`, representing a single arbitrary client, and `otherClients`, aggregating all the others::
 
-  initialObject("clientA", "Unknown").
-  initialObject("otherClients", "Unknown").
-  initialObject("factory", "Factory").
+  config {
+      Factory factory;
+  
+      setup {
+          factory = new Factory();
+      }
+  
+      test "A" {
+          Object clientA = new Unknown(factory);
+      }
+  
+      test "Other" {
+          Object otherClients = new Unknown(factory);
+      }
+  }
 
-  initialInvocation("clientA", "a").
-  initialInvocation("otherClients", "other").
+The model is evaluated in two phases. First, all the `setup` blocks are run. Then, all the `test`
+blocks. In this case using separate phases doesn't make any difference, but it can be useful to
+avoid cluttering up the output with effects of the setup phase.
 
-.. note::
-	SAM uses `Datalog <http://en.wikipedia.org/wiki/Datalog>`_ syntax to
-	state facts and rules. Literal strings must be in double-quotes.
-	Variable names (not used yet) are preceded by "?".
-
-The :func:`initialObject` lines define the three objects and their types.
-
-The :func:`initialInvocation` lines say that we assume both clients may be active by default (they
-don't wait for someone to invoke them). The second argument is the *modelling context*. By giving them
-different contexts we tell the modeller to consider these two cases separately when aggregating
-invocations.
-
-We also give each object a reference to the factory using :func:`field`. The
-"Unknown" type is modelled as an object which may make any call it is able to
-make. All its fields are aggregated into a single field called "ref"::
-
-  field("clientA", "ref", "factory").
-  field("otherClients", "ref", "factory").
+The labels on the test blocks (`"A"` and `"Other"`) are the the *modelling
+context*. By giving them different contexts we tell the modeller to consider
+these two cases separately when aggregating invocations.
 
 See :ref:`Configuration` for more information.
 
@@ -80,7 +78,6 @@ Running the scenario
 --------------------
 Putting these together gives this complete model file (:example:`factory1`)::
 
-  /* Behaviour */
   class Factory {
     public Task newInstance() {
       Task task = new Task();
@@ -88,20 +85,21 @@ Putting these together gives this complete model file (:example:`factory1`)::
     }
   }
   
-  class Task extends Unknown {
+  config {
+      Factory factory;
+  
+      setup {
+          factory = new Factory();
+      }
+  
+      test "A" {
+          Object clientA = new Unknown(factory);
+      }
+  
+      test "Other" {
+          Object otherClients = new Unknown(factory);
+      }
   }
-  
-  /* Config */
-  
-  initialObject("clientA", "Unknown").
-  initialObject("otherClients", "Unknown").
-  initialObject("factory", "Factory").
-  
-  field("clientA", "ref", "factory").
-  field("otherClients", "ref", "factory").
-  
-  initialInvocation("clientA", "a").
-  initialInvocation("otherClients", "other").
 
 You can run the model like this:
 
@@ -117,9 +115,10 @@ You should find you now have an output file called "factory1.png":
 
 This shows that, given the behaviour and initial configuration:
 
-* Some new Task objects will be created. SAM aggregates all those that may be created in context "a" as `aTask` and those created in "other" as `otherTask`.
-* clientA may get access to the `aTask` tasks.
-* otherClients may get access to the `otherTask` tasks.
+* Some new Task objects will be created. SAM aggregates all those that may be created in context "A" as `taskA` and those created in "Other" as `taskOther`.
+* clientA may get access to the `taskA` tasks.
+* otherClients may get access to the `taskOther` tasks.
+* The tasks may get references to their clients and to the factory.
 * The factory gets a reference to all tasks but doesn't store the reference (the
   dashed arrows indicate references held in local variables rather than in fields).
 
@@ -136,10 +135,16 @@ Because our model is an over-approximation of the real system, safety properties
 a much stronger guarantee than liveness properties. Liveness properties are mainly useful
 as a sanity check that the model isn't too restrictive.
 
-For example, we can require that no other clients can get access to a's tasks::
+For example, we can require that no other clients can get access to clientA's tasks::
 
-  denyAccess("otherClients", "aTask").
-  requireAccess("clientA", "aTask").
+  denyAccess("otherClients", "taskA").
+  requireAccess("clientA", "taskA").
+
+.. note::
+	SAM uses `Datalog <http://en.wikipedia.org/wiki/Datalog>`_ syntax to
+	state facts and rules. Literal strings must be in double-quotes.
+	Variable names (not used yet) are preceded by "?".
+
 
 Unconfined clients
 ------------------
@@ -155,7 +160,9 @@ two Unknown objects connected together (they'll share everything anyway), we'll 
 `clientA` a direct reference to `otherClients` and treat `otherClients` as including the
 rest of the Internet too (:example:`factory2`)::
 
-  field("clientA", "ref", "otherClients").
+    test "A" {
+        Object clientA = new Unknown(factory, otherClients);
+    }
 
 When we model this, SAM will detect that our safety goal is not met, and prints a simple
 example of how the problem can occur:
@@ -163,28 +170,30 @@ example of how the problem can occur:
 .. code-block:: none
 
   debug()
-    <= getsAccess('otherClients', 'aTask')
-      <= otherClients: received aTask (arg to Unknown.*)
-         <= clientA: otherClients.*()
-         <= clientA: got aTask
-            <= clientA: factory.newInstance()
-            <= factory: new aTask()
+     <= getsAccess('otherClients', 'taskA')
+	<= otherClients: received taskA (arg to Unknown.*)
+	   <= clientA: otherClients.*()
+	      ...
+	   <= clientA: got taskA
+	      <= clientA: factory.newInstance()
+	         ...
+	      <= factory: new taskA()
 
   === Errors detected after applying propagation rules ===
 
-  ('unsafe access may be possible', 'otherClients', 'aTask')
+  ('unsafe access may be possible', 'otherClients', 'taskA')
 
 You can read this as:
 
-* The debugger was triggered because `otherClients` got access to `aTask`, which happened because:
+* The debugger was triggered because `otherClients` got access to `taskA`, which happened because:
 
-  * `otherClients` got passed `aTask` as a method argument, which happened because:
+  * `otherClients` got passed `taskA` as a method argument, which happened because:
 
     * `clientA` invoked `otherClients`, and
-    * `clientA` had got `aTask`, because:
+    * `clientA` had got `taskA`, because:
 
       * `clientA` had called `factory.newInstance` and
-      * `factory` had created `aTask`.
+      * `factory` had created `taskA`.
 
 .. note:: There is another problem with this model, which we will cover in the next section.
           SAM may report this (less obvious) problem instead of the example above.
@@ -197,21 +206,24 @@ calls in the debugger's example:
 This says that if we can't rely on clientA's behaviour then we can't be sure that
 other clients won't get access to its tasks. To fix this, we must restrict clientA's
 behaviour. For example, we can model clientA as having three separate fields:
-"myTask", "ref" and "factory". "myTask" will be the task(s) clientA created explicitly using
-factory, "factory" is the factory, and "ref" will represent all other fields (aggregated)::
+"myTask", "myFactory" and "myOtherRefs". "myTask" will be the task(s) clientA created explicitly using
+the factory, "myFactory" is the factory, and "myOtherRefs" will represent all other fields (aggregated)::
 
   class ClientA {
-    private Object factory;
+    private Object myFactory;
     private Object myTask;
-    private Object ref;
-  
+    private Object myOtherRefs;
+
+    public ClientA(Object factory, Object otherRefs) {
+      myFactory = factory;
+      myOtherRefs = otherRefs;
+    }
+
     public void run() {
-      myTask = factory.newInstance();
+      myTask = myFactory.newInstance();
       myTask = myTask.invoke(myTask);
     }
   }
-  initialObject("clientA", "ClientA").
-  field("clientA", "factory", "factory").
 
 This model (:example:`factory3`) is safe, though it puts rather strict limits
 on what clientA can do:
@@ -225,7 +237,7 @@ safety properties are still satisfied by the updated code.
 Explicit aggregation
 --------------------
 Sometimes the default aggregation rules are not sufficient. For example, if we
-try to check whether it's safe for clientA to call `ref = ref.invoke(ref)`,
+try to check whether it's safe for clientA to call `myOtherRefs.invoke(myOtherRefs)`,
 we find that the required properties can't be verified::
 
   class ClientA {
@@ -236,7 +248,7 @@ we find that the required properties can't be verified::
     public void run() {
       myTask = factory.newInstance();
       myTask = myTask.invoke(myTask);
-      ref.invoke(ref);
+      myOtherRefs.invoke(myOtherRefs);
     }
   }
 
@@ -246,28 +258,27 @@ Turning on display of invocations shows the reason (:example:`factory4`)::
 
 .. image:: _images/factory4.png
 
-The example reported is:
+The example reported (simplified) is:
 
 .. code-block:: none
 
   debug()
-     <= getsAccess('otherClients', 'aTask')
-        <= otherClients: got aTask
-           <= otherClients: factory.newInstance()
-              <= clientA: otherClients.*()
-           <= clientA: factory.newInstance()
-           <= factory: new aTask()
+     <= getsAccess('otherClients', 'taskA')
+	<= otherClients: got taskA
+	   <= otherClients: factory.newInstance()
+	      <= clientA: otherClients.*()
+	   <= factory: new taskA()
 
-* `otherClients` got `aTask` because:
+* `otherClients` got `taskA` because:
   
   * it called `factory.newInstance()`, which it did because:
 
     * `clientA` invoked `otherClients`; and
 
-  * the factory created `aTask`.
+  * the factory created `taskA`.
 
 The problem here is that the default aggregation strategy groups all calls resulting from
-actions by `clientA` under the "a" context. Because `clientA` invoked `otherClients`, tasks
+actions by `clientA` under the "A" context. Because `clientA` invoked `otherClients`, tasks
 created directly by `clientA` are grouped with tasks created by `otherClients`. Often this is
 what you want (for example, if `otherClients` was instead some kind of proxy), but in this case
 we want to treat them separately.
@@ -277,10 +288,23 @@ In fact, clientA may end up with references to two different groups of Tasks: th
 objects.
 
 We will therefore put `clientA`'s initial invocation into the "other" group, and
-tell SAM to put only the `factory.invoke()` invocation under "a"::
+tell SAM to put only the `factory.invoke()` invocation under "A"::
 
-  initialInvocation("clientA", "other").
-  invocationObject("clientA", "other", "ClientA.run-1", "a").
+  config {
+    Factory factory;
+
+    setup {
+      factory = new Factory();
+    }
+
+    test "Other" {
+      Object otherClients = new Unknown(factory);
+      Object clientA = new ClientA(factory, otherClients);
+      clientA.run();
+    }
+  }
+
+  invocationObject("clientA", "Other", "ClientA.run-1", "A").
 
 The third argument to :func:`invocationObject` identifies the call: the first call in the `ClientA.run` method.
 
@@ -291,13 +315,16 @@ by other parties, but others still can't get access to the tasks created by `cli
 
 We need to be careful here. While playing around with aggregation
 strategies always leads to a correct over-approximation of the behaviour of the
-system, note that our goal refers to `aTask`. We have proved that `otherClients` never
-gets access to `aTask`, but which real tasks are in `aTask` now, and which are in `otherTask`?
+system, note that our goal refers to `taskA`. We have proved that `otherClients` never
+gets access to `taskA`, but which real tasks are in `taskA` now, and which are in `taskOther`?
 
-We can state our goal more explicitly by saying that `otherClients` must not get access to any
-reference that `clientA` may store in `myTask`::
+We can state our goal more explicitly by saying that it is an error if
+`otherClients` gets access to any reference that `clientA` may store in
+`myTask`::
 
-  denyAccess("otherClients", ?Value) :- field("clientA", "myTask", ?Value).
+  error("otherClient may access some clientA.myTask") :-
+          getsAccess("otherClients", ?Ref),
+          field("clientA", "myTask", ?Ref).
 
 This means that if there is some way that `clientA` could create a new task, aggregated under
-`otherTask`, and store it in `myTask` then we would still detect the problem.
+`taskOther`, and store it in `myTask` then we would still detect the problem.

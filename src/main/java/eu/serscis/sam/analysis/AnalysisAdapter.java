@@ -79,6 +79,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseAConfigToplevel(AConfigToplevel node)
+    {
+        defaultCase(node);
+    }
+
     public void caseAImportToplevel(AImportToplevel node)
     {
         defaultCase(node);
@@ -179,6 +184,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseAIntTerm(AIntTerm node)
+    {
+        defaultCase(node);
+    }
+
     public void caseACompositeTerm(ACompositeTerm node)
     {
         defaultCase(node);
@@ -199,6 +209,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseAConfig(AConfig node)
+    {
+        defaultCase(node);
+    }
+
     public void caseABehaviour(ABehaviour node)
     {
         defaultCase(node);
@@ -214,7 +229,17 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseAConfigBody(AConfigBody node)
+    {
+        defaultCase(node);
+    }
+
     public void caseAField(AField node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAConfigField(AConfigField node)
     {
         defaultCase(node);
     }
@@ -330,6 +355,11 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseAParamsTail(AParamsTail node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseANamedblock(ANamedblock node)
     {
         defaultCase(node);
     }
@@ -485,6 +515,11 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseTImportTok(TImportTok node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTConfigTok(TConfigTok node)
     {
         defaultCase(node);
     }

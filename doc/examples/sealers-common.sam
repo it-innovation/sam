@@ -1,31 +1,33 @@
 /* Behaviour */
-class Sender {
-  private Sealer sealer;
-  private Object precious;
-  private Object precious2;
-  private Object others;
-  private Object others2;
 
-  public void test() {
-    Box box1 = sealer.seal(precious);
-    Box box2 = sealer.seal(precious2);
-    others.accept(box1);
-    others2.accept(box2);
-  }
+class Precious {
+    public void use() {}
 }
 
 class Box {
   private Object precious;
+  private Object myUnsealer;
 
-  public Box(Object value) {
+  public Box(Unsealer unsealer, Object value) {
     precious = value;
+    myUnsealer = unsealer;
   }
 }
 
 class Sealer {
+  private Unsealer unsealer;
+
+  public Sealer() {
+    unsealer = new Unsealer();
+  }
+
   public Box seal(Object value) {
-    Box box = new Box(value);
+    Box box = new Box(unsealer, value);
     return box;
+  }
+
+  public Unsealer getUnsealer() {
+    return unsealer;
   }
 }
 
@@ -38,14 +40,5 @@ class Unsealer {
 local(?Unsealer, ?Invocation, "Unsealer.unseal.value", ?Value) :-
 	isA(?Unsealer, "Unsealer"),
 	local(?Unsealer, ?Invocation, "Unsealer.unseal.box", ?Box),
+	field(?Box, "myUnsealer", ?Unsealer),
 	field(?Box, "precious", ?Value).
-
-/* Config */
-initialObject("sealer", "Sealer").
-initialObject("unsealer", "Unsealer").
-
-initialObject("sender", "Sender").
-
-field("sender", "sealer", "sealer").
-
-initialInvocation("sender", "A").

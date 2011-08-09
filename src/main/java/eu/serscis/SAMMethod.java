@@ -97,15 +97,24 @@ class SAMMethod {
 
 		ACode code = (ACode) method.getCode();
 
-		// mayAccept(type, param)
-		IRelation acceptRel = parent.model.getRelation(mayAcceptP);
+		// mayAccept(type, param, pos)
+		IRelation acceptRel = parent.model.getRelation(mayAccept3P);
 		AParams params = (AParams) method.getParams();
 		if (params != null) {
-			addParam(methodNameFull, acceptRel, params.getParam());
+			if (method.getStar() != null) {
+				addParam(methodNameFull, acceptRel, params.getParam(), -1);
+				if (params.getParamsTail().size() > 0) {
+					throw new RuntimeException("Can't have multiple parameters with *; sorry");
+				}
+			} else {
+				int pos = 0;
+				addParam(methodNameFull, acceptRel, params.getParam(), pos);
 
-			for (PParamsTail tail : params.getParamsTail()) {
-				AParam param2 = (AParam) ((AParamsTail) tail).getParam();
-				addParam(methodNameFull, acceptRel, param2);
+				for (PParamsTail tail : params.getParamsTail()) {
+					pos += 1;
+					AParam param2 = (AParam) ((AParamsTail) tail).getParam();
+					addParam(methodNameFull, acceptRel, param2, pos);
+				}
 			}
 		}
 
@@ -178,7 +187,7 @@ class SAMMethod {
 					//System.out.println(rule);
 					parent.model.rules.add(rule);
 
-					addArgs(callSite, (AArgs) callExpr.getArgs());
+					addArgs(callSite, (AArgs) callExpr.getArgs(), callExpr.getStar());
 
 					// callsMethod(callSite, method)
 					String targetMethod = parsePattern(callExpr.getMethod());
@@ -194,13 +203,16 @@ class SAMMethod {
 				} else if (expr instanceof ANewExpr) {
 					ANewExpr newExpr = (ANewExpr) expr;
 
-					// mayCreate(classname, newType, var)
+					String varName = assign.getName().getText();
+
+					// mayCreate(callSite, newType, name)
 					rel = parent.model.getRelation(mayCreateP);
 					String newType = ((AType) newExpr.getType()).getName().getText();
 					rel.add(BASIC.createTuple(TERM.createString(callSite),
-								  TERM.createString(newType)));
+								  TERM.createString(newType),
+								  TERM.createString(varName)));
 
-					addArgs(callSite, (AArgs) newExpr.getArgs());
+					addArgs(callSite, (AArgs) newExpr.getArgs(), newExpr.getStar());
 
 					valueP = didCreateP;
 				} else if (expr instanceof ACopyExpr) {
@@ -310,19 +322,19 @@ class SAMMethod {
 		parent.model.rules.add(rule);
 	}
 
-	private void declareLocal(AAssign assign) {
+	private void declareLocal(AAssign assign) throws ParserException {
 		AType type = (AType) assign.getType();
 		if (type != null) {
 			declareLocal(type, assign.getName());
 		}
 	}
 
-	private void declareLocal(PType type, TName aName) {
+	private void declareLocal(PType type, TName aName) throws ParserException {
 		String name = aName.getText();
 		if (locals.contains(name)) {
-			throw new RuntimeException("Duplicate definition of local " + name);
+			throw new ParserException(aName, "Duplicate definition of local " + name);
 		} else if (parent.fields.contains(name)) {
-			throw new RuntimeException("Local variable shadows field of same name: " + name);
+			throw new ParserException(aName, "Local variable shadows field of same name: " + name);
 		} else {
 			locals.add(name);
 		}
@@ -333,7 +345,7 @@ class SAMMethod {
 	 * or
 	 *   field(?Caller, 'var', ?Value) :- body
 	 */
-	private void assignVar(AAssign assign, List<ILiteral> body) {
+	private void assignVar(AAssign assign, List<ILiteral> body) throws ParserException {
 		ILiteral head;
 
 		declareLocal(assign);
@@ -359,20 +371,20 @@ class SAMMethod {
 		parent.model.rules.add(rule);
 	}
 
-	private void addParam(ITerm method, IRelation acceptRel, PParam param) {
+	private void addParam(ITerm method, IRelation acceptRel, PParam param, int pos) throws ParserException {
 		String name = ((AParam) param).getName().getText();
-		acceptRel.add(BASIC.createTuple(method, TERM.createString(expandLocal(name))));
+		acceptRel.add(BASIC.createTuple(method, TERM.createString(expandLocal(name)), CONCRETE.createInt(pos)));
 
 		if (locals.contains(name)) {
-			throw new RuntimeException("Duplicate definition of local " + name);
+			throw new ParserException(((AParam) param).getName(), "Duplicate definition of local " + name);
 		} else if (parent.fields.contains(name)) {
-			throw new RuntimeException("Local variable shadows field of same name: " + name);
+			throw new ParserException(((AParam) param).getName(), "Local variable shadows field of same name: " + name);
 		} else {
 			locals.add(name);
 		}
 	}
 
-	/* mayGet(?Target, ?TargetInvocation, ?Method, ?Pos, ?Value) :-
+	/* maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?Value) :-
 	 * 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	 *	local|field,
 	 */
@@ -415,12 +427,23 @@ class SAMMethod {
 		//System.out.println(rule);
 	}
 
-	private void addArgs(String callSite, AArgs args) throws ParserException {
+	private void addArgs(String callSite, AArgs args, TStar star) throws ParserException {
 		if (args == null) {
+			if (star != null) {
+				throw new ParserException(star, "No argument for *");
+			}
 			return;
 		}
 		int pos = 0;
 		PExpr arg0 = args.getExpr();
+
+		if (star != null) {
+			addArg(callSite, -1, arg0);
+			if (args.getArgsTail().size() != 0) {
+				throw new ParserException(star, "Can't use multiple arguments with *; sorry");
+			}
+			return;
+		}
 
 		addArg(callSite, pos, arg0);
 

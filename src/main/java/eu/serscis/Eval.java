@@ -123,10 +123,20 @@ public class Eval {
 
 		parseResource("system.dl");
 
+		if (!doSetup()) {
+			System.out.println("Unexpected error in " + scenario);
+			System.exit(1);
+		}
+
+		parseResource("finalChecks.dl");
+
 		String stem = scenario.getName();
 		if (stem.endsWith(".sam")) {
 			stem = stem.substring(0, stem.length() - 4);
 		}
+
+		IRelation phase = model.getRelation(Constants.phaseP);
+		phase.add(BASIC.createTuple(new ITerm[] { TERM.createString("test") }));
 
 		IKnowledgeBase finalKnowledgeBase = model.createKnowledgeBase();
 		finalKnowledgeBase = doDebugging(finalKnowledgeBase);
@@ -141,6 +151,76 @@ public class Eval {
 				System.out.println("Unexpected error in " + scenario);
 			}
 			System.exit(1);
+		}
+	}
+
+	/* Instantiate the Setup class and run the model. Update the
+	 * initialObject and field relations with the results,
+	 * throwing everything else away.
+	 */
+	private boolean doSetup() throws Exception {
+		Model savedModel = model;
+		try {
+			model = new Model(savedModel);
+
+			IRelation phase = model.getRelation(Constants.phaseP);
+			phase.add(BASIC.createTuple(new ITerm[] { TERM.createString("setup") }));
+
+			IKnowledgeBase setupKnowledgeBase = model.createKnowledgeBase();
+			/*
+			boolean setupProblem = checkForErrors(setupKnowledgeBase, "during setup phase");
+			if (setupProblem) {
+				return false;
+			}
+			*/
+
+			ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
+			ILiteral isAL = BASIC.createLiteral(true, Constants.isAP, xAndY);
+			IQuery isAQ = BASIC.createQuery(isAL);
+			IRelation isAR = setupKnowledgeBase.execute(isAQ);
+			savedModel.getRelation(Constants.initialObjectP).addAll(isAR);
+
+			ITuple triple = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"), TERM.createVariable("Z"));
+			ILiteral fieldL = BASIC.createLiteral(true, Constants.fieldP, triple);
+			IQuery fieldQ = BASIC.createQuery(fieldL);
+			IRelation fieldR = setupKnowledgeBase.execute(fieldQ);
+			savedModel.getRelation(Constants.fieldP).addAll(fieldR);
+
+			/* Unknown objects may continue running after the setup phase. Find all unknown objects
+			 * and add initialInvocation facts for them, preserving the setup context. i.e.
+			 *
+			 * ?- didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild), isA(?NewChild, "Unknown").
+			 */
+			IVariable newChildVar = TERM.createVariable("NewChild");
+			IVariable invocationVar = TERM.createVariable("Invocation");
+			ILiteral didCreate = BASIC.createLiteral(true, BASIC.createAtom(Constants.didCreateP,
+						BASIC.createTuple(
+							TERM.createVariable("Caller"),
+							invocationVar,
+							TERM.createVariable("CallSite"),
+							newChildVar
+							)));
+			ILiteral isUnknown = BASIC.createLiteral(true, BASIC.createAtom(Constants.isAP,
+						BASIC.createTuple(
+							newChildVar,
+							TERM.createString("Unknown")
+							)));
+
+			List<IVariable> bindings = new LinkedList<IVariable>();
+			IRelation unknownsR = setupKnowledgeBase.execute(BASIC.createQuery(didCreate, isUnknown), bindings);
+			int newChildIndex = bindings.indexOf(newChildVar);
+			int invocationIndex = bindings.indexOf(invocationVar);
+			IRelation initialInvocations = savedModel.getRelation(Constants.initialInvocation2P);
+			for (int t = unknownsR.size() - 1; t >= 0; t--) {
+				ITuple tuple = unknownsR.get(t);
+				initialInvocations.add(BASIC.createTuple(
+						tuple.get(newChildIndex),
+						tuple.get(invocationIndex)));
+			}
+
+			return true;
+		} finally {
+			model = savedModel;
 		}
 	}
 
