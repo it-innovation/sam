@@ -1,0 +1,33 @@
+didCall("a", "b", "Foo.bar").
+didCall("d", "e", "Foo.bar").
+didCall("a", "g", "Foo.bar").
+
+assert didCall("a", "b", ?M).
+assert didCall("b", "c", ?M).
+assert didCall(?X, "c", ?M).
+
+assert !didCall("d", "e", ?M).
+assert !didCall("e", "f", ?M).
+assert !didCall(?X, "g", ?M).
+
+
+error("1") :- failedAssertion(1).     // pass
+error("2") :- !failedAssertion(2).   // arrow b -> c
+error("3") :- !failedAssertion(3).    // can't show arrow due to ?X
+
+error("4") :- !failedAssertion(4).   // arrow d -> e
+error("5") :- failedAssertion(5).     // pass
+error("6") :- !failedAssertion(6).   // arrow a -> g
+
+// ?- failedAssertion(?N).
+// ?- assertionArrow(?N, ?A, ?B, ?P).
+
+declare expectedArrow(?N, ?A, ?B, ?P).
+expectedArrow(6, "a", "g", false).
+expectedArrow(4, "d", "e", false).
+expectedArrow(2, "b", "c", true).
+
+error("Missing arrow") :- expectedArrow(?N, ?A, ?B, ?P), !assertionArrow(?N, ?A, ?B, ?P).
+error("Extra arrow") :- !expectedArrow(?N, ?A, ?B, ?P), assertionArrow(?N, ?A, ?B, ?P).
+
+expectFailure.

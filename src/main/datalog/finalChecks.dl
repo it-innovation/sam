@@ -43,5 +43,5 @@ error("required access is not possible", ?SourceObject, ?TargetObject) :-
 
 debug :- haveBadAccess(?Source, ?Target).
 
-debug :- failedAssertion(?Msg).
-error(?Msg) :- failedAssertion(?Msg).
+debug :- failedAssertion(?N).
+error(?Msg) :- failedAssertion(?N), assertionMessage(?N, ?Msg).

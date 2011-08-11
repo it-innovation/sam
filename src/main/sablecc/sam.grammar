@@ -57,6 +57,7 @@ Tokens
   try = 'try';
   catch = 'catch';
   assert_tok = 'assert';
+  bool = 'true' | 'false';
 
   // must be last
   name = char(char|digit|underscode)*;
@@ -92,6 +93,7 @@ Productions
   term = {var} question name
        | {string} string_literal
        | {int} number
+       | {bool} bool
        | {composite} name l_par terms r_par;
 
   query = query_start literals dot;

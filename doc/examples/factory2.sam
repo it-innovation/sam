@@ -25,12 +25,11 @@ config {
 
 /* Goals */
 
-denyAccess("otherClients", "taskA").
-requireAccess("clientA", "taskA").
+assert !getsAccess("otherClients", "taskA").
+assert getsAccess("clientA", "taskA").
 
 
 /* (force SAM to find the obvious problem first) */
 invocationObject("otherClients", "A", "Unknown.*-3", "Other").
-
 
 expectFailure.

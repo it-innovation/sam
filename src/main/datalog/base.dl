@@ -92,8 +92,9 @@ declare mayCreate(?CallSite, ?ChildType, ?NameHint).
 declare newObject(?Object, ?Invocation, ?ChildType, ?NewObject).
 declare isPublic(?Object).
 declare debug.
-declare passedAssertion(?Number).
-declare failedAssertion(?Message).
+declare assertionMessage(?Number, ?Msg).
+declare failedAssertion(?Number).
+declare assertionArrow(?Number, ?Source, ?Target, ?Positive).
 
 
 /* aggregation */

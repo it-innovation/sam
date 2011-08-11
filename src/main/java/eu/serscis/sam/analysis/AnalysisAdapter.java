@@ -194,6 +194,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseABoolTerm(ABoolTerm node)
+    {
+        defaultCase(node);
+    }
+
     public void caseACompositeTerm(ACompositeTerm node)
     {
         defaultCase(node);
@@ -545,6 +550,11 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseTAssertTok(TAssertTok node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTBool(TBool node)
     {
         defaultCase(node);
     }

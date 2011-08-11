@@ -69,3 +69,5 @@ error("Unknown method in initialInvocation", ?Object, ?MethodName) :-
 error("Unknown object in initialInvocation", ?Object) :-
 	initialInvocation(?Object, ?MethodName, ?Invocation),
 	!isObject(?Object).
+
+failedAssertion(?N) :- assertionArrow(?N, ?Source, ?Target, ?Positive).

@@ -64,8 +64,9 @@ public class Constants {
 	static public IPredicate initialInvocation2P = BASIC.createPredicate("initialInvocation", 2);
 	static public IPredicate initialInvocationP = BASIC.createPredicate("initialInvocation", 3);
 	static public IPredicate phaseP = BASIC.createPredicate("phase", 1);
-	static public IPredicate passedAssertionP = BASIC.createPredicate("passedAssertion", 1);
+	static public IPredicate assertionMessageP = BASIC.createPredicate("assertionMessage", 2);
 	static public IPredicate failedAssertionP = BASIC.createPredicate("failedAssertion", 1);
+	static public IPredicate assertionArrowP = BASIC.createPredicate("assertionArrow", 4);
 
 	static <X> List<X> makeList(X... items) {
 		return Arrays.asList(items);

@@ -137,8 +137,8 @@ as a sanity check that the model isn't too restrictive.
 
 For example, we can require that no other clients can get access to clientA's tasks::
 
-  denyAccess("otherClients", "taskA").
-  requireAccess("clientA", "taskA").
+  assert !getsAccess("otherClients", "taskA").
+  assert getsAccess("clientA", "taskA").
 
 .. note::
 	SAM uses `Datalog <http://en.wikipedia.org/wiki/Datalog>`_ syntax to
@@ -181,7 +181,7 @@ example of how the problem can occur:
 
   === Errors detected after applying propagation rules ===
 
-  ('unsafe access may be possible', 'otherClients', 'taskA')
+  Assertion failed (factory2.sam:28): !getsAccess('otherClients', 'taskA')
 
 You can read this as:
 

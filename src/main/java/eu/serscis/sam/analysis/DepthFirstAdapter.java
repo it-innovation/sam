@@ -646,6 +646,27 @@ public class DepthFirstAdapter extends AnalysisAdapter
         outAIntTerm(node);
     }
 
+    public void inABoolTerm(ABoolTerm node)
+    {
+        defaultIn(node);
+    }
+
+    public void outABoolTerm(ABoolTerm node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseABoolTerm(ABoolTerm node)
+    {
+        inABoolTerm(node);
+        if(node.getBool() != null)
+        {
+            node.getBool().apply(this);
+        }
+        outABoolTerm(node);
+    }
+
     public void inACompositeTerm(ACompositeTerm node)
     {
         defaultIn(node);

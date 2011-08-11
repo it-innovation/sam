@@ -21,6 +21,8 @@ no methods of `precious`::
   assert didCall("compiler", "billing", ?AnyMethod).
   assert !didCall("compiler", "precious", ?AnyMethod).
 
+If the predicate used in the goal includes two objects, then SAM will also add a
+suitable red arrow to the diagram.
 
 Predicates
 ----------

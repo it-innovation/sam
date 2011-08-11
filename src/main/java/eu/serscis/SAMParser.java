@@ -28,6 +28,7 @@
 
 package eu.serscis;
 
+import org.deri.iris.api.terms.IConcreteTerm;
 import eu.serscis.sam.parser.ParserException;
 import java.io.BufferedReader;
 import java.util.HashSet;
@@ -160,6 +161,9 @@ public class SAMParser {
 		} else if (parsed instanceof AVarTerm) {
 			String name = ((AVarTerm) parsed).getName().getText();
 			return TERM.createVariable(name);
+		} else if (parsed instanceof ABoolTerm) {
+			boolean val = Boolean.valueOf(((ABoolTerm) parsed).getBool().getText());
+			return CONCRETE.createBoolean(val);
 		} else if (parsed instanceof AIntTerm) {
 			int val = Integer.valueOf(((AIntTerm) parsed).getNumber().getText());
 			return CONCRETE.createInt(val);
@@ -285,19 +289,86 @@ public class SAMParser {
 
 	private void addAssert(AAssert ass) throws ParserException {
 		List<ILiteral> body = parseLiterals((ALiterals) ass.getLiterals());
+
+		if (body.size() != 1) {
+			throw new ParserException(ass.getAssertTok(), "Assert must contain exactly one goal");
+		}
+		ILiteral bodyLit = body.get(0);
+
 		assertions += 1;
+		ITerm assertionN = CONCRETE.createInteger(assertions);
 
-		// assertion(n) :- body
-		ILiteral head = BASIC.createLiteral(true,
-					BASIC.createAtom(passedAssertionP,
-						BASIC.createTuple(
-							CONCRETE.createInteger(assertions))));
+		// If body contains a single literal that refers to two objects,
+		// add a suitable red arrow to the graph
+		//
+		// For positive assertions, the object terms must be literals:
+		//
+		//   assert didCall("a", "b", ?M)
+		// becomes
+		//   assertionArrow("a", "b", false) :- !didCall("a", "b", ?M)
+		//
+		// For negative assertions:
+		//
+		//   assert !didCall(?X, "b", ?M).
+		// becomes
+		//   assertionArrow(?X, "b", true) :- didCall(?X, "b", ?M).
+		int nObjectTerms = 0;
+		ITerm[] objectTerms = new ITerm[2];
 
-		IRule r = BASIC.createRule(makeList(head), body);
-		model.rules.add(r);
+		IPredicate pred = bodyLit.getAtom().getPredicate();
+		boolean positive = bodyLit.isPositive();
+		ITuple terms = model.getDefinition(pred);
+		//System.out.println(":" + ass + " => " + terms);
 
-		// error(ass) :- !assertion(n)
+		int i = 0;
+		for (ITerm term : terms) {
+			String var = ((IVariable) term).getValue();
+			ITuple bodyTuple = bodyLit.getAtom().getTuple();
 
+			if ("Caller".equals(var) || "Target".equals(var) || "Object".equals(var) ||
+			    "Source".equals(var) || "SourceObject".equals(var) || "TargetObject".equals(var)) {
+				ITerm bodyTerm = bodyTuple.get(i);
+				if (positive && !(bodyTerm instanceof IConcreteTerm)) {
+					//System.out.println("Can't do arrow for variable term " + bodyTerm + " in " + ass);
+					break;
+				}
+				objectTerms[nObjectTerms] = bodyTerm;
+				nObjectTerms++;
+				if (nObjectTerms == 2) {
+					break;
+				}
+			}
+			i++;
+		}
+
+		ILiteral opposite = BASIC.createLiteral(!positive, bodyLit.getAtom());
+
+		if (nObjectTerms == 2) {
+			// assertionArrow(n, ?Source, ?Target, positive) :- !body
+			ILiteral arrow = BASIC.createLiteral(true,
+						BASIC.createAtom(assertionArrowP,
+							BASIC.createTuple(
+								assertionN,
+								objectTerms[0],
+								objectTerms[1],
+								CONCRETE.createBoolean(bodyLit.isPositive()))));
+
+			IRule r = BASIC.createRule(makeList(arrow), makeList(opposite));
+			model.rules.add(r);
+			//System.out.println(r);
+
+			// failedAssertion(?N) :- assertionArrow(?N, ?Source, ?Target, ?Positive) in checks.dl
+		} else {
+			// failedAssertion(?N) :- !body
+			ILiteral head = BASIC.createLiteral(true,
+						BASIC.createAtom(failedAssertionP,
+							BASIC.createTuple(assertionN)));
+
+			IRule r = BASIC.createRule(makeList(head), makeList(opposite));
+			model.rules.add(r);
+		}
+
+		// assertionMsg(n, msg).
 		String loc = myPath.getName() + ":" + ass.getAssertTok().getLine();
 		String msg = "Assertion failed (" + loc + "): ";
 		boolean first = true;
@@ -309,13 +380,9 @@ public class SAMParser {
 			}
 			msg += lit;
 		}
-		ILiteral error = BASIC.createLiteral(true,
-					BASIC.createAtom(failedAssertionP,
-						BASIC.createTuple(
-							TERM.createString(msg))));
-		r = BASIC.createRule(makeList(error), makeList(
-					BASIC.createLiteral(false, head.getAtom())));
-		model.rules.add(r);
+
+		IRelation messages = model.getRelation(assertionMessageP);
+		messages.add(BASIC.createTuple(assertionN, TERM.createString(msg)));
 	}
 
 	private void addDeclare(ADeclare declare) throws ParserException {

@@ -37,6 +37,7 @@ public interface Analysis extends Switch
     void caseAVarTerm(AVarTerm node);
     void caseAStringTerm(AStringTerm node);
     void caseAIntTerm(AIntTerm node);
+    void caseABoolTerm(ABoolTerm node);
     void caseACompositeTerm(ACompositeTerm node);
     void caseAQuery(AQuery node);
     void caseAAssert(AAssert node);
@@ -109,6 +110,7 @@ public interface Analysis extends Switch
     void caseTTry(TTry node);
     void caseTCatch(TCatch node);
     void caseTAssertTok(TAssertTok node);
+    void caseTBool(TBool node);
     void caseTName(TName node);
     void caseEOF(EOF node);
 }

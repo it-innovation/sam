@@ -57,8 +57,10 @@ graphNode(?Object, "fontcolor=red") :- live(?Object), isA(?Object, "Unknown"), !
 graphNode(?Object, "") :- live(?Object), isObject(?Object), !isA(?Object, "Unknown"), !isHidden(?Object).
 
 graphEdge(?Object, ?Target, "color=red,style=dashed") :- missingGoodAccess(?Object, ?Target).
-
 errorEdge(?Object, ?Target) :- haveBadAccess(?Object, ?Target).
+
+graphEdge(?Object, ?Target, "color=red,style=dashed") :- assertionArrow(?N, ?Object, ?Target, true).
+errorEdge(?Object, ?Target) :- assertionArrow(?N, ?Object, ?Target, false).
 
 /* There are all the edges that logically exist, even if we might not show all of them. */
 
