@@ -13,18 +13,24 @@ The syntax for the configuration section is::
 
 The `PHASE` is either `setup` or `test`. `CONTEXT` is optional, and defaults to `""`. For example::
 
-    setup {
-        billing = new File();
-        compiler = new Compiler(billing);
-        output = new File();
-        alice = new Unknown(compiler, output);
-    }
-
-    test "Alice" {
-        alice.test();
-    }
-  }
+  config {
+      File billing;
+      Compiler compiler;
+      File output;
+      Unknown alice;
   
+      setup {
+          billing = new File();
+          compiler = new Compiler(billing);
+          output = new File();
+          alice = new Unknown(compiler, output);
+      }
+  
+      test {
+          alice.test();
+      }
+  }
+
 Internally, SAM creates a class called `_TestDriver` based on the `config` section and creates
 an instance of it called `_testDriver`.
 
