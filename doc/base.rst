@@ -67,18 +67,16 @@ Invocations
    In some invocation of `Object` in context `Invocation`, local variable
    `VarName` has value `Value`.
 
-.. function:: value(?Object, ?Invocation, ?VarName, ?Value)
-
-   In some invocation of `Object` in context `Invocation`, the variable
-   `VarName` has value `Value`. It may be either a local variable or a field
-   on `Object`.
-
 Results
 -------
 These predicates indicate behaviour that may be possible given the behaviour and configuration of the
 system. They are named "did" to indicate that they are the result of applying the system rules - in the *model*
 everything that is possible "did" happen, even though in the real system this only represents things that
 might happen.
+
+.. function:: hasRef(?Object, ?Value)
+
+   `Object` has a local variable or field with the given value.
 
 .. function:: didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue)
 

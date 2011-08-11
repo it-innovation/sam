@@ -42,7 +42,6 @@ declare local(?Object, ?Invocation, ?VarName, ?Value).
 declare realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
 declare invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
 declare invocationObject(?CallSite, ?TargetInvocation).
-declare value(?Object, ?Invocation, ?VarName, ?Value).
 declare hasMethod(?Type, ?Method).
 declare hasCallSite(?Method, ?CallSite).
 declare initialObject(?Object, ?Type).
@@ -57,6 +56,7 @@ declare isType(?Type).
 declare phase(?Phase).
 
 declare expectFailure.
+declare hasRef(?Object, ?Value).
 declare haveBadAccess(?SourceObject, ?TargetObject).
 declare missingGoodAccess(?SourceObject, ?TargetObject).
 
@@ -159,10 +159,6 @@ realInitialInvocation(?Object, ?Method, ?Invocation) :-
 
 /* Every invocation has a "this" variable with a reference to its object. */
 local(?Object, ?Invocation, "this", ?Object) :- liveMethod(?Object, ?Invocation, ?AnyMethod).
-
-/* Local or field */
-value(?Object, ?Invocation, ?Var, ?Value) :- local(?Object, ?Invocation, ?Var, ?Value).
-value(?Object, ?Invocation, ?Var, ?Value) :- field(?Object, ?Var, ?Value), isInvocation(?Invocation).
 
 
 /* Unknown behaviour */

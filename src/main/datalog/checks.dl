@@ -27,21 +27,21 @@
 /////////////////////////////////////////////////////////////////////////
 
 declare objectHasField(?Object, ?Field).
-declare hasRef(?Object, ?Invocation, ?Value).
 declare hasMethodWithName(?Method, ?MethodName).
 
 /* If an Invocation has direct access to an object (via a local variable or a field on its object) */
-hasRef(?Object, ?Invocation, ?Value) :- value(?Object, ?Invocation, ?AnyVar, ?Value).
+hasRef(?Object, ?Value) :- local(?Object, ?Invocation, ?AnyVar, ?Value).
+hasRef(?Object, ?Value) :- field(?Object, ?AnyVar, ?Value).
 
 /* Error checking */
 
-error("Not an object (no type!)", ?Object) :- hasRef(?AnyObject, ?X, ?Object), !isObject(?Object).
+error("Not an object (no type!)", ?Object) :- hasRef(?AnyObject, ?Object), !isObject(?Object).
 
 error("Live invocation for non-alive object", ?Invocation, ?Object) :-
 	liveMethod(?Object, ?Invocation, ?Method), !live(?Object).
 
 getsAccess(?SourceObject, ?TargetObject) :-
-	hasRef(?SourceObject, ?AnyInvocation, ?TargetObject),
+	hasRef(?SourceObject, ?TargetObject),
 	accessAllowed(?SourceObject, ?TargetObject, ?AnyMethod).
 
 haveBadAccess(?SourceObject, ?TargetObject) :-
