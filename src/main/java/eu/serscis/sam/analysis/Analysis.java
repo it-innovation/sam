@@ -19,6 +19,7 @@ public interface Analysis extends Switch
     void caseAFactToplevel(AFactToplevel node);
     void caseARuleToplevel(ARuleToplevel node);
     void caseADeclareToplevel(ADeclareToplevel node);
+    void caseAAssertToplevel(AAssertToplevel node);
     void caseAQueryToplevel(AQueryToplevel node);
     void caseAImport(AImport node);
     void caseADeclare(ADeclare node);
@@ -38,6 +39,7 @@ public interface Analysis extends Switch
     void caseAIntTerm(AIntTerm node);
     void caseACompositeTerm(ACompositeTerm node);
     void caseAQuery(AQuery node);
+    void caseAAssert(AAssert node);
     void caseANamedPattern(ANamedPattern node);
     void caseAAnyPattern(AAnyPattern node);
     void caseAConfig(AConfig node);
@@ -106,6 +108,7 @@ public interface Analysis extends Switch
     void caseTConfigTok(TConfigTok node);
     void caseTTry(TTry node);
     void caseTCatch(TCatch node);
+    void caseTAssertTok(TAssertTok node);
     void caseTName(TName node);
     void caseEOF(EOF node);
 }

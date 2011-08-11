@@ -24,6 +24,5 @@ config {
     }
 }
 
-requireAccess("target", "matcher").
-
-error :- phase("test"), !didCall("twoArgs", "a", ?Method).
+assert getsAccess("target", "matcher").
+assert didCall("twoArgs", "a", ?Method).

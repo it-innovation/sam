@@ -1,6 +1,30 @@
 Goals
 =====
 
+The general syntax for a goal is::
+
+  assert GOAL.
+
+For example, the ensure that `compiler` called `billing.append(...)` but not `billing.write(...)`::
+
+  assert didCall("compiler", "billing", "File.append").
+  assert !didCall("compiler", "billing", "File.write").
+
+If an assertion fails, SAM will fail the model and display an error message
+giving the location of the assertion that failed. It will also run the debugger
+to examine the cause of the failure.
+
+If an assertion includes variables, then the assertion succeeds if any match is
+found. For example, to ensure that the compiler called some method of `billing` and
+no methods of `precious`::
+
+  assert didCall("compiler", "billing", ?AnyMethod).
+  assert !didCall("compiler", "precious", ?AnyMethod).
+
+
+Predicates
+----------
+
 .. function:: denyAccess(?Object, ?Target)
 
    Verify that it is impossible for `Object` to ever get access to
@@ -15,9 +39,6 @@ Goals
    still not allow this. However, it is a useful sanity check that your
    model is not over-constrained.
 
-Assertions
-----------
-
 .. function:: error(?Message, ?Args...)
 
    Fail the model checking and print the message and arguments as the
@@ -25,7 +46,7 @@ Assertions
    creates errors automatically in many cases (e.g. if `denyAccess`
    fails), but you can also specify them manually, e.g.::
 
-     error('Store contains non-data item', ?Store, ?Item) :-
+     error("Store contains non-data item", ?Store, ?Item) :-
        isA(?Store, "Store"),
        field(?Store, "data", ?Item),
        !isA(?Item, "Data").

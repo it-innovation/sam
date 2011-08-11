@@ -307,7 +307,15 @@ public class Eval {
 					System.out.println("\n=== Errors detected " + when + " ===\n");
 					problem = true;
 				}
-				formatResults(errorResults);
+				for(int t = 0; t < errorResults.size(); ++t )
+				{
+					ITuple tuple = errorResults.get( t );
+					String msg = tuple.get(0).getValue().toString();
+					for (int part = 1; part < tuple.size(); part++) {
+						msg += ", " + tuple.get(part).getValue();
+					}
+					System.out.println(msg);
+				}
 			}
 
 			ITerm newTerm = TERM.createVariable("t" + i);

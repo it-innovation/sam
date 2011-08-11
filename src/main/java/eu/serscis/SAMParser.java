@@ -72,11 +72,13 @@ public class SAMParser {
 	public List<IQuery> queries = new LinkedList<IQuery>();
 	private Model model;
 	private BuiltinRegister builtinRegister = new BuiltinRegister();
-	private File dir;
+	private File dir, myPath;
+	private static int assertions = 0;
 
 	public SAMParser(Model model, File path) throws Exception {
 		this.model = model;
 		dir = path.getParentFile();
+		myPath = path;
 
 		FileReader reader = new FileReader(path);
 		try {
@@ -127,6 +129,8 @@ public class SAMParser {
 				addQuery((AQuery) ((AQueryToplevel) toplevel).getQuery());
 			} else if (toplevel instanceof ADeclareToplevel) {
 				addDeclare((ADeclare) ((ADeclareToplevel) toplevel).getDeclare());
+			} else if (toplevel instanceof AAssertToplevel) {
+				addAssert((AAssert) ((AAssertToplevel) toplevel).getAssert());
 			} else if (toplevel instanceof AImportToplevel) {
 				addImport((AImport) ((AImportToplevel) toplevel).getImport());
 			} else if (toplevel instanceof AConfigToplevel) {
@@ -277,6 +281,41 @@ public class SAMParser {
 		IQuery q = BASIC.createQuery(literals);
 
 		queries.add(q);
+	}
+
+	private void addAssert(AAssert ass) throws ParserException {
+		List<ILiteral> body = parseLiterals((ALiterals) ass.getLiterals());
+		assertions += 1;
+
+		// assertion(n) :- body
+		ILiteral head = BASIC.createLiteral(true,
+					BASIC.createAtom(passedAssertionP,
+						BASIC.createTuple(
+							CONCRETE.createInteger(assertions))));
+
+		IRule r = BASIC.createRule(makeList(head), body);
+		model.rules.add(r);
+
+		// error(ass) :- !assertion(n)
+
+		String loc = myPath.getName() + ":" + ass.getAssertTok().getLine();
+		String msg = "Assertion failed (" + loc + "): ";
+		boolean first = true;
+		for (ILiteral lit : body) {
+			if (first) {
+				first = false;
+			} else {
+				msg += ", ";
+			}
+			msg += lit;
+		}
+		ILiteral error = BASIC.createLiteral(true,
+					BASIC.createAtom(failedAssertionP,
+						BASIC.createTuple(
+							TERM.createString(msg))));
+		r = BASIC.createRule(makeList(error), makeList(
+					BASIC.createLiteral(false, head.getAtom())));
+		model.rules.add(r);
 	}
 
 	private void addDeclare(ADeclare declare) throws ParserException {

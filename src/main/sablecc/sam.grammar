@@ -56,6 +56,7 @@ Tokens
 
   try = 'try';
   catch = 'catch';
+  assert_tok = 'assert';
 
   // must be last
   name = char(char|digit|underscode)*;
@@ -71,6 +72,7 @@ Productions
   	   | {fact} fact
   	   | {rule} rule
 	   | {declare} declare
+	   | {assert} assert
 	   | {query} query;
 
   import = import_tok string_literal dot;
@@ -93,6 +95,7 @@ Productions
        | {composite} name l_par terms r_par;
 
   query = query_start literals dot;
+  assert = assert_tok literals dot;
 
   pattern = {named} name
           | {any} star;

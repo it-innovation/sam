@@ -104,6 +104,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseAAssertToplevel(AAssertToplevel node)
+    {
+        defaultCase(node);
+    }
+
     public void caseAQueryToplevel(AQueryToplevel node)
     {
         defaultCase(node);
@@ -195,6 +200,11 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseAQuery(AQuery node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAAssert(AAssert node)
     {
         defaultCase(node);
     }
@@ -530,6 +540,11 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseTCatch(TCatch node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseTAssertTok(TAssertTok node)
     {
         defaultCase(node);
     }

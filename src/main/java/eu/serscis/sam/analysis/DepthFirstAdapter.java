@@ -186,6 +186,27 @@ public class DepthFirstAdapter extends AnalysisAdapter
         outADeclareToplevel(node);
     }
 
+    public void inAAssertToplevel(AAssertToplevel node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAAssertToplevel(AAssertToplevel node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAAssertToplevel(AAssertToplevel node)
+    {
+        inAAssertToplevel(node);
+        if(node.getAssert() != null)
+        {
+            node.getAssert().apply(this);
+        }
+        outAAssertToplevel(node);
+    }
+
     public void inAQueryToplevel(AQueryToplevel node)
     {
         defaultIn(node);
@@ -685,6 +706,35 @@ public class DepthFirstAdapter extends AnalysisAdapter
             node.getDot().apply(this);
         }
         outAQuery(node);
+    }
+
+    public void inAAssert(AAssert node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAAssert(AAssert node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAAssert(AAssert node)
+    {
+        inAAssert(node);
+        if(node.getAssertTok() != null)
+        {
+            node.getAssertTok().apply(this);
+        }
+        if(node.getLiterals() != null)
+        {
+            node.getLiterals().apply(this);
+        }
+        if(node.getDot() != null)
+        {
+            node.getDot().apply(this);
+        }
+        outAAssert(node);
     }
 
     public void inANamedPattern(ANamedPattern node)
