@@ -67,7 +67,7 @@ public class Model {
 	final Configuration configuration;
 	final List<IRule> rules = new LinkedList<IRule>();
 	final Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
-	final Set<IPredicate> declared = new HashSet<IPredicate>();
+	private final Map<IPredicate,ITuple> declared = new HashMap<IPredicate,ITuple>();
 
 	public Model(Configuration configuration) {
 		this.configuration = configuration;
@@ -77,7 +77,7 @@ public class Model {
 		this.configuration = source.configuration;
 		this.rules.addAll(source.rules);
 		this.facts.putAll(source.facts);
-		this.declared.addAll(source.declared);
+		this.declared.putAll(source.declared);
 	}
 
 	public IRelation getRelation(IPredicate pred) {
@@ -107,8 +107,21 @@ public class Model {
 			return;
 		}
 
-		if (!declared.contains(pred)) {
+		if (!declared.containsKey(pred)) {
 			throw new ParserException(tok, "Predicate not declared: " + pred + "/" + pred.getArity());
 		}
+	}
+
+	public ITuple getDefinition(IPredicate pred) {
+		return declared.get(pred);
+	}
+
+	public void declare(Token tok, IPredicate pred, ITuple terms) throws ParserException {
+		if (declared.containsKey(pred)) {
+			throw new ParserException(tok, "Predicate already declared: " + pred);
+		}
+
+		//System.out.println("Declare " + pred + "/" + pred.getArity());
+		declared.put(pred, terms);
 	}
 }

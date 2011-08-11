@@ -195,7 +195,7 @@ public class SAMParser {
 				IPredicate predicate = BASIC.createPredicate(name, terms.size());
 
 				if (declaration) {
-					declare(predicate);
+					model.declare(atom.getName(), predicate, terms);
 				} else {
 					model.requireDeclared(atom.getName(), predicate);
 				}
@@ -216,7 +216,7 @@ public class SAMParser {
 			IPredicate predicate = BASIC.createPredicate(name, 0);
 
 			if (declaration) {
-				declare(predicate);
+				model.declare(atom.getName(), predicate, BASIC.createTuple());
 			} else {
 				model.requireDeclared(atom.getName(), predicate);
 			}
@@ -320,15 +320,6 @@ public class SAMParser {
 
 	private void addDeclare(ADeclare declare) throws ParserException {
 		parseAtom(declare.getAtom(), true);
-	}
-
-	private void declare(IPredicate pred) {
-		if (model.declared.contains(pred)) {
-			throw new RuntimeException("Predicate already declared: " + pred);
-		}
-
-		//System.out.println("Declare " + pred + "/" + pred.getArity());
-		model.declared.add(pred);
 	}
 
 	private void addImport(AImport aImport) throws Exception {
