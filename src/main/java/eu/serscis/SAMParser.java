@@ -28,6 +28,7 @@
 
 package eu.serscis;
 
+import eu.serscis.sam.lexer.LexerException;
 import org.deri.iris.api.terms.IConcreteTerm;
 import eu.serscis.sam.parser.ParserException;
 import java.io.BufferedReader;
@@ -83,7 +84,24 @@ public class SAMParser {
 		FileReader reader = new FileReader(path);
 		try {
 			parse(reader);
-		} catch (eu.serscis.sam.parser.ParserException ex) {
+		} catch (LexerException ex) {
+			String msg = ex.getMessage();
+			System.out.println("\nLexing error: " + ex.getMessage());
+			int lbracket = msg.indexOf('[');
+			int rbracket = msg.indexOf(']', lbracket);
+			String[] loc = msg.substring(lbracket + 1, rbracket).split(",");
+			int line = Integer.valueOf(loc[0]);
+			int col = Integer.valueOf(loc[1]);
+
+			System.out.println(getLine(path, line));
+			String spaces = "";
+			for (int i = col; i > 1; i--) {
+				spaces += " ";
+			}
+			System.out.println(spaces + "^");
+			System.out.println(path + ":" + line);
+			System.exit(1);
+		} catch (ParserException ex) {
 			Token t = ex.getToken();
 			System.out.println("\nParsing error: " + ex.getMessage());
 			System.out.println(getLine(path, t.getLine()));
