@@ -12,11 +12,21 @@ situation is:
 The `owner` creates a new Directory and gives a logging, read-only reference to
 `delegate`::
 
-        Directory dir = new Directory();
-        Object readOnly = dir.readOnly();
-        Object loggedReadOnly = new Logger(readOnly);
+  class Owner {
+      private Object delegate;
+      private Object loggedReadOnly;
 
-        delegate.read(loggedReadOnly);
+      public Owner() {
+          delegate = new Unknown();
+          Directory dir = new Directory();
+          Object readOnly = dir.readOnly();
+          loggedReadOnly = new Logger(readOnly);
+      }
+
+      public void test() {
+          delegate.read(loggedReadOnly);
+      }
+  }
 
 Analysing this model reveals that it is not safe: `delegate` can bypass the
 logger (:example:`compose`):
@@ -31,6 +41,9 @@ The debug example is:
      <= getsAccess('delegate', 'readOnly')
         <= delegate: got readOnly
            <= delegate: loggedReadOnly.*()
+              <= delegate: received loggedReadOnly (arg to Unknown.*)
+                 <= owner: delegate.*()
+                    <= config: owner.test()
            <= loggedReadOnly: got readOnly
               <= loggedReadOnly: readOnly.readOnly()
 

@@ -66,6 +66,21 @@ Predicates
    Indicates that this scenario is expected to fail. Normally, SAM exits with a status
    code of 0 if the model passes, or 1 on failure. This reverses the test.
 
+.. function:: failedAssertion(?Number)
+
+   This will be true if the body of the assertion is false. SAM gives each assertion a
+   unique number.
+
+.. function:: assertionMessage(?Number, ?Msg)
+
+   The message to display if an assertion fails. This gives the location and
+   contents of the assertion.
+
+.. function:: assertionArrow(?Number, ?Source, ?Target, ?Positive)
+
+   If assertion ?Number fails and it relates two objects, an assertionArrow fact will be
+   recorded. This is used to add red arrows to the diagram.
+
 Debugging
 ---------
 

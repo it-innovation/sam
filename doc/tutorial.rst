@@ -254,7 +254,7 @@ we find that the required properties can't be verified::
 
 Turning on display of invocations shows the reason (:example:`factory4`)::
 
-  showInvocation("factory", ?Invocation) :- isInvocation(?Invocation).
+  showAllInvocations("factory").
 
 .. image:: _images/factory4.png
 

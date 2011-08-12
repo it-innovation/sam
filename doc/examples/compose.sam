@@ -47,16 +47,16 @@ class Directory {
 
 class Owner {
     private Object delegate;
+    private Object loggedReadOnly;
 
     public Owner() {
         delegate = new Unknown();
+        Directory dir = new Directory();
+        Object readOnly = dir.readOnly();
+        loggedReadOnly = new Logger(readOnly);
     }
 
     public void test() {
-        Directory dir = new Directory();
-        Object readOnly = dir.readOnly();
-        Object loggedReadOnly = new Logger(readOnly);
-
         delegate.read(loggedReadOnly);
     }
 }
