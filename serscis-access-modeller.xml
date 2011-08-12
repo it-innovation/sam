@@ -17,7 +17,7 @@ systems (e.g. modelling factories).</description>
   </release:management>
   <homepage>http://www.serscis.eu/sam/</homepage>
 
-  <implementation arch="*-src" compile:min-version="0.23" id="." released="2011-08-12" version="0.5">
+  <implementation arch="*-src" compile:min-version="0.23" id="." version="0.5-post">
     <command name="compile" shell-command="make -f ${SRCDIR}/src/Makefile">
       <compile:implementation arch="*-*" main="sam">
 	<environment insert="." name="CLASSPATH"/>
