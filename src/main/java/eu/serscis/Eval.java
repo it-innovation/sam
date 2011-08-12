@@ -152,6 +152,12 @@ public class Eval {
 			}
 			System.exit(1);
 		}
+
+		if (expectFailure) {
+			System.out.println(scenario + ": OK (failed, as expected)");
+		} else {
+			System.out.println(scenario + ": OK");
+		}
 	}
 
 	/* Instantiate the Setup class and run the model. Update the
