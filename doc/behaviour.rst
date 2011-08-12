@@ -147,3 +147,35 @@ The Unknown type
 Objects of type "Unknown" are willing to accept any argument when invoked,
 may invoke any object to which they have a reference, and may pass any argument
 they are able to. They aggregate all fields into a single field named `ref`.
+
+
+Embedding Datalog
+-----------------
+In addition to the standard Java syntax, it is possible to assign variables using Datalog
+rules. The syntax is::
+
+  [TYPE] NAME = VAR :- QUERY;
+
+For example, a `Matcher` stores an object if both arguments are equal::
+
+  class Matcher {
+      private Object matches;
+
+      public void match(Object a, Object b) {
+          matches = a :- a = b;
+      }
+  }
+
+This corresponds to the following Java version (which isn't valid SAM code)::
+
+  class Matcher {
+      private Object matches;
+
+      public void match(Object a, Object b) {
+          if (a == b) {
+              matches = a;
+          }
+      }
+  }
+
+You can use any Datalog query as the test.

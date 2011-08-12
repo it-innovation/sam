@@ -34,6 +34,7 @@ Tokens
   l_brace = '{';
   r_brace = '}';
   eq = '=';
+  neq = '!=';
   blank = (' ' | 13 | 9 | 10)+;
   comment = '//' input_character* line_terminator;
   block_comment = '/*' not_star* ('*' not_star_not_slash*)* '*/';
@@ -46,7 +47,6 @@ Tokens
   string_literal = '"' string_character* '"';
   query_start = '?-';
   question = '?';
-  binop = '=' | '!=';
   star = '*';
   dots = '...';
   dot = '.';
@@ -83,6 +83,8 @@ Productions
   rule = [head]:atom if_dl [body]:literals dot;
   literals = literal literal_tail*;
   literal_tail = comma literal;
+  binop = {eq} eq
+  	| {neq} neq;
   literal = {positive} atom
   	  | {negative} bang atom;
   atom = {nullary} name
@@ -91,6 +93,7 @@ Productions
   terms = term term_tail*;
   term_tail = comma term;
   term = {var} question name
+       | {javavar} name
        | {string} string_literal
        | {int} number
        | {bool} bool
@@ -115,6 +118,7 @@ Productions
   code = statement*;
   assign = type? name eq;
   statement = {assign} assign? expr semi
+            | {assign_dl} assign term if_dl literals semi
             | {decl} type name semi
 	    | {try} try l_brace statement* r_brace catch_block*
             | {throw} throw name semi

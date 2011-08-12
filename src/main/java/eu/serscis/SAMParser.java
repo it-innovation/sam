@@ -72,7 +72,6 @@ import static eu.serscis.Constants.*;
 public class SAMParser {
 	public List<IQuery> queries = new LinkedList<IQuery>();
 	private Model model;
-	private BuiltinRegister builtinRegister = new BuiltinRegister();
 	private File dir, myPath;
 	private static int assertions = 0;
 
@@ -154,94 +153,9 @@ public class SAMParser {
 		return queries;
 	}
 
-	private ITerm parseTerm(PTerm parsed) {
-		if (parsed instanceof AStringTerm) {
-			String str = getString(((AStringTerm) parsed).getStringLiteral());
-			return TERM.createString(str);
-		} else if (parsed instanceof AVarTerm) {
-			String name = ((AVarTerm) parsed).getName().getText();
-			return TERM.createVariable(name);
-		} else if (parsed instanceof ABoolTerm) {
-			boolean val = Boolean.valueOf(((ABoolTerm) parsed).getBool().getText());
-			return CONCRETE.createBoolean(val);
-		} else if (parsed instanceof AIntTerm) {
-			int val = Integer.valueOf(((AIntTerm) parsed).getNumber().getText());
-			return CONCRETE.createInt(val);
-		} else {
-			throw new RuntimeException("Unknown term type:" + parsed);
-		}
-	}
-
-	private ITuple parseTerms(ATerms parsed) {
-		List<ITerm> terms = new LinkedList<ITerm>();
-
-		terms.add(parseTerm(parsed.getTerm()));
-
-		for (PTermTail tail : parsed.getTermTail()) {
-			terms.add(parseTerm(((ATermTail) tail).getTerm()));
-		}
-		return BASIC.createTuple(terms);
-	}
-
-	private IAtom parseAtom(PAtom parsed) throws ParserException {
-		return parseAtom(parsed, false);
-	}
-
-	private IAtom parseAtom(PAtom parsed, boolean declaration) throws ParserException {
-		if (parsed instanceof ANormalAtom) {
-			ANormalAtom atom = (ANormalAtom) parsed;
-			ITuple terms = parseTerms((ATerms) atom.getTerms());
-
-			String name = atom.getName().getText();
-
-			Class<?> builtinClass = builtinRegister.getBuiltinClass(name);
-			if (builtinClass == null) {
-				IPredicate predicate = BASIC.createPredicate(name, terms.size());
-
-				if (declaration) {
-					model.declare(atom.getName(), predicate, terms);
-				} else {
-					model.requireDeclared(atom.getName(), predicate);
-				}
-
-				return BASIC.createAtom(predicate, terms);
-			} else {
-				try {
-					return (IAtom) builtinClass.getConstructor(ITerm[].class).
-						newInstance(new Object[] {terms.toArray(new ITerm[terms.size()])});
-				} catch (Exception ex) {
-					throw new RuntimeException(ex);
-				}
-			}
-		} else if (parsed instanceof ANullaryAtom) {
-			ANullaryAtom atom = (ANullaryAtom) parsed;
-
-			String name = atom.getName().getText();
-			IPredicate predicate = BASIC.createPredicate(name, 0);
-
-			if (declaration) {
-				model.declare(atom.getName(), predicate, BASIC.createTuple());
-			} else {
-				model.requireDeclared(atom.getName(), predicate);
-			}
-
-			return BASIC.createAtom(predicate, BASIC.createTuple());
-		} else {
-			ABuiltinAtom atom = (ABuiltinAtom) parsed;
-			String op = atom.getBinop().getText();
-
-			if ("=".equals(op)) {
-				return BUILTIN.createEqual(parseTerm(atom.getLhs()), parseTerm(atom.getRhs()));
-			} else if ("!=".equals(op)) {
-				return BUILTIN.createUnequal(parseTerm(atom.getLhs()), parseTerm(atom.getRhs()));
-			} else {
-				throw new RuntimeException("Unknown binary op " + op);
-			}
-		}
-	}
 
 	private void addFact(AFact fact) throws ParserException {
-		IAtom atom = parseAtom(fact.getAtom());
+		IAtom atom = model.parseAtom(fact.getAtom());
 
 		//System.out.println(" --> " + atom);
 
@@ -249,29 +163,10 @@ public class SAMParser {
 		rel.add(atom.getTuple());
 	}
 
-	private ILiteral parseLiteral(PLiteral parsed) throws ParserException {
-		if (parsed instanceof APositiveLiteral) {
-			return BASIC.createLiteral(true, parseAtom(((APositiveLiteral) parsed).getAtom()));
-		} else {
-			return BASIC.createLiteral(false, parseAtom(((ANegativeLiteral) parsed).getAtom()));
-		}
-	}
-
-	private List<ILiteral> parseLiterals(ALiterals parsed) throws ParserException {
-		List<ILiteral> literals = new LinkedList<ILiteral>();
-
-		literals.add(parseLiteral(parsed.getLiteral()));
-
-		for (PLiteralTail tail : parsed.getLiteralTail()) {
-			literals.add(parseLiteral(((ALiteralTail) tail).getLiteral()));
-		}
-		return literals;
-	}
-
 	private void addRule(ARule rule) throws ParserException {
-		ILiteral head = BASIC.createLiteral(true, parseAtom(rule.getHead()));
+		ILiteral head = BASIC.createLiteral(true, model.parseAtom(rule.getHead()));
 
-		List<ILiteral> body = parseLiterals((ALiterals) rule.getBody());
+		List<ILiteral> body = model.parseLiterals((ALiterals) rule.getBody(), null);
 
 		IRule r = BASIC.createRule(makeList(head), body);
 		//System.out.println(" --> " + r);
@@ -280,7 +175,7 @@ public class SAMParser {
 	}
 
 	private void addQuery(AQuery query) throws ParserException {
-		List<ILiteral> literals = parseLiterals((ALiterals) query.getLiterals());
+		List<ILiteral> literals = model.parseLiterals((ALiterals) query.getLiterals(), null);
 
 		IQuery q = BASIC.createQuery(literals);
 
@@ -288,7 +183,7 @@ public class SAMParser {
 	}
 
 	private void addAssert(AAssert ass) throws ParserException {
-		List<ILiteral> body = parseLiterals((ALiterals) ass.getLiterals());
+		List<ILiteral> body = model.parseLiterals((ALiterals) ass.getLiterals(), null);
 
 		if (body.size() != 1) {
 			throw new ParserException(ass.getAssertTok(), "Assert must contain exactly one goal");
@@ -386,7 +281,7 @@ public class SAMParser {
 	}
 
 	private void addDeclare(ADeclare declare) throws ParserException {
-		parseAtom(declare.getAtom(), true);
+		model.parseAtom(declare.getAtom(), true, null);
 	}
 
 	private void addImport(AImport aImport) throws Exception {

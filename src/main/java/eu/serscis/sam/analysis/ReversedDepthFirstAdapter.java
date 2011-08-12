@@ -399,6 +399,48 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         outALiteralTail(node);
     }
 
+    public void inAEqBinop(AEqBinop node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAEqBinop(AEqBinop node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAEqBinop(AEqBinop node)
+    {
+        inAEqBinop(node);
+        if(node.getEq() != null)
+        {
+            node.getEq().apply(this);
+        }
+        outAEqBinop(node);
+    }
+
+    public void inANeqBinop(ANeqBinop node)
+    {
+        defaultIn(node);
+    }
+
+    public void outANeqBinop(ANeqBinop node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseANeqBinop(ANeqBinop node)
+    {
+        inANeqBinop(node);
+        if(node.getNeq() != null)
+        {
+            node.getNeq().apply(this);
+        }
+        outANeqBinop(node);
+    }
+
     public void inAPositiveLiteral(APositiveLiteral node)
     {
         defaultIn(node);
@@ -605,6 +647,27 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
             node.getQuestion().apply(this);
         }
         outAVarTerm(node);
+    }
+
+    public void inAJavavarTerm(AJavavarTerm node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAJavavarTerm(AJavavarTerm node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAJavavarTerm(AJavavarTerm node)
+    {
+        inAJavavarTerm(node);
+        if(node.getName() != null)
+        {
+            node.getName().apply(this);
+        }
+        outAJavavarTerm(node);
     }
 
     public void inAStringTerm(AStringTerm node)
@@ -1259,6 +1322,43 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
             node.getAssign().apply(this);
         }
         outAAssignStatement(node);
+    }
+
+    public void inAAssignDlStatement(AAssignDlStatement node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAAssignDlStatement(AAssignDlStatement node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAAssignDlStatement(AAssignDlStatement node)
+    {
+        inAAssignDlStatement(node);
+        if(node.getSemi() != null)
+        {
+            node.getSemi().apply(this);
+        }
+        if(node.getLiterals() != null)
+        {
+            node.getLiterals().apply(this);
+        }
+        if(node.getIfDl() != null)
+        {
+            node.getIfDl().apply(this);
+        }
+        if(node.getTerm() != null)
+        {
+            node.getTerm().apply(this);
+        }
+        if(node.getAssign() != null)
+        {
+            node.getAssign().apply(this);
+        }
+        outAAssignDlStatement(node);
     }
 
     public void inADeclStatement(ADeclStatement node)

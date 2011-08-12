@@ -94,55 +94,55 @@ class TokenIndex extends AnalysisAdapter
     }
 
     @Override
-    public void caseTComma(@SuppressWarnings("unused") TComma node)
+    public void caseTNeq(@SuppressWarnings("unused") TNeq node)
     {
         this.index = 14;
     }
 
     @Override
-    public void caseTGoal(@SuppressWarnings("unused") TGoal node)
+    public void caseTComma(@SuppressWarnings("unused") TComma node)
     {
         this.index = 15;
     }
 
     @Override
-    public void caseTSemi(@SuppressWarnings("unused") TSemi node)
+    public void caseTGoal(@SuppressWarnings("unused") TGoal node)
     {
         this.index = 16;
     }
 
     @Override
-    public void caseTIfDl(@SuppressWarnings("unused") TIfDl node)
+    public void caseTSemi(@SuppressWarnings("unused") TSemi node)
     {
         this.index = 17;
     }
 
     @Override
-    public void caseTBang(@SuppressWarnings("unused") TBang node)
+    public void caseTIfDl(@SuppressWarnings("unused") TIfDl node)
     {
         this.index = 18;
     }
 
     @Override
-    public void caseTStringLiteral(@SuppressWarnings("unused") TStringLiteral node)
+    public void caseTBang(@SuppressWarnings("unused") TBang node)
     {
         this.index = 19;
     }
 
     @Override
-    public void caseTQueryStart(@SuppressWarnings("unused") TQueryStart node)
+    public void caseTStringLiteral(@SuppressWarnings("unused") TStringLiteral node)
     {
         this.index = 20;
     }
 
     @Override
-    public void caseTQuestion(@SuppressWarnings("unused") TQuestion node)
+    public void caseTQueryStart(@SuppressWarnings("unused") TQueryStart node)
     {
         this.index = 21;
     }
 
     @Override
-    public void caseTBinop(@SuppressWarnings("unused") TBinop node)
+    public void caseTQuestion(@SuppressWarnings("unused") TQuestion node)
     {
         this.index = 22;
     }

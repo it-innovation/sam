@@ -59,7 +59,6 @@ import org.deri.iris.api.terms.ITerm;
 import org.deri.iris.storage.IRelation;
 import org.deri.iris.rules.IRuleSafetyProcessor;
 import org.deri.iris.RuleUnsafeException;
-import org.deri.iris.compiler.BuiltinRegister;
 import static org.deri.iris.factory.Factory.*;
 import eu.serscis.sam.lexer.Lexer;
 import eu.serscis.sam.parser.Parser;
@@ -140,6 +139,50 @@ class SAMMethod {
 		IRelation rel = parent.model.getRelation(pred);
 
 		rel.add(BASIC.createTuple(values));
+	}
+
+	public List<ILiteral> processJavaDl(PTerm value, ALiterals parsed) throws ParserException {
+		final Set<String> javaVars = new HashSet<String>();
+		final List<ILiteral> extraLiterals = new LinkedList<ILiteral>();
+
+		TermProcessor termFn = new TermProcessor() {
+			public ITerm process(PTerm term) throws ParserException {
+				if (term instanceof AJavavarTerm) {
+					TName tname = ((AJavavarTerm) term).getName();
+					ITerm var = TERM.createVariable("Java_" + tname.getText());
+					extraLiterals.add(getValue(var, tname));
+					return var;
+				}
+				return null;
+			}
+		};
+
+		List<ILiteral> literals = parent.model.parseLiterals(parsed, termFn);
+
+		literals.addAll(extraLiterals);
+
+		/* local(?Caller, ?CallerInvocation, 'var', ?Value) :-
+		 *	isA(?Caller, type),
+		 *	live(?Caller, ?CallerInvocation, method),
+		 *	?Value = term,
+		 *	lits.
+		 */
+		ILiteral isA = BASIC.createLiteral(true, BASIC.createAtom(isAP, BASIC.createTuple(
+					TERM.createVariable("Caller"),
+					TERM.createString(this.parent.name))));
+		ILiteral live = BASIC.createLiteral(true, BASIC.createAtom(liveMethodP, BASIC.createTuple(
+					TERM.createVariable("Caller"),
+					TERM.createVariable("CallerInvocation"),
+					methodNameFull)));
+		ILiteral eq = BASIC.createLiteral(true,
+				BUILTIN.createEqual(
+					TERM.createVariable("Value"),
+					parent.model.parseTerm(value, termFn)));
+
+		literals.add(isA);
+		literals.add(live);
+		literals.add(eq);
+		return literals;
 	}
 
 	private void processCode(List<PStatement> statements) throws Exception {
@@ -289,6 +332,14 @@ class SAMMethod {
 
 					processCode(cb.getStatement());
 				}
+			} else if (ps instanceof AAssignDlStatement) {
+				AAssignDlStatement s = (AAssignDlStatement) ps;
+
+				AAssign assign = (AAssign) s.getAssign();
+				PTerm term = s.getTerm();
+				List<ILiteral> lits = processJavaDl(term, (ALiterals) s.getLiterals());
+
+				assignVar(assign, lits);
 			} else {
 				throw new RuntimeException("Unknown statement type: " + ps);
 			}
@@ -476,33 +527,37 @@ class SAMMethod {
 		return values;
 	}
 
+	private ILiteral getValue(TName var) throws ParserException {
+		return getValue(TERM.createVariable("Value"), var);
+	}
+
 	/* Returns
-	 *   local(?Caller, ?CallerInvocation, 'var', ?Value)
+	 *   local(?Caller, ?CallerInvocation, 'var', targetVar)
 	 * or
-	 *   field(?Caller, 'var', ?Value)
+	 *   field(?Caller, 'var', targetVar)
 	 * or
-	 *   equals(?Caller, ?Value)  (for "this")
+	 *   equals(?Caller, targetVar)  (for "this")
 	 * depending on whether varName refers to a local or a field.
 	 */
-	private ILiteral getValue(TName var) throws ParserException {
+	private ILiteral getValue(ITerm targetVar, TName var) throws ParserException {
 		String sourceVar = var.getText();
 		if (locals.contains(sourceVar)) {
 			ITuple tuple = BASIC.createTuple(
 					TERM.createVariable("Caller"),
 					TERM.createVariable("CallerInvocation"),
 					TERM.createString(expandLocal(sourceVar)),
-					TERM.createVariable("Value"));
+					targetVar);
 			return BASIC.createLiteral(true, BASIC.createAtom(localP, tuple));
 		} else if (parent.fields.contains(sourceVar)) {
 			ITuple tuple = BASIC.createTuple(
 					TERM.createVariable("Caller"),
 					TERM.createString(sourceVar),
-					TERM.createVariable("Value"));
+					targetVar);
 			return BASIC.createLiteral(true, BASIC.createAtom(fieldP, tuple));
 		} else if (sourceVar.equals("this")) {
 			return BASIC.createLiteral(true, BUILTIN.createEqual(
 					TERM.createVariable("Caller"),
-					TERM.createVariable("Value")));
+					targetVar));
 		} else {
 			throw new ParserException(var, "Unknown variable " + sourceVar);
 		}

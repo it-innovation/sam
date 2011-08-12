@@ -8,7 +8,7 @@ import eu.serscis.sam.analysis.*;
 public final class ABuiltinAtom extends PAtom
 {
     private PTerm _lhs_;
-    private TBinop _binop_;
+    private PBinop _binop_;
     private PTerm _rhs_;
 
     public ABuiltinAtom()
@@ -18,7 +18,7 @@ public final class ABuiltinAtom extends PAtom
 
     public ABuiltinAtom(
         @SuppressWarnings("hiding") PTerm _lhs_,
-        @SuppressWarnings("hiding") TBinop _binop_,
+        @SuppressWarnings("hiding") PBinop _binop_,
         @SuppressWarnings("hiding") PTerm _rhs_)
     {
         // Constructor
@@ -69,12 +69,12 @@ public final class ABuiltinAtom extends PAtom
         this._lhs_ = node;
     }
 
-    public TBinop getBinop()
+    public PBinop getBinop()
     {
         return this._binop_;
     }
 
-    public void setBinop(TBinop node)
+    public void setBinop(PBinop node)
     {
         if(this._binop_ != null)
         {
@@ -165,7 +165,7 @@ public final class ABuiltinAtom extends PAtom
 
         if(this._binop_ == oldChild)
         {
-            setBinop((TBinop) newChild);
+            setBinop((PBinop) newChild);
             return;
         }
 

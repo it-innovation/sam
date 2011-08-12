@@ -76,5 +76,4 @@ public class Constants {
 		String str = literal.getText();
 		return str.substring(1, str.length() - 1);	// TODO: ignores escapes
 	}
-
 }

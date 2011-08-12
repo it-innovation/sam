@@ -144,6 +144,16 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseAEqBinop(AEqBinop node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseANeqBinop(ANeqBinop node)
+    {
+        defaultCase(node);
+    }
+
     public void caseAPositiveLiteral(APositiveLiteral node)
     {
         defaultCase(node);
@@ -180,6 +190,11 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseAVarTerm(AVarTerm node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAJavavarTerm(AJavavarTerm node)
     {
         defaultCase(node);
     }
@@ -290,6 +305,11 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseAAssignStatement(AAssignStatement node)
+    {
+        defaultCase(node);
+    }
+
+    public void caseAAssignDlStatement(AAssignDlStatement node)
     {
         defaultCase(node);
     }
@@ -449,6 +469,11 @@ public class AnalysisAdapter implements Analysis
         defaultCase(node);
     }
 
+    public void caseTNeq(TNeq node)
+    {
+        defaultCase(node);
+    }
+
     public void caseTBlank(TBlank node)
     {
         defaultCase(node);
@@ -500,11 +525,6 @@ public class AnalysisAdapter implements Analysis
     }
 
     public void caseTQuestion(TQuestion node)
-    {
-        defaultCase(node);
-    }
-
-    public void caseTBinop(TBinop node)
     {
         defaultCase(node);
     }

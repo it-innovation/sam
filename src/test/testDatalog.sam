@@ -1,0 +1,23 @@
+class Test {
+    private Object results;
+
+    public void test(Object a, Object b) {
+        results = a :- a = b;
+    }
+}
+
+config {
+    test {
+        Object a = new Thing();
+        Object b = new Thing();
+        Object c = new Thing();
+        Test t = new Test();
+        t.test(a, b);
+        t.test(b, b);
+        t.test(a, c);
+    }
+}
+
+assert !field("t", "results", "a").
+assert field("t", "results", "b").
+assert !field("t", "results", "a").

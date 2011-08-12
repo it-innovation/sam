@@ -27,6 +27,8 @@ public interface Analysis extends Switch
     void caseARule(ARule node);
     void caseALiterals(ALiterals node);
     void caseALiteralTail(ALiteralTail node);
+    void caseAEqBinop(AEqBinop node);
+    void caseANeqBinop(ANeqBinop node);
     void caseAPositiveLiteral(APositiveLiteral node);
     void caseANegativeLiteral(ANegativeLiteral node);
     void caseANullaryAtom(ANullaryAtom node);
@@ -35,6 +37,7 @@ public interface Analysis extends Switch
     void caseATerms(ATerms node);
     void caseATermTail(ATermTail node);
     void caseAVarTerm(AVarTerm node);
+    void caseAJavavarTerm(AJavavarTerm node);
     void caseAStringTerm(AStringTerm node);
     void caseAIntTerm(AIntTerm node);
     void caseABoolTerm(ABoolTerm node);
@@ -57,6 +60,7 @@ public interface Analysis extends Switch
     void caseACode(ACode node);
     void caseAAssign(AAssign node);
     void caseAAssignStatement(AAssignStatement node);
+    void caseAAssignDlStatement(AAssignDlStatement node);
     void caseADeclStatement(ADeclStatement node);
     void caseATryStatement(ATryStatement node);
     void caseAThrowStatement(AThrowStatement node);
@@ -89,6 +93,7 @@ public interface Analysis extends Switch
     void caseTLBrace(TLBrace node);
     void caseTRBrace(TRBrace node);
     void caseTEq(TEq node);
+    void caseTNeq(TNeq node);
     void caseTBlank(TBlank node);
     void caseTComment(TComment node);
     void caseTBlockComment(TBlockComment node);
@@ -100,7 +105,6 @@ public interface Analysis extends Switch
     void caseTStringLiteral(TStringLiteral node);
     void caseTQueryStart(TQueryStart node);
     void caseTQuestion(TQuestion node);
-    void caseTBinop(TBinop node);
     void caseTStar(TStar node);
     void caseTDots(TDots node);
     void caseTDot(TDot node);
