@@ -5,5 +5,4 @@ Examples
    :maxdepth: 2
 
    sealers
-   composition
    confused

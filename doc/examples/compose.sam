@@ -5,8 +5,8 @@ class ReadOnly {
         myUnderlying = underlying;
     }
 
-    public Object get() {
-        Object value = myUnderlying.get();
+    public Object read() {
+        Object value = myUnderlying.read();
         return value;
     }
 
@@ -23,21 +23,15 @@ class Logger {
     }
 
     public Object *(Object arg*) {
-        Object value = myUnderlying.*(arg);
+        Object value = myUnderlying.*(arg*);
         return value;
     }
 }
 
-class Directory {
-    private Object myFile;
+class File {
+    public void write() { }
 
-    public void put(Object file) {
-        myFile = file;
-    }
-
-    public Object get() {
-        return myFile;
-    }
+    public Object read() { }
 
     public Object readOnly() {
         ReadOnly readOnly = new ReadOnly(this);
@@ -45,35 +39,24 @@ class Directory {
     }
 }
 
-class Owner {
-    private Object delegate;
-    private Object loggedReadOnly;
+config {
+    Logger loggedReadOnly;
 
-    public Owner() {
-        delegate = new Unknown();
-        Directory dir = new Directory();
-        Object readOnly = dir.readOnly();
+    setup {
+        File file = new File();
+        ReadOnly readOnly = file.readOnly();
         loggedReadOnly = new Logger(readOnly);
     }
 
-    public void test() {
-        delegate.read(loggedReadOnly);
-    }
-}
-
-config {
-    Owner owner;
-
-    setup {
-        owner = new Owner();
-    }
-
     test {
-        owner.test();
+        Unknown delegate = new Unknown(loggedReadOnly);
     }
 }
 
-denyAccess("delegate", "readOnly").
+assert didCall(?X, "file", "File.read").
+assert !didCall(?X, "file", "File.write").
 
+assert !getsAccess("delegate", "file").
+assert !getsAccess("delegate", "readOnly").
 
 expectFailure.
