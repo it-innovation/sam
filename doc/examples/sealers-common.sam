@@ -12,6 +12,10 @@ class Box {
     precious = value;
     myUnsealer = unsealer;
   }
+
+  public void offerContent() {
+    myUnsealer.acceptContent(precious);
+  }
 }
 
 class Sealer {
@@ -32,8 +36,16 @@ class Sealer {
 }
 
 class Unsealer {
+  private Object myTempContents;
+
   public Object unseal(Box box) {
-    Object value = ?Value :- field(box, "precious", ?Value), field(box, "myUnsealer", this);
+    box.offerContent();
+    Object value = myTempContents :-
+        maySend(this, ?CallerInvocation, "Unsealer.acceptContent", ?Pos, myTempContents);
     return value;
+  }
+
+  public void acceptContent(Object contents) {
+    myTempContents = contents;
   }
 }

@@ -12,28 +12,30 @@ class Sender {
     myBox = sealer.seal(precious);
   }
 
-  public void test(Object a, Object b) {
+  public void test(Object a) {
     a.accept(myBox);
-    b.accept(myBox);
   }
 }
 
 config {
-  Object withUnsealer;
-  Object withoutUnsealer;
+  Object unsealer;
   Object sender;
 
   setup {
     Object sealer = new Sealer();
-    Object unsealer = sealer.getUnsealer();
+    unsealer = sealer.getUnsealer();
 
     sender = new Sender(sealer);
-    withUnsealer = new Unknown(unsealer);
-    withoutUnsealer = new Unknown();
   }
 
-  test {
-    sender.test(withUnsealer, withoutUnsealer);
+  test "With" {
+    Object withUnsealer = new Unknown(unsealer);
+    sender.test(withUnsealer);
+  }
+
+  test "Without" {
+    Object withoutUnsealer = new Unknown();
+    sender.test(withoutUnsealer);
   }
 }
 
