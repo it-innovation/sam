@@ -1,0 +1,25 @@
+class Slot {
+    private Object myValue;
+
+    public Object get() {
+        Object value = myValue; // assign local from field
+        return value;
+    }
+
+    public void put(Object value) {
+        myValue = value;
+    }
+}
+
+config {
+    test {
+        Object value = new Unknown();
+        Slot slot1 = new Slot();
+        Slot slot2 = new Slot();
+        slot1.put(value);
+        Object val = slot1.get(value);
+        slot2.put(val);
+    }
+}
+
+assert hasRef("slot2", "value").
