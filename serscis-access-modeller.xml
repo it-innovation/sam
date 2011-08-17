@@ -26,7 +26,7 @@ systems (e.g. modelling factories).</description>
 	</requires>
 	<command name="run">
 	  <runner interface="http://repo.roscidus.com/java/openjdk-6-jre"/>
-	  <arg>eu.serscis.Eval</arg>
+	  <arg>eu.serscis.Main</arg>
 	</command>
       </compile:implementation>
     </command>

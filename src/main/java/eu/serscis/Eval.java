@@ -65,15 +65,6 @@ import eu.serscis.Constants;
 public class Eval {
 	private Model model = new Model(createDefaultConfiguration());
 
-	public static void main(String[] args) throws Exception {
-		if (args.length < 1) {
-			throw new Exception("usage: sam scenario.sam");
-		}
-		for (String arg : args) {
-			new Eval(new File(arg));
-		}
-	}
-
 	public static Configuration createDefaultConfiguration() {
 		Configuration config = KnowledgeBaseFactory.getDefaultConfiguration();
 
