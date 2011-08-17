@@ -32,7 +32,7 @@ examples:
 
 images: ${SAM_EXAMPLES}
 	mkdir -p ${DISTDIR}/doc/_images
-	(cd ${DISTDIR}/doc/_images && ${SAM} ${SAM_EXAMPLES})
+	(cd ${DISTDIR}/doc/_images && ${SAM} --batch ${SAM_EXAMPLES})
 
 parser:
 	rm -rf ${SRCDIR}/src/main/java/eu/serscis/sam/parser/*
@@ -42,4 +42,4 @@ parser:
 	java -jar ${SRCDIR}/sablecc.jar -d ${SRCDIR}/src/main/java ${SRCDIR}/src/main/sablecc/sam.grammar
 
 tests:
-	${SAM} ${SRCDIR}/src/test/*.sam
+	${SAM} --batch ${SRCDIR}/src/test/*.sam

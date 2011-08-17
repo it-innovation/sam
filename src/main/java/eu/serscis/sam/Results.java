@@ -55,6 +55,7 @@ public class Results {
 	public IKnowledgeBase finalKnowledgeBase;
 	public Phase phase = Phase.Init;
 	public Exception exception;
+	public boolean expectingFailure = false;
 	
 	public Results(Model model) {
 		this.model = model;

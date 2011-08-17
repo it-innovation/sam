@@ -28,10 +28,16 @@ systems (e.g. modelling factories).</description>
 	  <runner interface="http://repo.roscidus.com/java/openjdk-6-jre"/>
 	  <arg>eu.serscis.sam.Main</arg>
 	</command>
+	<environment insert="doc/examples" name="SAM_EXAMPLES"/>
       </compile:implementation>
     </command>
     <requires interface="http://repo.roscidus.com/python/sphinx"/>
     <requires compile:include-binary="true" interface="http://repo.roscidus.com/java/iris"/>
+
+    <requires compile:include-binary="true" interface="http://repo.roscidus.com/java/swt">
+      <environment insert="swt.jar" name="CLASSPATH"/>
+    </requires>
+
     <requires interface="http://repo.roscidus.com/java/openjdk-6-jdk">
       <environment insert="bin" name="PATH"/>
     </requires>

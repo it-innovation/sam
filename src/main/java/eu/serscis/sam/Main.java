@@ -28,23 +28,55 @@
 
 package eu.serscis.sam;
 
+import eu.serscis.sam.gui.GUI;
 import java.io.File;
 
 public class Main {
 	public static void main(String[] args) throws Exception {
 		if (args.length < 1) {
-			throw new Exception("usage: sam scenario.sam");
+			new GUI(null);
+			return;
 		}
 
-		Eval eval = new Eval();
+		if (args[0].equals("--batch")) {
+			Eval eval = new Eval();
 
-		for (int i = 0; i < args.length; i++) {
-			String arg = args[i];
-			Results results = eval.evaluate(new File(arg));
-			if (results.exception != null) {
-				System.out.println(results.exception);
-				System.exit(1);
+			for (int i = 1; i < args.length; i++) {
+				String arg = args[i];
+				File scenario = new File(arg);
+				Results results = eval.evaluate(scenario);
+				if (results.exception != null) {
+					System.out.println(results.exception);
+					System.exit(1);
+				}
+				if (results.finalKnowledgeBase != null) {
+					String stem = scenario.getName();
+					if (stem.endsWith(".sam")) {
+						stem = stem.substring(0, stem.length() - 4);
+					}
+					Graph.graph(results.finalKnowledgeBase, new File(stem + ".png"));
+				}
+				if (results.phase != Results.Phase.Success) {
+					if (results.expectingFailure) {
+						System.out.println(scenario + ": OK (failed, as expected)");
+					} else {
+						System.out.println(scenario + ": FAILED");
+						System.exit(1);
+					}
+				} else {
+					if (results.expectingFailure) {
+						System.out.println(scenario + ": Expecting model to fail ('expectFailure' is set), but passed!");
+						System.exit(1);
+
+					}
+					System.out.println(scenario + ": OK");
+				}
 			}
+		} else {
+			if (args.length != 1) {
+				throw new RuntimeException("only --batch mode is currently supported");
+			}
+			new GUI(new File(args[0]));
 		}
 	}
 }

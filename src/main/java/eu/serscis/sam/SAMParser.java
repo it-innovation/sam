@@ -85,7 +85,8 @@ public class SAMParser {
 			}
 			System.out.println(spaces + "^");
 			System.out.println(path + ":" + line);
-			System.exit(1);
+
+			throw ex;
 		} catch (ParserException ex) {
 			Token t = ex.getToken();
 			System.out.println("\nParsing error: " + ex.getMessage());
@@ -96,7 +97,8 @@ public class SAMParser {
 			}
 			System.out.println(spaces + "^");
 			System.out.println(path + ":" + t.getLine());
-			System.exit(1);
+
+			throw ex;
 		} finally {
 			reader.close();
 		}

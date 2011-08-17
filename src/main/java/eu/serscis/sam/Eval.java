@@ -74,7 +74,7 @@ public class Eval {
 	public Eval() {
 	}
 
-	public Results evaluate(File scenario) throws Exception {
+	public Results evaluate(File scenario) {
 		Results results = new Results(new Model(createDefaultConfiguration()));
 
 		try {
@@ -101,14 +101,11 @@ public class Eval {
 		IKnowledgeBase initialKnowledgeBase = results.model.createKnowledgeBase();
 		//graph(initialKnowledgeBase, new File("initial.png"));
 
-		boolean expectFailure = expectingFailure(initialKnowledgeBase);
+		results.expectingFailure = expectingFailure(initialKnowledgeBase);
 		boolean initialProblem = checkForErrors(initialKnowledgeBase, "in initial configuration");
 
 		if (initialProblem) {
-			if (expectFailure) {
-				return;
-			}
-			throw new ModelFailureException("Unexpected error in " + scenario);
+			return;
 		}
 
 		parseResource(results.model, "system.dl");
@@ -123,35 +120,17 @@ public class Eval {
 
 		parseResource(results.model, "finalChecks.dl");
 
-		String stem = scenario.getName();
-		if (stem.endsWith(".sam")) {
-			stem = stem.substring(0, stem.length() - 4);
-		}
-
 		IRelation phase = results.model.getRelation(Constants.phaseP);
 		phase.add(BASIC.createTuple(new ITerm[] { TERM.createString("test") }));
 
 		IKnowledgeBase finalKnowledgeBase = results.model.createKnowledgeBase();
 		results.finalKnowledgeBase = doDebugging(results.model, finalKnowledgeBase);
-		Graph.graph(results.finalKnowledgeBase, new File(stem + ".png"));
 		doQueries(results.finalKnowledgeBase, queries);
 		boolean finalProblem = checkForErrors(results.finalKnowledgeBase, "after applying propagation rules");
 
-		if (finalProblem != expectFailure) {
-			if (expectFailure) {
-				throw new ModelFailureException("Expecting model to fail ('expectFailure' is set), but passed, in " + scenario);
-			} else {
-				throw new ModelFailureException("Unexpected error in " + scenario);
-			}
+		if (!finalProblem) {
+			results.phase = Results.Phase.Success;
 		}
-
-		if (expectFailure) {
-			System.out.println(scenario + ": OK (failed, as expected)");
-		} else {
-			System.out.println(scenario + ": OK");
-		}
-
-		results.phase = Results.Phase.Success;
 	}
 
 	/* Instantiate the Setup class and run the model. Update the

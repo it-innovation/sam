@@ -107,7 +107,7 @@ You can run the model like this:
 
 See :ref:`install` for more information about running SAM.
 
-You should find you now have an output file called "factory1.png":
+SAM will open a window displaying the results:
 
 .. image:: _images/factory1.png
 

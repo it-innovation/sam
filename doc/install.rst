@@ -26,6 +26,12 @@ Running
 
 To run SAM::
 
-  $ sam scenario.sam
+  $ sam
+
+You can then use the `File` menu to load one of the example files.
+
+To run in batch mode (without opening a window)::
+
+  $ sam --batch scenario.sam
 
 See the :ref:`tutorial` for instructions on writing the scenario.sam file.
