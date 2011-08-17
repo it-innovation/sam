@@ -26,7 +26,7 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-package eu.serscis;
+package eu.serscis.sam;
 
 import org.deri.iris.rules.compiler.RuleCompiler;
 import org.deri.iris.evaluation.stratifiedbottomup.EvaluationUtilities;
@@ -62,7 +62,7 @@ import org.deri.iris.storage.IRelation;
 import org.deri.iris.utils.TermMatchingAndSubstitution;
 import org.deri.iris.api.builtins.IBuiltinAtom;
 import static org.deri.iris.factory.Factory.*;
-import static eu.serscis.Constants.*;
+import static eu.serscis.sam.Constants.*;
 
 public class Debugger {
 	private List<IRule> rules = new LinkedList<IRule>();

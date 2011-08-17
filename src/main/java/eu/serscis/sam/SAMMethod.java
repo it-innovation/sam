@@ -26,7 +26,7 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-package eu.serscis;
+package eu.serscis.sam;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -41,7 +41,7 @@ import org.deri.iris.api.terms.ITerm;
 import org.deri.iris.storage.IRelation;
 import static org.deri.iris.factory.Factory.*;
 import eu.serscis.sam.parser.ParserException;
-import static eu.serscis.Constants.*;
+import static eu.serscis.sam.Constants.*;
 
 class SAMMethod {
 	private Set<String> locals = new HashSet<String>();

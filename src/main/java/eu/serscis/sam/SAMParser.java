@@ -26,7 +26,7 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-package eu.serscis;
+package eu.serscis.sam;
 
 import eu.serscis.sam.lexer.LexerException;
 import org.deri.iris.api.terms.IConcreteTerm;
@@ -53,7 +53,7 @@ import org.deri.iris.storage.IRelation;
 import static org.deri.iris.factory.Factory.*;
 import eu.serscis.sam.lexer.Lexer;
 import eu.serscis.sam.parser.Parser;
-import static eu.serscis.Constants.*;
+import static eu.serscis.sam.Constants.*;
 
 public class SAMParser {
 	public List<IQuery> queries = new LinkedList<IQuery>();

@@ -17,7 +17,7 @@
 // the software.
 //
 //	Created By :			Thomas Leonard
-//	Created Date :			2011-04-04
+//	Created Date :			2011-08-12
 //	Created for Project :		SERSCIS
 //
 /////////////////////////////////////////////////////////////////////////
@@ -26,38 +26,12 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-package eu.serscis;
+package eu.serscis.sam;
 
-import java.util.HashSet;
-import java.util.Set;
-import eu.serscis.sam.node.*;
-import org.deri.iris.storage.IRelation;
-import static org.deri.iris.factory.Factory.*;
-import static eu.serscis.Constants.*;
+import org.deri.iris.api.terms.ITerm;
+import eu.serscis.sam.parser.ParserException;
+import eu.serscis.sam.node.PTerm;
 
-abstract class SAMClass {
-	public String name;
-	Set<String> fields = new HashSet<String>();
-	Model model;
-
-	public SAMClass(Model model, String name) {
-		this.model = model;
-		this.name = name;
-	}
-
-	public void addDatalog() throws Exception {
-		IRelation definedType = model.getRelation(definedTypeP);
-		definedType.add(BASIC.createTuple(TERM.createString(name)));
-	}
-
-	public void declareField(TName aName) {
-		String fieldName = aName.getText();
-		if (fields.contains(fieldName)) {
-			throw new RuntimeException("Duplicate definition of field " + fieldName);
-		} else {
-			fields.add(fieldName);
-			IRelation rel = model.getRelation(hasFieldP);
-			rel.add(BASIC.createTuple(TERM.createString(this.name), TERM.createString(fieldName)));
-		}
-	}
+public interface TermProcessor {
+	public ITerm process(PTerm parsedTerm) throws ParserException;
 }

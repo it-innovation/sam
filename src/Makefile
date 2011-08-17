@@ -6,7 +6,7 @@ SBUILDDIR      = ${DISTDIR}/doc
 ALLSPHINXOPTS   = -d $(SBUILDDIR)/doctrees
 all: htmldoc tests
 
-JAVA_SOURCES = $(wildcard ${SRCDIR}/src/main/java/eu/serscis/*.java) \
+JAVA_SOURCES = $(wildcard ${SRCDIR}/src/main/java/eu/serscis/sam/*.java) \
 	       $(wildcard ${SRCDIR}/src/main/java/eu/serscis/sam/*/*.java)
 
 SAM_EXAMPLES = $(wildcard ${SRCDIR}/doc/examples/*.sam)

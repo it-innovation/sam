@@ -26,7 +26,7 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-package eu.serscis;
+package eu.serscis.sam;
 
 import eu.serscis.sam.node.*;
 import java.util.LinkedList;
@@ -37,7 +37,7 @@ import org.deri.iris.api.basics.ILiteral;
 import org.deri.iris.api.terms.ITerm;
 import org.deri.iris.storage.IRelation;
 import static org.deri.iris.factory.Factory.*;
-import static eu.serscis.Constants.*;
+import static eu.serscis.sam.Constants.*;
 
 class SAMTestDriver extends SAMClass {
 	private List<ANamedblock> blocks = new LinkedList<ANamedblock>();

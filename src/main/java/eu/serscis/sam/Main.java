@@ -17,7 +17,7 @@
 // the software.
 //
 //	Created By :			Thomas Leonard
-//	Created Date :			2011-08-12
+//	Created Date :			2011-08-17
 //	Created for Project :		SERSCIS
 //
 /////////////////////////////////////////////////////////////////////////
@@ -26,12 +26,17 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-package eu.serscis;
+package eu.serscis.sam;
 
-import org.deri.iris.api.terms.ITerm;
-import eu.serscis.sam.parser.ParserException;
-import eu.serscis.sam.node.PTerm;
+import java.io.File;
 
-public interface TermProcessor {
-	public ITerm process(PTerm parsedTerm) throws ParserException;
+public class Main {
+	public static void main(String[] args) throws Exception {
+		if (args.length < 1) {
+			throw new Exception("usage: sam scenario.sam");
+		}
+		for (String arg : args) {
+			new Eval(new File(arg));
+		}
+	}
 }

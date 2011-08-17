@@ -26,7 +26,7 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-package eu.serscis;
+package eu.serscis.sam;
 
 import eu.serscis.sam.node.TStringLiteral;
 import java.util.List;
