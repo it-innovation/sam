@@ -28,39 +28,18 @@
 
 package eu.serscis;
 
-import eu.serscis.sam.node.Token;
-import java.io.BufferedReader;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.io.FileWriter;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.FileReader;
-import java.io.Reader;
-import java.io.IOException;
-import org.deri.iris.Configuration;
-import org.deri.iris.KnowledgeBaseFactory;
 import org.deri.iris.api.IKnowledgeBase;
 import org.deri.iris.api.basics.IPredicate;
 import org.deri.iris.api.basics.IQuery;
-import org.deri.iris.api.basics.IRule;
 import org.deri.iris.api.basics.ITuple;
 import org.deri.iris.api.basics.ILiteral;
-import org.deri.iris.api.terms.IVariable;
 import org.deri.iris.api.terms.ITerm;
-import org.deri.iris.compiler.Parser;
 import org.deri.iris.storage.IRelation;
-import org.deri.iris.rules.IRuleSafetyProcessor;
-import org.deri.iris.RuleUnsafeException;
-import org.deri.iris.compiler.BuiltinRegister;
 import static org.deri.iris.factory.Factory.*;
-import eu.serscis.Constants;
 
 public class Graph {
 	static public void graph(IKnowledgeBase knowledgeBase, File outputPngFile) throws Exception {
