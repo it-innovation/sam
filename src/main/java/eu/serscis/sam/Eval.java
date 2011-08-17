@@ -50,8 +50,6 @@ import org.deri.iris.RuleUnsafeException;
 import static org.deri.iris.factory.Factory.*;
 
 public class Eval {
-	private Model model = new Model(createDefaultConfiguration());
-
 	public static Configuration createDefaultConfiguration() {
 		Configuration config = KnowledgeBaseFactory.getDefaultConfiguration();
 
@@ -73,19 +71,34 @@ public class Eval {
 		return config;
 	}
 
-	public Eval(File scenario) throws Exception {
+	public Eval() {
+	}
+
+	public Results evaluate(File scenario) throws Exception {
+		Results results = new Results(new Model(createDefaultConfiguration()));
+
+		try {
+			evaluate(scenario, results);
+		} catch (Exception ex) {
+			results.setException(ex);
+		}
+
+		return results;
+	}
+
+	private void evaluate(File scenario, Results results) throws Exception {
 		File baseDir = scenario.getParentFile();
 
 		ClassLoader loader = Eval.class.getClassLoader();
 
-		parseResource("base.dl");
-		parseResource("checks.dl");
-		parseResource("graph.dl");
+		parseResource(results.model, "base.dl");
+		parseResource(results.model, "checks.dl");
+		parseResource(results.model, "graph.dl");
 
-		SAMParser parser = new SAMParser(model, scenario);
+		SAMParser parser = new SAMParser(results.model, scenario);
 		List<IQuery> queries = parser.getQueries();
 
-		IKnowledgeBase initialKnowledgeBase = model.createKnowledgeBase();
+		IKnowledgeBase initialKnowledgeBase = results.model.createKnowledgeBase();
 		//graph(initialKnowledgeBase, new File("initial.png"));
 
 		boolean expectFailure = expectingFailure(initialKnowledgeBase);
@@ -95,40 +108,41 @@ public class Eval {
 			if (expectFailure) {
 				return;
 			}
-			System.out.println("Unexpected error in " + scenario);
-			System.exit(1);
+			throw new ModelFailureException("Unexpected error in " + scenario);
 		}
 
-		parseResource("system.dl");
+		parseResource(results.model, "system.dl");
 
-		if (!doSetup()) {
-			System.out.println("Unexpected error in " + scenario);
-			System.exit(1);
+		results.phase = Results.Phase.Setup;
+
+		if (!doSetup(results.model)) {
+			throw new ModelFailureException("Unexpected error in " + scenario);
 		}
 
-		parseResource("finalChecks.dl");
+		results.phase = Results.Phase.Test;
+
+		parseResource(results.model, "finalChecks.dl");
 
 		String stem = scenario.getName();
 		if (stem.endsWith(".sam")) {
 			stem = stem.substring(0, stem.length() - 4);
 		}
 
-		IRelation phase = model.getRelation(Constants.phaseP);
+		IRelation phase = results.model.getRelation(Constants.phaseP);
 		phase.add(BASIC.createTuple(new ITerm[] { TERM.createString("test") }));
 
-		IKnowledgeBase finalKnowledgeBase = model.createKnowledgeBase();
-		finalKnowledgeBase = doDebugging(finalKnowledgeBase);
-		Graph.graph(finalKnowledgeBase, new File(stem + ".png"));
-		doQueries(finalKnowledgeBase, queries);
-		boolean finalProblem = checkForErrors(finalKnowledgeBase, "after applying propagation rules");
+		IKnowledgeBase finalKnowledgeBase = results.model.createKnowledgeBase();
+		results.finalKnowledgeBase = doDebugging(results.model, finalKnowledgeBase);
+		Graph.graph(results.finalKnowledgeBase, new File(stem + ".png"));
+		doQueries(results.finalKnowledgeBase, queries);
+		boolean finalProblem = checkForErrors(results.finalKnowledgeBase, "after applying propagation rules");
 
 		if (finalProblem != expectFailure) {
 			if (expectFailure) {
-				System.out.println("Expecting model to fail ('expectFailure' is set), but passed, in " + scenario);
+				throw new ModelFailureException("Expecting model to fail ('expectFailure' is set), but passed, in " + scenario);
 			} else {
-				System.out.println("Unexpected error in " + scenario);
+				throw new ModelFailureException("Unexpected error in " + scenario);
 			}
-			System.exit(1);
 		}
 
 		if (expectFailure) {
@@ -136,79 +150,76 @@ public class Eval {
 		} else {
 			System.out.println(scenario + ": OK");
 		}
+
+		results.phase = Results.Phase.Success;
 	}
 
 	/* Instantiate the Setup class and run the model. Update the
 	 * initialObject and field relations with the results,
 	 * throwing everything else away.
 	 */
-	private boolean doSetup() throws Exception {
-		Model savedModel = model;
-		try {
-			model = new Model(savedModel);
+	private boolean doSetup(Model mainModel) throws Exception {
+		Model tmpModel = new Model(mainModel);
 
-			IRelation phase = model.getRelation(Constants.phaseP);
-			phase.add(BASIC.createTuple(new ITerm[] { TERM.createString("setup") }));
+		IRelation phase = tmpModel.getRelation(Constants.phaseP);
+		phase.add(BASIC.createTuple(new ITerm[] { TERM.createString("setup") }));
 
-			IKnowledgeBase setupKnowledgeBase = model.createKnowledgeBase();
-			/*
-			boolean setupProblem = checkForErrors(setupKnowledgeBase, "during setup phase");
-			if (setupProblem) {
-				return false;
-			}
-			*/
-
-			ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
-			ILiteral isAL = BASIC.createLiteral(true, Constants.isAP, xAndY);
-			IQuery isAQ = BASIC.createQuery(isAL);
-			IRelation isAR = setupKnowledgeBase.execute(isAQ);
-			savedModel.getRelation(Constants.initialObjectP).addAll(isAR);
-
-			ITuple triple = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"), TERM.createVariable("Z"));
-			ILiteral fieldL = BASIC.createLiteral(true, Constants.fieldP, triple);
-			IQuery fieldQ = BASIC.createQuery(fieldL);
-			IRelation fieldR = setupKnowledgeBase.execute(fieldQ);
-			savedModel.getRelation(Constants.fieldP).addAll(fieldR);
-
-			/* Unknown objects may continue running after the setup phase. Find all unknown objects
-			 * and add initialInvocation facts for them, preserving the setup context. i.e.
-			 *
-			 * ?- didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild), isA(?NewChild, "Unknown").
-			 */
-			IVariable newChildVar = TERM.createVariable("NewChild");
-			IVariable invocationVar = TERM.createVariable("Invocation");
-			ILiteral didCreate = BASIC.createLiteral(true, BASIC.createAtom(Constants.didCreateP,
-						BASIC.createTuple(
-							TERM.createVariable("Caller"),
-							invocationVar,
-							TERM.createVariable("CallSite"),
-							newChildVar
-							)));
-			ILiteral isUnknown = BASIC.createLiteral(true, BASIC.createAtom(Constants.isAP,
-						BASIC.createTuple(
-							newChildVar,
-							TERM.createString("Unknown")
-							)));
-
-			List<IVariable> bindings = new LinkedList<IVariable>();
-			IRelation unknownsR = setupKnowledgeBase.execute(BASIC.createQuery(didCreate, isUnknown), bindings);
-			int newChildIndex = bindings.indexOf(newChildVar);
-			int invocationIndex = bindings.indexOf(invocationVar);
-			IRelation initialInvocations = savedModel.getRelation(Constants.initialInvocation2P);
-			for (int t = unknownsR.size() - 1; t >= 0; t--) {
-				ITuple tuple = unknownsR.get(t);
-				initialInvocations.add(BASIC.createTuple(
-						tuple.get(newChildIndex),
-						tuple.get(invocationIndex)));
-			}
-
-			return true;
-		} finally {
-			model = savedModel;
+		IKnowledgeBase setupKnowledgeBase = tmpModel.createKnowledgeBase();
+		/*
+		boolean setupProblem = checkForErrors(setupKnowledgeBase, "during setup phase");
+		if (setupProblem) {
+			return false;
 		}
+		*/
+
+		ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
+		ILiteral isAL = BASIC.createLiteral(true, Constants.isAP, xAndY);
+		IQuery isAQ = BASIC.createQuery(isAL);
+		IRelation isAR = setupKnowledgeBase.execute(isAQ);
+		mainModel.getRelation(Constants.initialObjectP).addAll(isAR);
+
+		ITuple triple = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"), TERM.createVariable("Z"));
+		ILiteral fieldL = BASIC.createLiteral(true, Constants.fieldP, triple);
+		IQuery fieldQ = BASIC.createQuery(fieldL);
+		IRelation fieldR = setupKnowledgeBase.execute(fieldQ);
+		mainModel.getRelation(Constants.fieldP).addAll(fieldR);
+
+		/* Unknown objects may continue running after the setup phase. Find all unknown objects
+		 * and add initialInvocation facts for them, preserving the setup context. i.e.
+		 *
+		 * ?- didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild), isA(?NewChild, "Unknown").
+		 */
+		IVariable newChildVar = TERM.createVariable("NewChild");
+		IVariable invocationVar = TERM.createVariable("Invocation");
+		ILiteral didCreate = BASIC.createLiteral(true, BASIC.createAtom(Constants.didCreateP,
+					BASIC.createTuple(
+						TERM.createVariable("Caller"),
+						invocationVar,
+						TERM.createVariable("CallSite"),
+						newChildVar
+						)));
+		ILiteral isUnknown = BASIC.createLiteral(true, BASIC.createAtom(Constants.isAP,
+					BASIC.createTuple(
+						newChildVar,
+						TERM.createString("Unknown")
+						)));
+
+		List<IVariable> bindings = new LinkedList<IVariable>();
+		IRelation unknownsR = setupKnowledgeBase.execute(BASIC.createQuery(didCreate, isUnknown), bindings);
+		int newChildIndex = bindings.indexOf(newChildVar);
+		int invocationIndex = bindings.indexOf(invocationVar);
+		IRelation initialInvocations = mainModel.getRelation(Constants.initialInvocation2P);
+		for (int t = unknownsR.size() - 1; t >= 0; t--) {
+			ITuple tuple = unknownsR.get(t);
+			initialInvocations.add(BASIC.createTuple(
+					tuple.get(newChildIndex),
+					tuple.get(invocationIndex)));
+		}
+
+		return true;
 	}
 
-	private void parseResource(String resource) throws Exception {
+	private void parseResource(Model model, String resource) throws Exception {
 		InputStream is = getClass().getClassLoader().getResourceAsStream(resource);
 		try {
 			SAMParser parser = new SAMParser(model, new InputStreamReader(is));
@@ -285,7 +296,7 @@ public class Eval {
 		return problem;
 	}
 
-	private IKnowledgeBase doDebugging(IKnowledgeBase knowledgeBase) throws Exception {
+	private IKnowledgeBase doDebugging(Model model, IKnowledgeBase knowledgeBase) throws Exception {
 		ILiteral debugL = BASIC.createLiteral(true, BASIC.createPredicate("debug", 0), BASIC.createTuple());
 		IQuery debugQ = BASIC.createQuery(debugL);
 		IRelation debugResults = knowledgeBase.execute(debugQ);

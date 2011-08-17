@@ -28,23 +28,8 @@
 
 package eu.serscis.sam;
 
-import java.io.File;
-
-public class Main {
-	public static void main(String[] args) throws Exception {
-		if (args.length < 1) {
-			throw new Exception("usage: sam scenario.sam");
-		}
-
-		Eval eval = new Eval();
-
-		for (int i = 0; i < args.length; i++) {
-			String arg = args[i];
-			Results results = eval.evaluate(new File(arg));
-			if (results.exception != null) {
-				System.out.println(results.exception);
-				System.exit(1);
-			}
-		}
+public class ModelFailureException extends Exception {
+	public ModelFailureException(String msg) {
+		super(msg);
 	}
 }

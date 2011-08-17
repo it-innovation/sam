@@ -299,7 +299,11 @@ public class SAMParser {
 		 for (int i = 1; i < line; i++) {
 			  in.readLine();
 		 }
-		 return in.readLine();
+		 String lineText = in.readLine();
+		 if (lineText == null) {
+			 return "(end-of-file)";
+		 }
+		 return lineText;
 	}
 
 	private SAMClass processConfig(AConfig config) throws ParserException {

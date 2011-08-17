@@ -28,23 +28,42 @@
 
 package eu.serscis.sam;
 
+import java.util.LinkedList;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import org.deri.iris.Configuration;
+import org.deri.iris.KnowledgeBaseFactory;
+import org.deri.iris.api.IKnowledgeBase;
+import org.deri.iris.api.basics.IPredicate;
+import org.deri.iris.api.basics.IQuery;
+import org.deri.iris.api.basics.IRule;
+import org.deri.iris.api.basics.ITuple;
+import org.deri.iris.api.basics.ILiteral;
+import org.deri.iris.api.terms.IVariable;
+import org.deri.iris.api.terms.ITerm;
+import org.deri.iris.storage.IRelation;
+import org.deri.iris.rules.IRuleSafetyProcessor;
+import org.deri.iris.RuleUnsafeException;
+import static org.deri.iris.factory.Factory.*;
 
-public class Main {
-	public static void main(String[] args) throws Exception {
-		if (args.length < 1) {
-			throw new Exception("usage: sam scenario.sam");
+public class Results {
+	public static enum Phase {Init, Setup, Test, Success};
+	public Model model;
+	public IKnowledgeBase finalKnowledgeBase;
+	public Phase phase = Phase.Init;
+	public Exception exception;
+	
+	public Results(Model model) {
+		this.model = model;
+	}
+
+	public void setException(Exception ex) {
+		if (exception != null) {
+			throw new RuntimeException("Already have an exception", ex);
 		}
-
-		Eval eval = new Eval();
-
-		for (int i = 0; i < args.length; i++) {
-			String arg = args[i];
-			Results results = eval.evaluate(new File(arg));
-			if (results.exception != null) {
-				System.out.println(results.exception);
-				System.exit(1);
-			}
-		}
+		this.exception = ex;
 	}
 }
