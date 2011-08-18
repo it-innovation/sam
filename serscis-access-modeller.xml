@@ -17,7 +17,7 @@ systems (e.g. modelling factories).</description>
   </release:management>
   <homepage>http://www.serscis.eu/sam/</homepage>
 
-  <implementation arch="*-src" compile:min-version="0.23" id="." version="0.5-post">
+  <implementation arch="*-src" compile:min-version="0.23" id="." released="2011-08-18" version="0.6">
     <command name="compile" shell-command="make -f ${SRCDIR}/src/Makefile">
       <compile:implementation arch="*-*" main="sam">
 	<environment insert="." name="CLASSPATH"/>
@@ -39,7 +39,7 @@ systems (e.g. modelling factories).</description>
     </requires>
 
     <requires interface="http://repo.roscidus.com/java/sablecc">
-      <environment name='SABLECC' insert='' mode='replace'/>
+      <environment insert="" mode="replace" name="SABLECC"/>
     </requires>
     <requires interface="http://repo.roscidus.com/java/openjdk-6-jdk">
       <environment insert="bin" name="PATH"/>
