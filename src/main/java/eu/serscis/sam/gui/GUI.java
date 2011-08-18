@@ -182,7 +182,12 @@ public class GUI {
 			results = eval.evaluate(myFile);
 
 			if (results.exception != null) {
-				warningLabel.setText(results.exception.getMessage());
+				results.exception.printStackTrace();
+				String msg = results.exception.getMessage();
+				if (msg == null) {
+					msg = results.exception.toString();
+				}
+				warningLabel.setText(msg);
 
 				warningLabel.setBackground(new Color(display, 255, 50, 50));
 				warningLabel.setForeground(new Color(display, 255, 255, 255));
