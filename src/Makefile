@@ -39,7 +39,7 @@ parser:
 	rm -rf ${SRCDIR}/src/main/java/eu/serscis/sam/lexer/*
 	rm -rf ${SRCDIR}/src/main/java/eu/serscis/sam/analysis/*
 	rm -rf ${SRCDIR}/src/main/java/eu/serscis/sam/node/*
-	java -jar ${SRCDIR}/sablecc.jar -d ${SRCDIR}/src/main/java ${SRCDIR}/src/main/sablecc/sam.grammar
+	java -jar ${SABLECC}/lib/sablecc.jar -d ${SRCDIR}/src/main/java ${SRCDIR}/src/main/sablecc/sam.grammar
 
 tests:
 	${SAM} --batch ${SRCDIR}/src/test/*.sam

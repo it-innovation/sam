@@ -38,6 +38,9 @@ systems (e.g. modelling factories).</description>
       <environment insert="swt.jar" name="CLASSPATH"/>
     </requires>
 
+    <requires interface="http://repo.roscidus.com/java/sablecc">
+      <environment name='SABLECC' insert='' mode='replace'/>
+    </requires>
     <requires interface="http://repo.roscidus.com/java/openjdk-6-jdk">
       <environment insert="bin" name="PATH"/>
     </requires>
