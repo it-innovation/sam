@@ -11,14 +11,14 @@ JAVA_SOURCES = $(wildcard ${SRCDIR}/src/main/java/eu/serscis/sam/*.java) \
 
 SAM_EXAMPLES = $(wildcard ${SRCDIR}/doc/examples/*.sam)
 
-code:
+code: parser
 	cp ${SRCDIR}/src/main/datalog/*.dl ${DISTDIR}/
 	cp ${SRCDIR}/src/main/bin/sam ${DISTDIR}/
 	mkdir -p ${DISTDIR}/eu/serscis/sam/lexer/
 	mkdir -p ${DISTDIR}/eu/serscis/sam/parser/
-	cp ${SRCDIR}/src/main/java/eu/serscis/sam/lexer/lexer.dat ${DISTDIR}/eu/serscis/sam/lexer/
-	cp ${SRCDIR}/src/main/java/eu/serscis/sam/parser/parser.dat ${DISTDIR}/eu/serscis/sam/parser/
-	javac -d ${DISTDIR} -cp ${CLASSPATH} ${JAVA_SOURCES}
+	cp ${BUILDDIR}/eu/serscis/sam/lexer/lexer.dat ${DISTDIR}/eu/serscis/sam/lexer/
+	cp ${BUILDDIR}/eu/serscis/sam/parser/parser.dat ${DISTDIR}/eu/serscis/sam/parser/
+	javac -d ${DISTDIR} -cp .:${CLASSPATH} ${JAVA_SOURCES}
 
 htmldoc: code images examples
 	sphinx-build -b html ${ALLSPHINXOPTS} ${SRCDIR}/doc ${SBUILDDIR}
@@ -35,11 +35,7 @@ images: ${SAM_EXAMPLES}
 	(cd ${DISTDIR}/doc/_images && ${SAM} --batch ${SAM_EXAMPLES})
 
 parser:
-	rm -rf ${SRCDIR}/src/main/java/eu/serscis/sam/parser/*
-	rm -rf ${SRCDIR}/src/main/java/eu/serscis/sam/lexer/*
-	rm -rf ${SRCDIR}/src/main/java/eu/serscis/sam/analysis/*
-	rm -rf ${SRCDIR}/src/main/java/eu/serscis/sam/node/*
-	java -jar ${SABLECC}/lib/sablecc.jar -d ${SRCDIR}/src/main/java ${SRCDIR}/src/main/sablecc/sam.grammar
+	java -jar ${SABLECC}/lib/sablecc.jar -d ${BUILDDIR} ${SRCDIR}/src/main/sablecc/sam.grammar
 
 tests:
 	${SAM} --batch ${SRCDIR}/src/test/*.sam
