@@ -31,6 +31,7 @@ package eu.serscis.sam.gui;
 import org.deri.iris.api.basics.ITuple;
 import org.deri.iris.api.basics.IPredicate;
 import java.util.Arrays;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import eu.serscis.sam.Graph;
@@ -116,6 +117,30 @@ public class GUI {
 		relationsMenuHeader.setText("&Relations");
 		relationsMenu = new Menu(shell, SWT.DROP_DOWN);
 		relationsMenuHeader.setMenu(relationsMenu);
+
+		MenuItem helpMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
+		helpMenuHeader.setText("&Help");
+		Menu helpMenu = new Menu(shell, SWT.DROP_DOWN);
+		helpMenuHeader.setMenu(helpMenu);
+
+		MenuItem userGuide = new MenuItem(helpMenu, 0);
+		userGuide.setText("User Guide");
+		userGuide.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				Program.launch("http://www.serscis.eu/sam/");
+			}
+		});
+
+		MenuItem about = new MenuItem(helpMenu, 0);
+		about.setText("About");
+		about.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				MessageBox box = new MessageBox(shell, SWT.OK);
+				box.setText("About");
+				box.setMessage("SERSCIS Access Modeller\n© University of Southampton IT Innovation Centre, 2011");
+				box.open();
+			}
+		});
 
 		mainImage = new Label(shell, SWT.CENTER);
 		mainImage.setBackground(white);
