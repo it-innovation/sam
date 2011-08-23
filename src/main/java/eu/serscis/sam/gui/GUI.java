@@ -52,18 +52,18 @@ public class GUI {
 	private Results results;
 	private Display display;
 	private Shell shell;
-	private Label warningLabel;
 	private Label mainImage;
 	private Color white;
 	private MenuItem relationsMenuHeader;
 	private Menu relationsMenu;
+	private List messageList;
 
 	public GUI(File file) throws Exception {
 		myFile = file;
 
 		display = new Display();
 		white = new Color(display, 255, 255, 255);
-		shell = new Shell(display);
+		shell = new Shell(display, SWT.RESIZE);
 		shell.setText("SAM");
 
 		Menu menuBar = new Menu(shell, SWT.BAR);
@@ -117,10 +117,10 @@ public class GUI {
 		relationsMenu = new Menu(shell, SWT.DROP_DOWN);
 		relationsMenuHeader.setMenu(relationsMenu);
 
-		warningLabel = new Label(shell, SWT.CENTER);
-
 		mainImage = new Label(shell, SWT.CENTER);
 		mainImage.setBackground(white);
+
+		messageList = new List(shell, 0);
 
 		GridLayout gridLayout = new GridLayout();
  		gridLayout.numColumns = 1;
@@ -128,18 +128,19 @@ public class GUI {
 		gridLayout.marginWidth = 0;
 		gridLayout.verticalSpacing = 0;
 
-		GridData warningLayoutData = new GridData();
-		warningLayoutData.horizontalAlignment = GridData.FILL;
-		warningLayoutData.grabExcessHorizontalSpace = true;
-		warningLayoutData.grabExcessVerticalSpace = false;
-		warningLabel.setLayoutData(warningLayoutData);
-
 		GridData imageLayoutData = new GridData();
 		imageLayoutData.horizontalAlignment = GridData.FILL;
-		imageLayoutData.verticalAlignment = SWT.FILL;
+		imageLayoutData.verticalAlignment = GridData.FILL;
 		imageLayoutData.grabExcessHorizontalSpace = true;
 		imageLayoutData.grabExcessVerticalSpace = true;
 		mainImage.setLayoutData(imageLayoutData);
+
+		GridData assertionsLayoutData = new GridData();
+		assertionsLayoutData.horizontalAlignment = GridData.FILL;
+		assertionsLayoutData.verticalAlignment = GridData.FILL;
+		assertionsLayoutData.grabExcessHorizontalSpace = true;
+		assertionsLayoutData.grabExcessVerticalSpace = false;
+		messageList.setLayoutData(assertionsLayoutData);
 
  		shell.setLayout(gridLayout);
 
@@ -181,17 +182,14 @@ public class GUI {
 	private void evaluate() {
 		try {
 			relationsMenuHeader.setEnabled(false);
+			messageList.removeAll();
 
 			for (MenuItem item : relationsMenu.getItems()) {
 				item.dispose();
 			}
 
 			if (myFile == null) {
-				warningLabel.setText("Open a file to start");
-
-				warningLabel.setBackground(new Color(display, 0, 100, 0));
-				warningLabel.setForeground(new Color(display, 255, 255, 255));
-				warningLabel.pack();
+				addInfo("Open a file to start");
 				return;
 			}
 
@@ -204,22 +202,16 @@ public class GUI {
 				if (msg == null) {
 					msg = results.exception.toString();
 				}
-				warningLabel.setText(msg);
-
-				warningLabel.setBackground(new Color(display, 255, 50, 50));
-				warningLabel.setForeground(new Color(display, 255, 255, 255));
+				addWarning(msg);
 			} else if (results.phase != Results.Phase.Success) {
-				warningLabel.setText("Problem in " + results.phase + " phase");
-
-				warningLabel.setBackground(new Color(display, 255, 50, 50));
-				warningLabel.setForeground(new Color(display, 255, 255, 255));
+				addWarning("Problem in " + results.phase + " phase");
 			} else {
-				warningLabel.setText("OK");
-
-				warningLabel.setBackground(new Color(display, 0, 100, 0));
-				warningLabel.setForeground(new Color(display, 255, 255, 255));
+				addInfo("OK");
 			}
-			warningLabel.pack();
+
+			for (String msg : results.errors) {
+				addWarning(msg);
+			}
 
 			if (results.finalKnowledgeBase != null) {
 				File tmpFile = File.createTempFile("sam-", "-graph.png");
@@ -258,10 +250,20 @@ public class GUI {
 					});
 				}
 			}
+
+			messageList.pack();
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
 
 		shell.layout();
+	}
+
+	private void addWarning(String msg) {
+		messageList.add(msg);
+	}
+
+	private void addInfo(String msg) {
+		messageList.add(msg);
 	}
 }

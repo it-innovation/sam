@@ -102,7 +102,7 @@ public class Eval {
 		//graph(initialKnowledgeBase, new File("initial.png"));
 
 		results.expectingFailure = expectingFailure(initialKnowledgeBase);
-		boolean initialProblem = checkForErrors(initialKnowledgeBase, "in initial configuration");
+		boolean initialProblem = checkForErrors(results, initialKnowledgeBase, "in initial configuration");
 
 		if (initialProblem) {
 			return;
@@ -126,7 +126,7 @@ public class Eval {
 		IKnowledgeBase finalKnowledgeBase = results.model.createKnowledgeBase();
 		results.finalKnowledgeBase = doDebugging(results.model, finalKnowledgeBase);
 		doQueries(results.finalKnowledgeBase, queries);
-		boolean finalProblem = checkForErrors(results.finalKnowledgeBase, "after applying propagation rules");
+		boolean finalProblem = checkForErrors(results, results.finalKnowledgeBase, "after applying propagation rules");
 
 		if (!finalProblem) {
 			results.phase = Results.Phase.Success;
@@ -243,7 +243,7 @@ public class Eval {
 	}
 
 	/* Returns true if an error was detected */
-	private boolean checkForErrors(IKnowledgeBase knowledgeBase, String when) throws Exception {
+	private boolean checkForErrors(Results results, IKnowledgeBase knowledgeBase, String when) throws Exception {
 		List<ITerm> terms = new LinkedList<ITerm>();
 		boolean problem = false;
 
@@ -265,6 +265,7 @@ public class Eval {
 						msg += ", " + tuple.get(part).getValue();
 					}
 					System.out.println(msg);
+					results.errors.add(msg);
 				}
 			}
 
