@@ -72,7 +72,7 @@ public class Model {
 	final Configuration configuration;
 	final List<IRule> rules = new LinkedList<IRule>();
 	final Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
-	private final Map<IPredicate,ITuple> declared = new HashMap<IPredicate,ITuple>();
+	public final Map<IPredicate,ITuple> declared = new HashMap<IPredicate,ITuple>();
 	private final static BuiltinRegister builtinRegister = new BuiltinRegister();
 
 	public Model(Configuration configuration) {

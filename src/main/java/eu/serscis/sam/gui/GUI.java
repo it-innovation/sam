@@ -28,6 +28,8 @@
 
 package eu.serscis.sam.gui;
 
+import org.deri.iris.api.basics.ITuple;
+import org.deri.iris.api.basics.IPredicate;
 import java.util.Arrays;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -53,6 +55,8 @@ public class GUI {
 	private Label warningLabel;
 	private Label mainImage;
 	private Color white;
+	private MenuItem relationsMenuHeader;
+	private Menu relationsMenu;
 
 	public GUI(File file) throws Exception {
 		myFile = file;
@@ -94,8 +98,9 @@ public class GUI {
 		reloadItem.setAccelerator(SWT.F5);
 		reloadItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				System.out.println("reload");
+				System.out.println("Reloading...");
 				evaluate();
+				System.out.println("Reloaded");
 			}
 		});
 
@@ -106,6 +111,11 @@ public class GUI {
 				System.exit(1);
 			}
 		});
+
+		relationsMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
+		relationsMenuHeader.setText("&Relations");
+		relationsMenu = new Menu(shell, SWT.DROP_DOWN);
+		relationsMenuHeader.setMenu(relationsMenu);
 
 		warningLabel = new Label(shell, SWT.CENTER);
 
@@ -170,6 +180,12 @@ public class GUI {
 
 	private void evaluate() {
 		try {
+			relationsMenuHeader.setEnabled(false);
+
+			for (MenuItem item : relationsMenu.getItems()) {
+				item.dispose();
+			}
+
 			if (myFile == null) {
 				warningLabel.setText("Open a file to start");
 
@@ -222,6 +238,25 @@ public class GUI {
 
 				mainImage.setImage(image);
 				mainImage.pack();
+
+				relationsMenuHeader.setEnabled(true);
+
+				IPredicate[] relations = results.model.declared.keySet().toArray(new IPredicate[] {});
+				Arrays.sort(relations);
+				for (final IPredicate pred : relations) {
+					MenuItem item = new MenuItem(relationsMenu, SWT.PUSH);
+					final ITuple args = results.model.declared.get(pred);
+					item.setText(pred.toString() + args);
+					item.addSelectionListener(new SelectionAdapter() {
+						public void widgetSelected(SelectionEvent e) {
+							try {
+								new RelationViewer(shell, results.model.getRelation(pred), pred, args);
+							} catch (Throwable ex) {
+								ex.printStackTrace();
+							}
+						}
+					});
+				}
 			}
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
