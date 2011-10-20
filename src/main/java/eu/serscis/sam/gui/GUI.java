@@ -82,6 +82,9 @@ public class GUI {
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog dialog = new FileDialog(shell);
 				dialog.setFilterExtensions(new String[] {"*.sam", "*"});
+				if (myFile != null) {
+					dialog.setFileName(myFile.getPath());
+				}
 				String path = dialog.open();
 				if (path != null) {
 					myFile = new File(path);
