@@ -527,6 +527,11 @@ public class Debugger {
 				//String resultVar = tuple.get(2).getValue().toString();
 				String type = tuple.get(3).getValue().toString();
 				msg = actor + ": new " + type + "()";
+				debugEdges.add(BASIC.createTuple(tuple.get(0),
+							    tuple.get(1),
+							    tuple.get(2),
+							    tuple.get(3),
+							    tuple.get(1)));
 			}
 
 			if (msg == null) {
