@@ -28,6 +28,9 @@
 
 package eu.serscis.sam.gui;
 
+import org.deri.iris.api.basics.ILiteral;
+import org.deri.iris.storage.IRelation;
+import org.deri.iris.api.basics.IQuery;
 import org.deri.iris.api.basics.ITuple;
 import org.deri.iris.api.basics.IPredicate;
 import java.util.Arrays;
@@ -47,6 +50,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.RowLayout;
+import static org.deri.iris.factory.Factory.*;
 
 public class GUI {
 	private File myFile;
@@ -270,7 +274,10 @@ public class GUI {
 					item.addSelectionListener(new SelectionAdapter() {
 						public void widgetSelected(SelectionEvent e) {
 							try {
-								new RelationViewer(shell, results.model.getRelation(pred), pred, args);
+								ILiteral lit = BASIC.createLiteral(true, pred, args);
+								IQuery query = BASIC.createQuery(lit);
+								IRelation rel = results.finalKnowledgeBase.execute(query);
+								new RelationViewer(shell, rel, pred, args);
 							} catch (Throwable ex) {
 								ex.printStackTrace();
 							}
