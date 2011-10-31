@@ -136,6 +136,7 @@ class SAMMethod {
 		};
 
 		List<ILiteral> literals = parent.model.parseLiterals(parsed, termFn);
+		ITerm term = parent.model.parseTerm(value, termFn);
 
 		literals.addAll(extraLiterals);
 
@@ -155,7 +156,7 @@ class SAMMethod {
 		ILiteral eq = BASIC.createLiteral(true,
 				BUILTIN.createEqual(
 					TERM.createVariable("Value"),
-					parent.model.parseTerm(value, termFn)));
+					term));
 
 		literals.add(isA);
 		literals.add(live);
