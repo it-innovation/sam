@@ -193,3 +193,8 @@ didCall(?Caller, ?Target, ?Method) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
 
 initialObject("_testDriver", "_TestDriver").
+
+/* No behaviour and no references. This is useful if you want to pass literal values
+ * as method arguments. Objects that are pure values are not graphed.
+ */
+class Value {}

@@ -71,3 +71,8 @@ error("Unknown object in initialInvocation", ?Object) :-
 	!isObject(?Object).
 
 failedAssertion(?N) :- assertionArrow(?N, ?Source, ?Target, ?Positive).
+
+/* Value objects are not shown on the graph because the hold no interesting authority. */
+error("Pure Value object holds reference", ?Object, ?Ref) :-
+	isA(?Object, "Value"),
+	hasRef(?Object, ?Ref).

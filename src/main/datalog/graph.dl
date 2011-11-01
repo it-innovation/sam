@@ -41,6 +41,7 @@ declare uncalledEdge(?Source, ?Target).
 declare problemEdge(?Source, ?Target).
 declare errorEdge(?Source, ?Target).
 declare isBoring(?Source, ?Target).
+declare hasNonValueType(?Object).
 
 /* Every unknown object knows the address of every public object, so don't bother showing that. */
 isBoring(?Source, ?Target) :-
@@ -49,6 +50,10 @@ isBoring(?Source, ?Target) :-
 	!didCall(?Source, ?C1, ?CallSite, ?Target, ?C2, ?Method).
 
 isHidden("_testDriver").
+
+/* Don't graph values (but if something is both a real object and a value, do graph it). */
+hasNonValueType(?Object) :- isA(?Object, ?Type), ?Type != "Value".
+isHidden(?Object) :- isObject(?Object), !hasNonValueType(?Object).
 
 /* Graphing */
 

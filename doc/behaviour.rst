@@ -149,6 +149,14 @@ may invoke any object to which they have a reference, and may pass any argument
 they are able to. They aggregate all fields into a single field named `ref`.
 
 
+The Value type
+--------------
+Objects of type "Value" represent pure values (e.g. strings and numbers). It is not usually
+necessary to model these in SAM, but if you do need to pass them around then mark them as
+`isA("myValue", "Value")` to avoid errors about them not being objects. Values are not shown
+on the graph. They have no behaviour and cannot hold references to other objects.
+
+
 Embedding Datalog
 -----------------
 In addition to the standard Java syntax, it is possible to assign variables using Datalog
