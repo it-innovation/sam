@@ -45,3 +45,16 @@ debug :- haveBadAccess(?Source, ?Target).
 
 debug :- failedAssertion(?N).
 error(?Msg) :- failedAssertion(?N), assertionMessage(?N, ?Msg).
+
+/* Check that all mustCall calls were made. */
+
+declare missingMustCall(?Source, ?Target, ?Method).
+missingMustCall(?Source, ?Target, ?Method) :-
+    mustCall(?Source, ?Target, ?Method),
+    !didCall(?Source, ?Target, ?Method).
+
+missingGoodAccess(?Source, ?Target) :-
+    missingMustCall(?Source, ?Target, ?Method).
+
+error("mustCall but not didCall", ?Source, ?Target, ?Method) :-
+	missingMustCall(?Source, ?Target, ?Method).

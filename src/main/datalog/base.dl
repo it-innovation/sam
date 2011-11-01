@@ -95,6 +95,9 @@ declare debug.
 declare assertionMessage(?Number, ?Msg).
 declare failedAssertion(?Number).
 declare assertionArrow(?Number, ?Source, ?Target, ?Positive).
+declare mustCall(?Caller, ?Target, ?Method).
+declare mayCall(?Caller, ?Target, ?Method).
+declare checkCalls(?Object).
 
 
 /* aggregation */

@@ -24,6 +24,30 @@ no methods of `precious`::
 If the predicate used in the goal includes two objects, then SAM will also add a
 suitable red arrow to the diagram.
 
+
+Comparing against a base-line
+-----------------------------
+
+It is often useful to look at changes to a model. A good approach is as follows:
+
+1. Create a model containing just the minimal set of required components, all with
+   trusted behaviour (and access control, if any, turned off).
+
+2. Use the query `?- didCall(?Source, ?Target, ?Method)` to dump all the possible
+   invocations.
+
+3. Turn each result into a :func:`mustCall` fact.
+
+4. Get a list of objects using the query `?- isObject(?Object)`.
+
+5. Turn each result into a :func:`checkCalls` fact (if no-one else should call that
+   object).
+
+6. Add objects for Unknown actors and re-enable any access control policies. SAM will
+   verify that all the calls in the minimal safe model are still possible, and that
+   no new calls can be made on the `checkCalls` objects.
+
+
 Predicates
 ----------
 
@@ -80,6 +104,20 @@ Predicates
 
    If assertion ?Number fails and it relates two objects, an assertionArrow fact will be
    recorded. This is used to add red arrows to the diagram.
+
+.. function:: mustCall(?Caller, ?Target, ?Method)
+
+   The :func:`didCall` relation must contain this call. Otherwise, fail the model.
+
+.. function:: checkCalls(?Object)
+
+   Ensure that every call on `Object` is in `mayCall`.
+
+.. function:: mayCall(?Caller, ?Target, ?Method)
+
+   Calls that can be made on objects marked with :func:`checkCalls` without generating an error.
+   Everything in :func:`mustCall` is automatically added to `mayCall` too.
+
 
 Debugging
 ---------
