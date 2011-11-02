@@ -37,6 +37,7 @@ declare localEdge(?GraphSourceNode, ?Target).
 declare problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
 declare problemEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode).
 declare shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation).
+declare calledEdge(?Source, ?Target).
 declare uncalledEdge(?Source, ?Target).
 declare problemEdge(?Source, ?Target).
 declare errorEdge(?Source, ?Target).
@@ -110,11 +111,24 @@ problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode) :-
 problemEdge(?Source, ?Target) :- problemEdgeViaField(?Source, ?Target).
 problemEdge(?Source, ?Target) :- problemEdgeViaLocal(?Source, ?Target).
 
+/* (invocation to object, for locals) */
+calledEdge(?GraphSourceNode, ?Target) :-
+	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
+	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target),
+	didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	!isBoring(?Source, ?Target).
+
+/* (object to object, for fields) */
+calledEdge(?Source, ?Target) :-
+	field(?Source, ?AnyLocal, ?Target),
+	didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	!isBoring(?Source, ?Target).
+
 /* (invocation to object) */
 uncalledEdge(?GraphSourceNode, ?Target) :-
 	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
 	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target),
-	!didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	!calledEdge(?GraphSourceNode, ?Target),
 	!isBoring(?Source, ?Target).
 
 /* (object to object)
@@ -122,7 +136,7 @@ uncalledEdge(?GraphSourceNode, ?Target) :-
  */
 uncalledEdge(?Source, ?Target) :-
 	field(?Source, ?AnyLocal, ?Target),
-	!didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	!calledEdge(?Source, ?Target),
 	!isBoring(?Source, ?Target).
 
 /* Hide arrows that have higher-priority replacements. */
