@@ -56,5 +56,5 @@ missingMustCall(?Source, ?Target, ?Method) :-
 missingGoodAccess(?Source, ?Target) :-
     missingMustCall(?Source, ?Target, ?Method).
 
-error("mustCall but not didCall", ?Source, ?Target, ?Method) :-
-	missingMustCall(?Source, ?Target, ?Method).
+/* error("mustCall but not didCall", ?Source, ?Target, ?Method) :-
+	missingMustCall(?Source, ?Target, ?Method). */
