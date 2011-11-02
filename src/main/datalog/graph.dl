@@ -199,6 +199,25 @@ graphInvocationEdge(?GraphSourceNode, ?GraphTargetNode) :-
 	graphInvocation(?Target, ?TargetInvocation, ?GraphTargetNode),
 	?GraphSourceNode != ?GraphTargetNode.
 
+
+/* If showOnlyProblemNodes is on, only show "important" objects */
+
+declare hasProblem.
+hasProblem :- errorEdge(?X, ?Y).
+hasProblem :- problemEdge(?X, ?Y).
+
+declare importantObject(?Object).
+importantObject(?Object) :- initialObject(?Object, ?Type).
+importantObject(?Object) :- created(?Object, ?Important), importantObject(?Important).
+importantObject(?Source) :- errorEdge(?Source, ?Target).
+importantObject(?Target) :- errorEdge(?Source, ?Target).
+importantObject(?Source) :- problemEdge(?Source, ?Target).
+importantObject(?Target) :- problemEdge(?Source, ?Target).
+
+isHidden(?Object) :- showOnlyProblemNodes, isObject(?Object), hasProblem, !importantObject(?Object).
+
+
+
 declare visibleGraphNode(?GraphNode, ?Attrs).
 declare visibleGraphEdge(?SourceGraphNode, ?TargetGraphNode, ?Attrs).
 

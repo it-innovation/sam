@@ -36,6 +36,16 @@ imports have also been processed.
 
    Don't show this object or references from it. Used to hide the `_testDriver` object.
 
+.. function:: showOnlyProblemNodes
+
+   If on, the graph is limited to showing "important" nodes. A node is important if:
+
+   - it is one of the initial objects
+   - it is at one end of a debug arrow (an orange or red one), or
+   - it :func:`created` an important object
+
+   If there is no problem, this is ignored and all nodes are shown.
+
 Notation
 --------
 

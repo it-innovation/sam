@@ -66,6 +66,7 @@ declare debugEdge(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocat
 declare showAllInvocations(?Object).
 declare showInvocation(?Object, ?Invocation).
 declare isHidden(?Source).
+declare showOnlyProblemNodes.
 
 declare didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
 declare didCall(?Caller, ?Target, ?Method).
@@ -98,7 +99,7 @@ declare assertionArrow(?Number, ?Source, ?Target, ?Positive).
 declare mustCall(?Caller, ?Target, ?Method).
 declare mayCall(?Caller, ?Target, ?Method).
 declare checkCalls(?Object).
-
+declare created(?Factory, ?Object).
 
 /* aggregation */
 
@@ -201,3 +202,8 @@ initialObject("_testDriver", "_TestDriver").
  * as method arguments. Objects that are pure values are not graphed.
  */
 class Value {}
+
+
+/* The creator of an object is the factory that did the "new" operation. */
+created(?Factory, ?Object) :-
+    didCreate(?Factory, ?FactoryInvocation, ?CreationSite, ?Object).

@@ -107,3 +107,7 @@ might happen.
 .. function:: getsAccess(?SourceObject, ?TargetObject)
 
    Some invocation of `SourceObject` may have access to `TargetObject` (through a field or local variable).
+
+.. function:: created(?Factory, ?Object)
+
+   `Factory` created `Object` (using the `new` operator). This is a simplified view onto :func:`didCreate`.
