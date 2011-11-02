@@ -45,20 +45,20 @@ public class Graph {
 	static public void graph(IKnowledgeBase knowledgeBase, File outputPngFile) throws Exception {
 		ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
 
-		IPredicate graphNodePredicate = BASIC.createPredicate("graphNode", 2);
+		IPredicate graphNodePredicate = BASIC.createPredicate("visibleGraphNode", 2);
 		ILiteral graphNodeLiteral = BASIC.createLiteral(true, graphNodePredicate, xAndY);
 		IQuery graphNodeQuery = BASIC.createQuery(graphNodeLiteral);
 		IRelation graphNodeResults = knowledgeBase.execute(graphNodeQuery);
 
 		ITuple xAndYandAttr = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"), TERM.createVariable("Attr"));
-		IPredicate graphEdgePredicate = BASIC.createPredicate("graphEdge", 3);
+		IPredicate graphEdgePredicate = BASIC.createPredicate("visibleGraphEdge", 3);
 		ILiteral graphEdgeLiteral = BASIC.createLiteral(true, graphEdgePredicate, xAndYandAttr);
 		IQuery graphEdgeQuery = BASIC.createQuery(graphEdgeLiteral);
 		IRelation graphEdgeResults = knowledgeBase.execute(graphEdgeQuery);
 
 		ITuple xAndYandAttrAndLabel = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"),
 								TERM.createVariable("Attr"), TERM.createVariable("Label"));
-		IPredicate graphEdgeLabelPredicate = BASIC.createPredicate("graphEdge", 4);
+		IPredicate graphEdgeLabelPredicate = BASIC.createPredicate("visibleGraphEdge", 4);
 		ILiteral graphEdgeLabelLiteral = BASIC.createLiteral(true, graphEdgeLabelPredicate, xAndYandAttrAndLabel);
 		IQuery graphEdgeLabelQuery = BASIC.createQuery(graphEdgeLabelLiteral);
 		IRelation graphEdgeLabelResults = knowledgeBase.execute(graphEdgeLabelQuery);
