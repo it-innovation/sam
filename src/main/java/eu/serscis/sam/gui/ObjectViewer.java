@@ -56,12 +56,17 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.RowLayout;
 import static org.deri.iris.factory.Factory.*;
 
-public class ObjectViewer {
+public class ObjectViewer implements Updatable {
 	private final String myName;
-	private final Results myResults;
+	private final LiveResults myResults;
 	private final Shell myShell;
 
-	public ObjectViewer(Shell parent, Results results, String name) throws Exception {
+	private Table myLocals;
+	private Table myFields;
+	private Table myCalled;
+	private Table myWasCalled;
+
+	public ObjectViewer(Shell parent, LiveResults results, String name) throws Exception {
 		myShell = new Shell(parent, SWT.RESIZE);
 		myShell.setText(name);
 
@@ -72,23 +77,23 @@ public class ObjectViewer {
 
 		TabItem fieldsTab = new TabItem(folder, 0);
 		fieldsTab.setText("Fields");
-		Control fieldsBody = addFields(folder);
-		fieldsTab.setControl(fieldsBody);
+		myFields = makeTable(folder, new String[] {"Field", "Value"});
+		fieldsTab.setControl(myFields);
 
 		TabItem localsTab = new TabItem(folder, 0);
 		localsTab.setText("Local variables");
-		Control localsBody = addLocals(folder);
-		localsTab.setControl(localsBody);
+		myLocals = makeTable(folder, new String[] {"Invocation", "Var name", "Value"});
+		localsTab.setControl(myLocals);
 
 		TabItem wasCalledTab = new TabItem(folder, 0);
 		wasCalledTab.setText("Was called");
-		Control wasCalledBody = addWasCalled(folder);
-		wasCalledTab.setControl(wasCalledBody);
+		myWasCalled = makeTable(folder, new String[] {"Caller", "Caller invocation", "Call-site", "Target invocation", "Method"});
+		wasCalledTab.setControl(myWasCalled);
 
 		TabItem calledTab = new TabItem(folder, 0);
 		calledTab.setText("Called");
-		Control calledBody = addCalled(folder);
-		calledTab.setControl(calledBody);
+		myCalled = makeTable(folder, new String[] {"Caller invocation", "Call-site", "Target", "Target invocation", "Method"});
+		calledTab.setControl(myCalled);
 
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 1;
@@ -103,20 +108,49 @@ public class ObjectViewer {
 		layoutData.grabExcessVerticalSpace = true;
 		folder.setLayoutData(layoutData);
 
+		update();
+
 		myShell.setLayout(gridLayout);
 
 		myShell.open();
 	}
 
-	private Control makeTable(Composite parent, List<IVariable> headings, ITuple[] rows) {
+	public void update() throws Exception {
+		if (myShell.isDisposed()) {
+			return;
+		}
+
+		//System.out.println("refresh " + myName);
+
+		populateFields();
+		populateLocals();
+		populateWasCalled();
+		populateCalled();
+
+		myResults.whenUpdated(this);
+	}
+
+	private Table makeTable(Composite parent, String[] headings) {
 		Table table = new Table(parent, SWT.BORDER);
 
-		int nColumns = headings.size();
-		for (IVariable var : headings) {
+		for (String heading : headings) {
 			TableColumn column = new TableColumn(table, SWT.LEFT);
-			column.setText(var.toString().substring(1));
+			column.setText(heading);
 		}
 		table.setHeaderVisible(true);
+
+		GridData tableLayoutData = new GridData();
+		tableLayoutData.horizontalAlignment = GridData.FILL;
+		tableLayoutData.verticalAlignment = GridData.FILL;
+		tableLayoutData.grabExcessHorizontalSpace = true;
+		tableLayoutData.grabExcessVerticalSpace = true;
+		table.setLayoutData(tableLayoutData);
+		
+		return table;
+	}
+
+	private void fillTable(Table table, ITuple[] rows, int nColumns) {
+		table.removeAll();
 
 		for (int i = 0; i < rows.length; i++) {
 			TableItem item = new TableItem(table, 0);
@@ -129,18 +163,9 @@ public class ObjectViewer {
 		for (TableColumn column : table.getColumns()) {
 			column.pack();
 		}
-
-		GridData tableLayoutData = new GridData();
-		tableLayoutData.horizontalAlignment = GridData.FILL;
-		tableLayoutData.verticalAlignment = GridData.FILL;
-		tableLayoutData.grabExcessHorizontalSpace = true;
-		tableLayoutData.grabExcessVerticalSpace = true;
-		table.setLayoutData(tableLayoutData);
-		
-		return table;
 	}
 
-	private Control addLocals(Composite parent) throws Exception {
+	private void populateLocals() throws Exception {
 		ITuple args = BASIC.createTuple(
 				TERM.createString(myName),
 				TERM.createVariable("Invocation"),
@@ -150,7 +175,7 @@ public class ObjectViewer {
 		ILiteral lit = BASIC.createLiteral(true, Constants.localP, args);
 		IQuery query = BASIC.createQuery(lit);
 		List<IVariable> bindings = new LinkedList<IVariable>();
-		IRelation rel = myResults.finalKnowledgeBase.execute(query, bindings);
+		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query, bindings);
 
 		ITuple[] rows = new ITuple[rel.size()];
 		for (int i = 0; i < rows.length; i++) {
@@ -158,10 +183,10 @@ public class ObjectViewer {
 		}
 		Arrays.sort(rows);
 
-		return makeTable(parent, bindings, rows);
+		fillTable(myLocals, rows, 3);
 	}
 
-	private Control addFields(Composite parent) throws Exception {
+	private void populateFields() throws Exception {
 		ITuple args = BASIC.createTuple(
 				TERM.createString(myName),
 				TERM.createVariable("FieldName"),
@@ -170,7 +195,7 @@ public class ObjectViewer {
 		ILiteral lit = BASIC.createLiteral(true, Constants.fieldP, args);
 		IQuery query = BASIC.createQuery(lit);
 		List<IVariable> bindings = new LinkedList<IVariable>();
-		IRelation rel = myResults.finalKnowledgeBase.execute(query, bindings);
+		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query, bindings);
 
 		ITuple[] rows = new ITuple[rel.size()];
 		for (int i = 0; i < rows.length; i++) {
@@ -178,10 +203,10 @@ public class ObjectViewer {
 		}
 		Arrays.sort(rows);
 
-		return makeTable(parent, bindings, rows);
+		fillTable(myFields, rows, 2);
 	}
 
-	private Control addWasCalled(Composite parent) throws Exception {
+	private void populateWasCalled() throws Exception {
 		ITuple args = BASIC.createTuple(
 				TERM.createVariable("Caller"),
 				TERM.createVariable("CallerInvocation"),
@@ -193,7 +218,7 @@ public class ObjectViewer {
 		ILiteral lit = BASIC.createLiteral(true, Constants.didCallP, args);
 		IQuery query = BASIC.createQuery(lit);
 		List<IVariable> bindings = new LinkedList<IVariable>();
-		IRelation rel = myResults.finalKnowledgeBase.execute(query, bindings);
+		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query, bindings);
 
 		ITuple[] rows = new ITuple[rel.size()];
 		for (int i = 0; i < rows.length; i++) {
@@ -201,10 +226,10 @@ public class ObjectViewer {
 		}
 		Arrays.sort(rows);
 
-		return makeTable(parent, bindings, rows);
+		fillTable(myWasCalled, rows, 5);
 	}
 
-	private Control addCalled(Composite parent) throws Exception {
+	private void populateCalled() throws Exception {
 		ITuple args = BASIC.createTuple(
 				TERM.createString(myName),
 				TERM.createVariable("CallerInvocation"),
@@ -216,7 +241,7 @@ public class ObjectViewer {
 		ILiteral lit = BASIC.createLiteral(true, Constants.didCallP, args);
 		IQuery query = BASIC.createQuery(lit);
 		List<IVariable> bindings = new LinkedList<IVariable>();
-		IRelation rel = myResults.finalKnowledgeBase.execute(query, bindings);
+		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query, bindings);
 
 		ITuple[] rows = new ITuple[rel.size()];
 		for (int i = 0; i < rows.length; i++) {
@@ -224,6 +249,6 @@ public class ObjectViewer {
 		}
 		Arrays.sort(rows);
 
-		return makeTable(parent, bindings, rows);
+		fillTable(myCalled, rows, 5);
 	}
 }

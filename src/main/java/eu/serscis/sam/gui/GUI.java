@@ -55,7 +55,7 @@ import static org.deri.iris.factory.Factory.*;
 
 public class GUI {
 	private File myFile;
-	private Results results;
+	private LiveResults liveResults = new LiveResults();
 	private Display display;
 	private Shell shell;
 	private Label mainImage;
@@ -239,7 +239,8 @@ public class GUI {
 			}
 
 			Eval eval = new Eval();
-			results = eval.evaluate(myFile);
+			final Results results = eval.evaluate(myFile);
+			liveResults.update(results);
 
 			if (results.exception != null) {
 				results.exception.printStackTrace();
@@ -301,14 +302,14 @@ public class GUI {
 				}
 
 				/* Populate Objects menu */
-				String[] objects = getObjects();
+				String[] objects = getObjects(results);
 				for (final String name : objects) {
 					MenuItem item = new MenuItem(objectsMenu, SWT.PUSH);
 					item.setText(name);
 					item.addSelectionListener(new SelectionAdapter() {
 						public void widgetSelected(SelectionEvent e) {
 							try {
-								new ObjectViewer(shell, results, name);
+								new ObjectViewer(shell, liveResults, name);
 							} catch (Throwable ex) {
 								ex.printStackTrace();
 							}
@@ -325,7 +326,7 @@ public class GUI {
 		shell.layout();
 	}
 
-	private String[] getObjects() throws Exception {
+	private String[] getObjects(Results results) throws Exception {
 		ILiteral lit = BASIC.createLiteral(true, Constants.hasNonValueTypeP, BASIC.createTuple(TERM.createVariable("Object")));
 
 		IQuery query = BASIC.createQuery(lit);
