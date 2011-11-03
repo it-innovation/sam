@@ -61,10 +61,10 @@ public class ObjectViewer implements Updatable {
 	private final LiveResults myResults;
 	private final Shell myShell;
 
-	private Table myLocals;
-	private Table myFields;
-	private Table myCalled;
-	private Table myWasCalled;
+	private ResultsTable myLocals;
+	private ResultsTable myFields;
+	private ResultsTable myCalled;
+	private ResultsTable myWasCalled;
 
 	public ObjectViewer(Shell parent, LiveResults results, String name) throws Exception {
 		myShell = new Shell(parent, SWT.RESIZE);
@@ -77,23 +77,23 @@ public class ObjectViewer implements Updatable {
 
 		TabItem fieldsTab = new TabItem(folder, 0);
 		fieldsTab.setText("Fields");
-		myFields = makeTable(folder, new String[] {"Field", "Value"});
-		fieldsTab.setControl(myFields);
+		myFields = new ResultsTable(folder, new String[] {"Field", "Value"});
+		fieldsTab.setControl(myFields.getTable());
 
 		TabItem localsTab = new TabItem(folder, 0);
 		localsTab.setText("Local variables");
-		myLocals = makeTable(folder, new String[] {"Invocation", "Var name", "Value"});
-		localsTab.setControl(myLocals);
+		myLocals = new ResultsTable(folder, new String[] {"Invocation", "Var name", "Value"});
+		localsTab.setControl(myLocals.getTable());
 
 		TabItem wasCalledTab = new TabItem(folder, 0);
 		wasCalledTab.setText("Was called");
-		myWasCalled = makeTable(folder, new String[] {"Caller", "Caller invocation", "Call-site", "Target invocation", "Method"});
-		wasCalledTab.setControl(myWasCalled);
+		myWasCalled = new ResultsTable(folder, new String[] {"Caller", "Caller invocation", "Call-site", "Target invocation", "Method"});
+		wasCalledTab.setControl(myWasCalled.getTable());
 
 		TabItem calledTab = new TabItem(folder, 0);
 		calledTab.setText("Called");
-		myCalled = makeTable(folder, new String[] {"Caller invocation", "Call-site", "Target", "Target invocation", "Method"});
-		calledTab.setControl(myCalled);
+		myCalled = new ResultsTable(folder, new String[] {"Caller invocation", "Call-site", "Target", "Target invocation", "Method"});
+		calledTab.setControl(myCalled.getTable());
 
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 1;
@@ -130,41 +130,6 @@ public class ObjectViewer implements Updatable {
 		myResults.whenUpdated(this);
 	}
 
-	private Table makeTable(Composite parent, String[] headings) {
-		Table table = new Table(parent, SWT.BORDER);
-
-		for (String heading : headings) {
-			TableColumn column = new TableColumn(table, SWT.LEFT);
-			column.setText(heading);
-		}
-		table.setHeaderVisible(true);
-
-		GridData tableLayoutData = new GridData();
-		tableLayoutData.horizontalAlignment = GridData.FILL;
-		tableLayoutData.verticalAlignment = GridData.FILL;
-		tableLayoutData.grabExcessHorizontalSpace = true;
-		tableLayoutData.grabExcessVerticalSpace = true;
-		table.setLayoutData(tableLayoutData);
-		
-		return table;
-	}
-
-	private void fillTable(Table table, ITuple[] rows, int nColumns) {
-		table.removeAll();
-
-		for (int i = 0; i < rows.length; i++) {
-			TableItem item = new TableItem(table, 0);
-
-			for (int c = 0; c < nColumns; c++) {
-				item.setText(c, rows[i].get(c).getValue().toString());
-			}
-		}
-
-		for (TableColumn column : table.getColumns()) {
-			column.pack();
-		}
-	}
-
 	private void populateLocals() throws Exception {
 		ITuple args = BASIC.createTuple(
 				TERM.createString(myName),
@@ -177,13 +142,7 @@ public class ObjectViewer implements Updatable {
 		List<IVariable> bindings = new LinkedList<IVariable>();
 		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query, bindings);
 
-		ITuple[] rows = new ITuple[rel.size()];
-		for (int i = 0; i < rows.length; i++) {
-			rows[i] = rel.get(i);
-		}
-		Arrays.sort(rows);
-
-		fillTable(myLocals, rows, 3);
+		myLocals.fillTable(rel);
 	}
 
 	private void populateFields() throws Exception {
@@ -197,13 +156,7 @@ public class ObjectViewer implements Updatable {
 		List<IVariable> bindings = new LinkedList<IVariable>();
 		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query, bindings);
 
-		ITuple[] rows = new ITuple[rel.size()];
-		for (int i = 0; i < rows.length; i++) {
-			rows[i] = rel.get(i);
-		}
-		Arrays.sort(rows);
-
-		fillTable(myFields, rows, 2);
+		myFields.fillTable(rel);
 	}
 
 	private void populateWasCalled() throws Exception {
@@ -220,13 +173,7 @@ public class ObjectViewer implements Updatable {
 		List<IVariable> bindings = new LinkedList<IVariable>();
 		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query, bindings);
 
-		ITuple[] rows = new ITuple[rel.size()];
-		for (int i = 0; i < rows.length; i++) {
-			rows[i] = rel.get(i);
-		}
-		Arrays.sort(rows);
-
-		fillTable(myWasCalled, rows, 5);
+		myWasCalled.fillTable(rel);
 	}
 
 	private void populateCalled() throws Exception {
@@ -243,12 +190,6 @@ public class ObjectViewer implements Updatable {
 		List<IVariable> bindings = new LinkedList<IVariable>();
 		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query, bindings);
 
-		ITuple[] rows = new ITuple[rel.size()];
-		for (int i = 0; i < rows.length; i++) {
-			rows[i] = rel.get(i);
-		}
-		Arrays.sort(rows);
-
-		fillTable(myCalled, rows, 5);
+		myCalled.fillTable(rel);
 	}
 }
