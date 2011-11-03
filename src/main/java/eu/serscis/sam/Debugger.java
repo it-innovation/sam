@@ -455,11 +455,6 @@ public class Debugger {
  		}
  	}
 
-	private interface Reporter {
-		void enter(ILiteral literal);
-		void leave(ILiteral literal);
-	}
-
 	private static class Step {
 		ILiteral problem;
 		Step parent;
