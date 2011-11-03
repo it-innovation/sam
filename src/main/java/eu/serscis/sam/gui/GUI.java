@@ -28,6 +28,7 @@
 
 package eu.serscis.sam.gui;
 
+import eu.serscis.sam.Constants;
 import org.deri.iris.api.basics.ILiteral;
 import org.deri.iris.storage.IRelation;
 import org.deri.iris.api.basics.IQuery;
@@ -61,6 +62,8 @@ public class GUI {
 	private Color white;
 	private MenuItem relationsMenuHeader;
 	private Menu relationsMenu;
+	private MenuItem objectsMenuHeader;
+	private Menu objectsMenu;
 	private List messageList;
 
 	public GUI(File file) throws Exception {
@@ -124,6 +127,11 @@ public class GUI {
 		relationsMenuHeader.setText("&Relations");
 		relationsMenu = new Menu(shell, SWT.DROP_DOWN);
 		relationsMenuHeader.setMenu(relationsMenu);
+
+		objectsMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
+		objectsMenuHeader.setText("&Objects");
+		objectsMenu = new Menu(shell, SWT.DROP_DOWN);
+		objectsMenuHeader.setMenu(objectsMenu);
 
 		MenuItem helpMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
 		helpMenuHeader.setText("&Help");
@@ -214,9 +222,14 @@ public class GUI {
 	private void evaluate() {
 		try {
 			relationsMenuHeader.setEnabled(false);
+			objectsMenuHeader.setEnabled(false);
 			messageList.removeAll();
 
 			for (MenuItem item : relationsMenu.getItems()) {
+				item.dispose();
+			}
+
+			for (MenuItem item : objectsMenu.getItems()) {
 				item.dispose();
 			}
 
@@ -264,7 +277,9 @@ public class GUI {
 				mainImage.pack();
 
 				relationsMenuHeader.setEnabled(true);
+				objectsMenuHeader.setEnabled(true);
 
+				/* Populate Relations menu */
 				IPredicate[] relations = results.model.declared.keySet().toArray(new IPredicate[] {});
 				Arrays.sort(relations);
 				for (final IPredicate pred : relations) {
@@ -284,6 +299,22 @@ public class GUI {
 						}
 					});
 				}
+
+				/* Populate Objects menu */
+				String[] objects = getObjects();
+				for (final String name : objects) {
+					MenuItem item = new MenuItem(objectsMenu, SWT.PUSH);
+					item.setText(name);
+					item.addSelectionListener(new SelectionAdapter() {
+						public void widgetSelected(SelectionEvent e) {
+							try {
+								new ObjectViewer(shell, results, name);
+							} catch (Throwable ex) {
+								ex.printStackTrace();
+							}
+						}
+					});
+				}
 			}
 
 			messageList.pack();
@@ -292,6 +323,19 @@ public class GUI {
 		}
 
 		shell.layout();
+	}
+
+	private String[] getObjects() throws Exception {
+		ILiteral lit = BASIC.createLiteral(true, Constants.hasNonValueTypeP, BASIC.createTuple(TERM.createVariable("Object")));
+
+		IQuery query = BASIC.createQuery(lit);
+		IRelation rel = results.finalKnowledgeBase.execute(query);
+		String[] objects = new String[rel.size()];
+		for (int i = 0; i < objects.length; i++) {
+			objects[i] = rel.get(i).get(0).getValue().toString();
+		}
+		Arrays.sort(objects);
+		return objects;
 	}
 
 	private void addWarning(String msg) {
