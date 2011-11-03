@@ -290,10 +290,7 @@ public class GUI {
 					item.addSelectionListener(new SelectionAdapter() {
 						public void widgetSelected(SelectionEvent e) {
 							try {
-								ILiteral lit = BASIC.createLiteral(true, pred, args);
-								IQuery query = BASIC.createQuery(lit);
-								IRelation rel = results.finalKnowledgeBase.execute(query);
-								new RelationViewer(shell, rel, pred, args);
+								new RelationViewer(shell, liveResults, pred);
 							} catch (Throwable ex) {
 								ex.printStackTrace();
 							}

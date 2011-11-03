@@ -28,6 +28,8 @@
 
 package eu.serscis.sam.gui;
 
+import org.deri.iris.api.basics.IQuery;
+import org.deri.iris.api.basics.ILiteral;
 import org.deri.iris.storage.IRelation;
 import org.deri.iris.api.basics.ITuple;
 import org.deri.iris.api.basics.IPredicate;
@@ -47,38 +49,27 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.RowLayout;
+import static org.deri.iris.factory.Factory.*;
 
-public class RelationViewer {
-	public RelationViewer(Shell parent, IRelation relation, IPredicate pred, ITuple columns) {
-		Shell shell = new Shell(parent, SWT.RESIZE);
-		shell.setText(pred.toString() + columns);
+public class RelationViewer implements Updatable {
+	private final Shell myShell;
+	private final ResultsTable myTable;
+	private final LiveResults myResults;
+	private final IPredicate myPred;
 
-		Table table = new Table(shell, SWT.BORDER);
+	public RelationViewer(Shell parent, LiveResults results, IPredicate pred) throws Exception {
+		ITuple args = results.getResults().model.declared.get(pred);
 
-		int nColumns = columns.size();
-		for (int c = 0; c < nColumns; c++) {
-			TableColumn column = new TableColumn(table, SWT.LEFT);
-			column.setText(columns.get(c).toString());
+		myShell = new Shell(parent, SWT.RESIZE);
+		myShell.setText(pred.toString() + args);
+		myResults = results;
+		myPred = pred;
+
+		String[] headings = new String[args.size()];
+		for (int i = 0; i < headings.length; i++) {
+			headings[i] = args.get(i).toString();
 		}
-		table.setHeaderVisible(true);
-
-		ITuple[] rows = new ITuple[relation.size()];
-		for (int i = 0; i < rows.length; i++) {
-			rows[i] = relation.get(i);
-		}
-		Arrays.sort(rows);
-
-		for (int i = 0; i < rows.length; i++) {
-			TableItem item = new TableItem(table, 0);
-
-			for (int c = 0; c < nColumns; c++) {
-				item.setText(c, rows[i].get(c).getValue().toString());
-			}
-		}
-
-		for (TableColumn column : table.getColumns()) {
-			column.pack();
-		}
+		myTable = new ResultsTable(myShell, headings);
 
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 1;
@@ -91,10 +82,30 @@ public class RelationViewer {
 		tableLayoutData.verticalAlignment = GridData.FILL;
 		tableLayoutData.grabExcessHorizontalSpace = true;
 		tableLayoutData.grabExcessVerticalSpace = true;
-		table.setLayoutData(tableLayoutData);
+		myTable.getTable().setLayoutData(tableLayoutData);
 
-		shell.setLayout(gridLayout);
+		update();
 
-		shell.open();
+		myShell.setLayout(gridLayout);
+
+		myShell.open();
+	}
+
+	public void update() throws Exception {
+		if (myShell.isDisposed()) {
+			return;
+		}
+
+		//System.out.println("refresh " + myShell.getText());
+
+		Results results = myResults.getResults();
+
+		ITuple args = results.model.declared.get(myPred);
+		ILiteral lit = BASIC.createLiteral(true, myPred, args);
+		IQuery query = BASIC.createQuery(lit);
+		IRelation rel = results.finalKnowledgeBase.execute(query);
+		myTable.fillTable(rel);
+
+		myResults.whenUpdated(this);
 	}
 }
