@@ -28,9 +28,22 @@
 
 package eu.serscis.sam;
 
+import org.deri.iris.api.basics.IRule;
+import org.deri.iris.api.basics.IQuery;
 import org.deri.iris.api.basics.ILiteral;
 
 public interface Reporter {
 	void enter(ILiteral literal);
 	void leave(ILiteral literal);
+
+	void noteNewProblem(ILiteral problem);
+	void noteQuery(IQuery ruleQ);
+
+	/* We are about to explain why literal is false. */
+	void enterNegative(ILiteral literal);
+
+	void leaveNegative();
+
+	/* This rule might have been intended to fire, but there was no match. */
+	void noteNegative(IRule rule, IQuery unified);
 }

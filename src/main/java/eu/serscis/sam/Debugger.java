@@ -118,7 +118,7 @@ public class Debugger {
 
 		Recorder recorder = new Recorder(problem);
 
-		showGraph(problem, "", new HashSet<ILiteral>(), recorder);
+		exploreGraph(problem, new HashSet<ILiteral>(), recorder);
 
 		recorder.showImportantSteps(edges);
 	}
@@ -159,7 +159,7 @@ public class Debugger {
 		return BASIC.createQuery(newLiterals);
 	}
 
-	private void showGraph(ILiteral problem, String indent, Set<ILiteral> seen, Reporter reporter) throws Exception {
+	private void exploreGraph(ILiteral problem, Set<ILiteral> seen, Reporter reporter) throws Exception {
 		reporter.enter(problem);
 
 		try {
@@ -167,7 +167,7 @@ public class Debugger {
 				return;
 			}
 			seen.add(problem);
-			System.out.println(indent + problem);
+			reporter.noteNewProblem(problem);
 
 			DebugRelation debugRelation = debugRelations.get(problem.getAtom().getPredicate());
 			IRule rule = debugRelation.getReason(problem.getAtom().getTuple());
@@ -178,7 +178,7 @@ public class Debugger {
 			}
 
 			IQuery ruleQ = unify(rule, problem, true);
-			System.out.println(indent + ruleQ);
+			reporter.noteQuery(ruleQ);
 
 			/* Check internal variable assignments that make this rule true, and select the
 			 * one that was true first.
@@ -238,12 +238,11 @@ public class Debugger {
 
 			//System.out.println(indent + "best true: " + bestLiterals + " at " + bestTrue);
 
-			indent += "   ";
 			for (ILiteral lit : bestLiterals) {
-				showGraph(lit, indent, seen, reporter);
+				exploreGraph(lit, seen, reporter);
 			}
 			for (ILiteral lit : bestNegatives) {
-				explainNegative(lit, indent);
+				explainNegative(lit, reporter);
 			}
 		} finally {
 			reporter.leave(problem);
@@ -251,35 +250,30 @@ public class Debugger {
 	}
 
 	/* Why was this false? */
-	private void explainNegative(ILiteral lit, String indent) throws Exception {
-		boolean needHeader = true;
+	private void explainNegative(ILiteral lit, Reporter reporter) throws Exception {
+		reporter.enterNegative(lit);
+		try {
+			boolean needHeader = true;
 
-		IPredicate targetPred = lit.getAtom().getPredicate();
+			IPredicate targetPred = lit.getAtom().getPredicate();
 
-		for (IRule rule : rules) {
-			List<ILiteral> heads = rule.getHead();
-			if (heads.size() != 1) {
-				throw new RuntimeException("Multiple heads!");
-			}
-			ILiteral head = heads.get(0);
-			IPredicate pred = head.getAtom().getPredicate();
-			if (pred.equals(targetPred)) {
-				IQuery unified = unify(rule, lit, false);
+			for (IRule rule : rules) {
+				List<ILiteral> heads = rule.getHead();
+				if (heads.size() != 1) {
+					throw new RuntimeException("Multiple heads!");
+				}
+				ILiteral head = heads.get(0);
+				IPredicate pred = head.getAtom().getPredicate();
+				if (pred.equals(targetPred)) {
+					IQuery unified = unify(rule, lit, false);
 
-				if (unified != null) {
-					if (needHeader) {
-						System.out.println(indent + lit + "; none of these was true:");
-						needHeader = false;
+					if (unified != null) {
+						reporter.noteNegative(rule, unified);
 					}
-
-					System.out.println(indent + "   " + rule);
-					System.out.println(indent + "   " + unified);
 				}
 			}
-		}
-
-		if (needHeader) {
-			System.out.println(indent + lit + "; no rules for this predicate");
+		} finally {
+			reporter.leaveNegative();
 		}
 	}
 
@@ -554,8 +548,9 @@ public class Debugger {
 	}
 
 	private static class Recorder implements Reporter {
-		private String indent = "";
+		private int indent = 0;
 		private Step myStep;
+		private ILiteral optNegativeNeedHeader = null;
 		
 		public Recorder(ILiteral problem) {
 			myStep = new Step(null, problem);
@@ -575,17 +570,64 @@ public class Debugger {
 				myStep.children.add(child);
 				myStep = child;
 			}
+
+			indent += 1;
 		}
 
 		public void leave(ILiteral literal) {
 			if (myStep.problem == literal && myStep.parent != null) {
 				myStep = myStep.parent;
 			}
+			indent -= 1;
+		}
+
+		public void printIndented(Object item) {
+			String msg = "";
+			for (int i = 0; i < indent; i++) {
+				msg += "   ";
+			}
+			System.out.println(msg + item);
+		}
+
+		public void noteNewProblem(ILiteral problem) {
+			printIndented(problem);
+		}
+
+		public void noteQuery(IQuery ruleQ) {
+			printIndented(ruleQ);
 		}
 
 		public void showImportantSteps(IRelation debugEdges) {
 			System.out.println("\nSimplified debug graph:\n");
 			myStep.show("", debugEdges);
 		}
+
+		/* We are about to explain why literal is false. */
+		public void enterNegative(ILiteral literal) {
+			optNegativeNeedHeader = literal;
+			indent += 1;
+		}
+
+		public void leaveNegative() {
+			if (optNegativeNeedHeader != null) {
+				printIndented("" + optNegativeNeedHeader + "; no rules for this predicate");
+			}
+			optNegativeNeedHeader = null;
+			indent -= 1;
+		}
+
+		/* This rule might have been intended to fire, but there was no match. */
+		public void noteNegative(IRule rule, IQuery unified) {
+			if (optNegativeNeedHeader != null) {
+				printIndented("" + optNegativeNeedHeader + "; none of these was true:");
+				optNegativeNeedHeader = null;
+			}
+
+			indent += 1;
+			printIndented(rule);
+			printIndented(unified);
+			indent -= 1;
+		}
+
 	}
 }
