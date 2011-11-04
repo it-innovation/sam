@@ -89,8 +89,6 @@ public class DebugViewer implements Updatable {
 		textLayoutData.grabExcessVerticalSpace = false;
 		myText.setLayoutData(textLayoutData);
 
-		update();
-
 		myTree.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				TreeItem item = (TreeItem) e.item;
@@ -106,6 +104,8 @@ public class DebugViewer implements Updatable {
 		myShell.setLayout(gridLayout);
 
 		myShell.open();
+
+		update();
 	}
 
 	public void update() throws Exception {
@@ -120,6 +120,17 @@ public class DebugViewer implements Updatable {
 		GUIReporter reporter = new GUIReporter();
 		Debugger debugger = new Debugger(model);
 		debugger.debug(myProblem, reporter);
+
+		Display.getCurrent().timerExec(0, new Runnable() {
+			public void run() {
+				for (TreeItem item : myTree.getItems()) {
+					item.setExpanded(true);
+					for (TreeItem child : item.getItems()) {
+						child.setExpanded(true);
+					}
+				}
+			}
+		});
 
 		myResults.whenUpdated(this);
 	}
