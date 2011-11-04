@@ -48,9 +48,14 @@ import org.eclipse.swt.layout.RowLayout;
 import static org.deri.iris.factory.Factory.*;
 
 public class ResultsTable {
+	private ITuple[] rows;
 	private final Table myTable;
 
 	public ResultsTable(Composite parent, String[] headings) {
+		this(parent, headings, null);
+	}
+
+	public ResultsTable(Composite parent, String[] headings, final RowViewer rowViewer) {
 		myTable = new Table(parent, SWT.BORDER);
 
 		for (String heading : headings) {
@@ -65,10 +70,22 @@ public class ResultsTable {
 		tableLayoutData.grabExcessHorizontalSpace = true;
 		tableLayoutData.grabExcessVerticalSpace = true;
 		myTable.setLayoutData(tableLayoutData);
+
+		if (rowViewer != null) {
+			myTable.addSelectionListener(new SelectionAdapter() {
+				public void widgetDefaultSelected(SelectionEvent e) {
+					try {
+						rowViewer.openRow(rows[myTable.getSelectionIndex()]);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+			});
+		}
 	}
 
 	public void fillTable(IRelation rel) {
-		ITuple[] rows = new ITuple[rel.size()];
+		rows = new ITuple[rel.size()];
 		for (int i = 0; i < rows.length; i++) {
 			rows[i] = rel.get(i);
 		}

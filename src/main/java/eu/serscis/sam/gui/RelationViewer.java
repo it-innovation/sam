@@ -57,7 +57,7 @@ public class RelationViewer implements Updatable {
 	private final LiveResults myResults;
 	private final IPredicate myPred;
 
-	public RelationViewer(Shell parent, LiveResults results, IPredicate pred) throws Exception {
+	public RelationViewer(Shell parent, final LiveResults results, final IPredicate pred) throws Exception {
 		ITuple args = results.getResults().model.declared.get(pred);
 
 		myShell = new Shell(parent, SWT.RESIZE);
@@ -69,7 +69,12 @@ public class RelationViewer implements Updatable {
 		for (int i = 0; i < headings.length; i++) {
 			headings[i] = args.get(i).toString();
 		}
-		myTable = new ResultsTable(myShell, headings);
+		myTable = new ResultsTable(myShell, headings, new RowViewer() {
+			public void openRow(ITuple row) throws Exception {
+				ILiteral lit = BASIC.createLiteral(true, pred, row);
+				new DebugViewer(myShell, results, lit);
+			}
+		});
 
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 1;
