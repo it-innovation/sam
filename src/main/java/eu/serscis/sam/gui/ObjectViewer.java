@@ -66,7 +66,7 @@ public class ObjectViewer implements Updatable {
 	private ResultsTable myCalled;
 	private ResultsTable myWasCalled;
 
-	public ObjectViewer(Shell parent, LiveResults results, String name) throws Exception {
+	public ObjectViewer(Shell parent, final LiveResults results, final String name) throws Exception {
 		myShell = new Shell(parent, SWT.RESIZE);
 		myShell.setText(name);
 
@@ -77,22 +77,46 @@ public class ObjectViewer implements Updatable {
 
 		TabItem fieldsTab = new TabItem(folder, 0);
 		fieldsTab.setText("Fields");
-		myFields = new ResultsTable(folder, new String[] {"Field", "Value"});
+		myFields = new ResultsTable(folder, new String[] {"Field", "Value"}, new RowViewer() {
+			public void openRow(ITuple row) throws Exception {
+				ILiteral lit = BASIC.createLiteral(true, Constants.fieldP,
+					BASIC.createTuple(TERM.createString(name), row.get(0), row.get(1)));
+				new DebugViewer(myShell, results, lit);
+			}
+		});
 		fieldsTab.setControl(myFields.getTable());
 
 		TabItem localsTab = new TabItem(folder, 0);
 		localsTab.setText("Local variables");
-		myLocals = new ResultsTable(folder, new String[] {"Invocation", "Var name", "Value"});
+		myLocals = new ResultsTable(folder, new String[] {"Invocation", "Var name", "Value"}, new RowViewer() {
+			public void openRow(ITuple row) throws Exception {
+				ILiteral lit = BASIC.createLiteral(true, Constants.localP,
+					BASIC.createTuple(TERM.createString(name), row.get(0), row.get(1), row.get(2)));
+				new DebugViewer(myShell, results, lit);
+			}
+		});
 		localsTab.setControl(myLocals.getTable());
 
 		TabItem wasCalledTab = new TabItem(folder, 0);
 		wasCalledTab.setText("Was called");
-		myWasCalled = new ResultsTable(folder, new String[] {"Caller", "Caller invocation", "Call-site", "Target invocation", "Method"});
+		myWasCalled = new ResultsTable(folder, new String[] {"Caller", "Caller invocation", "Call-site", "Target invocation", "Method"}, new RowViewer() {
+			public void openRow(ITuple row) throws Exception {
+				ILiteral lit = BASIC.createLiteral(true, Constants.didCallP,
+					BASIC.createTuple(row.get(0), row.get(1), row.get(2), TERM.createString(name), row.get(3), row.get(4)));
+				new DebugViewer(myShell, results, lit);
+			}
+		});
 		wasCalledTab.setControl(myWasCalled.getTable());
 
 		TabItem calledTab = new TabItem(folder, 0);
 		calledTab.setText("Called");
-		myCalled = new ResultsTable(folder, new String[] {"Caller invocation", "Call-site", "Target", "Target invocation", "Method"});
+		myCalled = new ResultsTable(folder, new String[] {"Caller invocation", "Call-site", "Target", "Target invocation", "Method"}, new RowViewer() {
+			public void openRow(ITuple row) throws Exception {
+				ILiteral lit = BASIC.createLiteral(true, Constants.didCallP,
+					BASIC.createTuple(TERM.createString(name), row.get(0), row.get(1), row.get(2), row.get(3), row.get(4)));
+				new DebugViewer(myShell, results, lit);
+			}
+		});
 		calledTab.setControl(myCalled.getTable());
 
 		GridLayout gridLayout = new GridLayout();
