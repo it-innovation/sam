@@ -58,9 +58,9 @@ public class DebugViewer implements Updatable {
 	private final Text myText;
 	private final LiveResults myResults;
 	private final ILiteral myProblem;
-	private final Map<TreeItem,String> extraData = new HashMap<TreeItem,String>();
+	private final Map<TreeItem,Details> extraData = new HashMap<TreeItem,Details>();
 
-	public DebugViewer(Shell parent, LiveResults results, ILiteral problem) throws Exception {
+	public DebugViewer(final Shell parent, final LiveResults results, ILiteral problem) throws Exception {
 		myShell = new Shell(parent, SWT.RESIZE);
 		myShell.setText("Debug: " + problem);
 		myResults = results;
@@ -92,12 +92,21 @@ public class DebugViewer implements Updatable {
 		myTree.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				TreeItem item = (TreeItem) e.item;
-				String details = extraData.get(item);
-				if (details == null) {
-					details = "";
-				}
-				myText.setText(details);
+				Details details = extraData.get(item);
+				myText.setText(details != null ? details.notes : "");
 				myShell.layout();
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+				TreeItem item = (TreeItem) e.item;
+				Details details = extraData.get(item);
+				if (details != null && details.lit != null) {
+					try {
+						new DebugViewer(parent, results, details.lit);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
 			}
 		});
 
@@ -114,6 +123,8 @@ public class DebugViewer implements Updatable {
 		}
 
 		//System.out.println("refresh " + myShell.getText());
+
+		myTree.removeAll();
 
 		Model model = myResults.getResults().model;
 
@@ -149,7 +160,7 @@ public class DebugViewer implements Updatable {
 			}
 			item.setText("" + literal);
 
-			extraData.put(item, "");
+			extraData.put(item, new Details(literal));
 
 			currentItem = item;
 		}
@@ -166,7 +177,7 @@ public class DebugViewer implements Updatable {
 			for (ILiteral literal : ruleQ.getLiterals()) {
 				msg += literal + "\n";
 			}
-			extraData.put(currentItem, extraData.get(currentItem) + msg);
+			extraData.get(currentItem).notes += msg;
 		}
 
 
@@ -175,6 +186,7 @@ public class DebugViewer implements Updatable {
 			optNegativeNeedHeader = literal;
 			currentItem = new TreeItem(currentItem, 0);
 			currentItem.setText("" + literal + "; none of these was true:");
+			extraData.put(currentItem, new Details(literal));
 		}
 
 
@@ -193,8 +205,19 @@ public class DebugViewer implements Updatable {
 			TreeItem ruleItem = new TreeItem(currentItem, 0);
 			ruleItem.setText("" + rule);
 
-			TreeItem unifiedItem = new TreeItem(ruleItem, 0);
-			unifiedItem.setText("" + unified);
+			Details details = new Details(null);
+			details.notes += unified;
+
+			extraData.put(ruleItem, details);
+		}
+	}
+
+	private class Details {
+		private ILiteral lit;
+		private String notes = "";
+
+		private Details(ILiteral lit) {
+			this.lit = lit;
 		}
 	}
 }
