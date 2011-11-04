@@ -114,13 +114,17 @@ public class Debugger {
 	 * explain it visually.
 	 */
 	public void debug(final ILiteral problem, final IRelation edges) throws Exception {
-		knowledgeBase.execute(BASIC.createQuery(problem));
-
 		Recorder recorder = new Recorder(problem);
-
-		exploreGraph(problem, new HashSet<ILiteral>(), recorder);
-
+		debug(problem, recorder);
 		recorder.showImportantSteps(edges);
+	}
+
+	/* Why was this true? Find a simple example which would cause it and
+	 * tell reporter.
+	 */
+	public void debug(final ILiteral problem, Reporter reporter) throws Exception {
+		knowledgeBase.execute(BASIC.createQuery(problem));
+		exploreGraph(problem, new HashSet<ILiteral>(), reporter);
 	}
 
 	/* Replace the variables in rule, where the variables in the head have the values in problem.

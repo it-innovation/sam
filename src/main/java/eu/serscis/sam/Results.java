@@ -56,7 +56,7 @@ public class Results {
 	public Phase phase = Phase.Init;
 	public Exception exception;
 	public boolean expectingFailure = false;
-	public List<String> errors = new LinkedList<String>();
+	public List<ILiteral> errors = new LinkedList<ILiteral>();
 	
 	public Results(Model model) {
 		this.model = model;

@@ -28,6 +28,7 @@
 
 package eu.serscis.sam.gui;
 
+import java.util.LinkedList;
 import eu.serscis.sam.Constants;
 import org.deri.iris.api.basics.ILiteral;
 import org.deri.iris.storage.IRelation;
@@ -65,6 +66,7 @@ public class GUI {
 	private MenuItem objectsMenuHeader;
 	private Menu objectsMenu;
 	private List messageList;
+	private LinkedList<ILiteral> myProblems;
 
 	public GUI(File file) throws Exception {
 		myFile = file;
@@ -161,6 +163,19 @@ public class GUI {
 		mainImage.setBackground(white);
 
 		messageList = new List(shell, 0);
+		messageList.addSelectionListener(new SelectionAdapter() {
+			public void widgetDefaultSelected(SelectionEvent e) {
+				ILiteral optProblem = myProblems.get(messageList.getSelectionIndex());
+				System.out.println(optProblem);
+				if (optProblem != null) {
+					try {
+						new DebugViewer(shell, liveResults, optProblem);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+			}
+		});
 
 		GridLayout gridLayout = new GridLayout();
  		gridLayout.numColumns = 1;
@@ -224,6 +239,7 @@ public class GUI {
 			relationsMenuHeader.setEnabled(false);
 			objectsMenuHeader.setEnabled(false);
 			messageList.removeAll();
+			myProblems = new LinkedList<ILiteral>();
 
 			for (MenuItem item : relationsMenu.getItems()) {
 				item.dispose();
@@ -248,15 +264,21 @@ public class GUI {
 				if (msg == null) {
 					msg = results.exception.toString();
 				}
-				addWarning(msg);
+				addWarning(msg, null);
 			} else if (results.phase != Results.Phase.Success) {
-				addWarning("Problem in " + results.phase + " phase");
+				addWarning("Problem in " + results.phase + " phase", null);
 			} else {
 				addInfo("OK");
 			}
 
-			for (String msg : results.errors) {
-				addWarning(msg);
+			for (ILiteral errorLit : results.errors) {
+				ITuple tuple = errorLit.getAtom().getTuple();
+				String msg = tuple.get(0).getValue().toString();
+				for (int part = 1; part < tuple.size(); part++) {
+					msg += ", " + tuple.get(part).getValue();
+				}
+
+				addWarning(msg, errorLit);
 			}
 
 			if (results.finalKnowledgeBase != null) {
@@ -336,11 +358,13 @@ public class GUI {
 		return objects;
 	}
 
-	private void addWarning(String msg) {
+	private void addWarning(String msg, ILiteral optProblem) {
+		myProblems.add(optProblem);
 		messageList.add(msg);
 	}
 
 	private void addInfo(String msg) {
+		myProblems.add(null);
 		messageList.add(msg);
 	}
 }

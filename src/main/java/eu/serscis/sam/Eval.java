@@ -265,7 +265,11 @@ public class Eval {
 						msg += ", " + tuple.get(part).getValue();
 					}
 					System.out.println(msg);
-					results.errors.add(msg);
+
+					ILiteral thisError = BASIC.createLiteral(true,
+						errorPredicate,
+						tuple);
+					results.errors.add(thisError);
 				}
 			}
 
