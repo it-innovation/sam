@@ -35,6 +35,7 @@ import org.deri.iris.api.basics.IPredicate;
 import static org.deri.iris.factory.Factory.*;
 
 public class Constants {
+	static public IPredicate accessControlOnP = BASIC.createPredicate("accessControlOn", 0);
 	static public IPredicate expectFailureP = BASIC.createPredicate("expectFailure", 0);
 	static public IPredicate importP = BASIC.createPredicate("import", 2);
 	static public IPredicate definedTypeP = BASIC.createPredicate("definedType", 1);
@@ -46,11 +47,13 @@ public class Constants {
 	static public IPredicate didCallP = BASIC.createPredicate("didCall", 6);
 	static public IPredicate didGetP = BASIC.createPredicate("didGet", 4);
 	static public IPredicate didGetExceptionP = BASIC.createPredicate("didGetException", 4);
+	static public IPredicate accessAllowedP = BASIC.createPredicate("accessAllowed", 3);
 	static public IPredicate didCreateP = BASIC.createPredicate("didCreate", 4);
 	static public IPredicate mayCallObjectP = BASIC.createPredicate("mayCallObject", 4);
 	static public IPredicate callsMethodP = BASIC.createPredicate("callsMethod", 2);
 	static public IPredicate callsAnyMethodP = BASIC.createPredicate("callsAnyMethod", 1);
 	static public IPredicate maySendP = BASIC.createPredicate("maySend", 5);
+	static public IPredicate mayStoreP = BASIC.createPredicate("mayStore", 2);
 	static public IPredicate mayCreateP = BASIC.createPredicate("mayCreate", 3);
 	static public IPredicate mayAccept3P = BASIC.createPredicate("mayAccept", 3);
 	static public IPredicate mayReturnP = BASIC.createPredicate("mayReturn", 4);

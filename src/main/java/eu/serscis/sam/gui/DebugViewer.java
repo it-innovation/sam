@@ -28,6 +28,7 @@
 
 package eu.serscis.sam.gui;
 
+import org.deri.iris.api.basics.IAtom;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import java.util.HashMap;
@@ -46,6 +47,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.RowLayout;
@@ -59,6 +62,9 @@ public class DebugViewer implements Updatable {
 	private final LiveResults myResults;
 	private final ILiteral myProblem;
 	private final Map<TreeItem,Details> extraData = new HashMap<TreeItem,Details>();
+	private final Color PRETTY_COLOUR = new Color(Display.getCurrent(), 0, 50, 150);
+	private final Color GREY = new Color(Display.getCurrent(), 100, 100, 100);
+	private boolean accessControlOn;
 
 	public DebugViewer(final Shell parent, final LiveResults results, ILiteral problem) throws Exception {
 		myShell = new Shell(parent, SWT.RESIZE);
@@ -128,6 +134,8 @@ public class DebugViewer implements Updatable {
 
 		Model model = myResults.getResults().model;
 
+		accessControlOn = checkAccessControl(model);
+
 		GUIReporter reporter = new GUIReporter();
 		Debugger debugger = new Debugger(model);
 		debugger.debug(myProblem, reporter);
@@ -146,6 +154,110 @@ public class DebugViewer implements Updatable {
 		myResults.whenUpdated(this);
 	}
 
+	private boolean checkAccessControl(Model model) throws Exception {
+		ILiteral lit = BASIC.createLiteral(true, Constants.accessControlOnP, BASIC.createTuple());
+		IQuery query = BASIC.createQuery(lit);
+		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query);
+		return rel.size() > 0;
+	}
+
+	private static String getInvocation(ITuple tuple, int i) {
+		String object = tuple.get(i).getValue().toString();
+		if ("_testDriver".equals(object)) {
+			return "config";
+		}
+		return object;
+	}
+
+	/* Produce a friendly description of literal */
+	private String getPrettyText(ILiteral literal) {
+		if (!literal.isPositive()) {
+			return null;
+		}
+
+		IAtom atom = literal.getAtom();
+		ITuple tuple = atom.getTuple();
+		IPredicate p = atom.getPredicate();
+
+		if (p.getPredicateSymbol().equals("maySend")) {
+			String target = tuple.get(0).getValue().toString();
+			String method = tuple.get(2).getValue().toString();
+			String arg;
+			if (tuple.size() == 4) {
+				arg = tuple.get(3).getValue().toString();
+			} else {
+				arg = tuple.get(4).getValue().toString();
+			}
+			String msg = target + " received " + arg;
+			if (!method.equals("Unknown.invoke")) {
+				msg += " (arg to " + method + ")";
+			} else {
+				msg += " (as an argument)";
+			}
+			return msg;
+		} else if (p.equals(Constants.mayStoreP)) {
+			String callSite = tuple.get(0).getValue().toString();
+			String target = tuple.get(1).getValue().toString();
+			return "(" + callSite + " may store result in " + target + ")";
+		} else if (p.equals(Constants.didCallP)) {
+			String caller = getInvocation(tuple, 0);
+			String callSite = tuple.get(2).getValue().toString();
+			String target = getInvocation(tuple, 3);
+			String method = tuple.get(5).getValue().toString();
+			//String method = tuple.get(4).getValue().toString();
+			//String arg = tuple.get(5).getValue().toString();
+			//String result = tuple.get(6).getValue().toString();
+			//msg = caller + "@" + callSite + " calls " + target + "." + method;
+			int i = method.indexOf('.');
+			method = method.substring(i + 1);
+			return caller + " called " + target + "." + method + "()";
+		} else if (p.equals(Constants.didGetP)) {
+			String caller = getInvocation(tuple, 0);
+			String callSite = tuple.get(2).getValue().toString();
+			String result = tuple.get(3).getValue().toString();
+			return "" + caller + " got " + result;
+		} else if (p.equals(Constants.didGetExceptionP)) {
+			String caller = getInvocation(tuple, 0);
+			String callSite = tuple.get(2).getValue().toString();
+			String result = tuple.get(3).getValue().toString();
+			return "" + caller + " got exception " + result;
+		} else if (p.equals(Constants.isAP)) {
+			String name = tuple.get(0).getValue().toString();
+			String type = tuple.get(1).getValue().toString();
+			return type + " '" + name + "' exists";
+		} else if (p.equals(Constants.accessAllowedP)) {
+			if (!accessControlOn) {
+				return null;		// Not interesting then
+			}
+			String caller = tuple.get(0).getValue().toString();
+			String target = tuple.get(1).getValue().toString();
+			String[] method = tuple.get(2).getValue().toString().split("\\.");
+			return "Access control: " + caller + " may call " + target + "." + method[1];
+		} else if (p.equals(Constants.fieldP)) {
+			String actor = tuple.get(0).getValue().toString();
+			String name = tuple.get(1).getValue().toString();
+			String value = tuple.get(2).getValue().toString();
+			return actor + "." + name + " = " + value;
+		} else if (p.equals(Constants.localP)) {
+			String actor = getInvocation(tuple, 0);
+			String[] name = tuple.get(2).getValue().toString().split("\\.");
+			String value = tuple.get(3).getValue().toString();
+			return actor + "." + name[1] + "()'s " + name[2] + " = " + value;
+		} else if (p.equals(Constants.mayCallObjectP)) {
+			String actor = getInvocation(tuple, 0);
+			String method = tuple.get(2).getValue().toString().split("\\.")[1].split("-")[0];
+			String target = tuple.get(3).getValue().toString();
+			return actor + " may call " + target + "." + method;
+		} else if (p.equals(Constants.didCreateP)) {
+			String actor = getInvocation(tuple, 0);
+			//String resultVar = tuple.get(2).getValue().toString();
+			String type = tuple.get(3).getValue().toString();
+			return actor + " created " + type;
+		}
+
+		return null;
+	}
+
 	private class GUIReporter implements Reporter {
 		private ILiteral optNegativeNeedHeader;
 		private TreeItem currentItem;
@@ -158,9 +270,21 @@ public class DebugViewer implements Updatable {
 			} else {
 				item = new TreeItem(currentItem, 0);
 			}
-			item.setText("" + literal);
 
-			extraData.put(item, new Details(literal));
+			Details details = new Details(literal);
+			String prettyText = getPrettyText(literal);
+			if (prettyText == null) {
+				item.setText("" + literal);
+				item.setForeground(GREY);
+			} else {
+				item.setText(prettyText);
+				item.setForeground(PRETTY_COLOUR);
+				FontData fontData = item.getFont().getFontData()[0];
+				item.setFont(new Font(Display.getCurrent(), fontData.getName(), fontData.getHeight(), SWT.BOLD));
+				details.notes += literal + "\n";
+			}
+
+			extraData.put(item, details);
 
 			currentItem = item;
 		}
@@ -185,6 +309,7 @@ public class DebugViewer implements Updatable {
 		public void enterNegative(ILiteral literal) {
 			optNegativeNeedHeader = literal;
 			currentItem = new TreeItem(currentItem, 0);
+			currentItem.setForeground(GREY);
 			currentItem.setText("" + literal + "; none of these was true:");
 			extraData.put(currentItem, new Details(literal));
 		}
@@ -204,6 +329,7 @@ public class DebugViewer implements Updatable {
 
 			TreeItem ruleItem = new TreeItem(currentItem, 0);
 			ruleItem.setText("" + rule);
+			ruleItem.setForeground(GREY);
 
 			Details details = new Details(null);
 			details.notes += unified;
