@@ -266,7 +266,7 @@ public class DebugViewer implements Updatable {
 			String actor = getInvocation(tuple, 0);
 			String method = tuple.get(2).getValue().toString().split("\\.")[1].split("-")[0];
 			String target = tuple.get(3).getValue().toString();
-			return actor + " may call " + target + "." + method;
+			return actor + "." + method + " may call " + target;
 		} else if (p.equals(Constants.didCreateP)) {
 			String actor = getInvocation(tuple, 0);
 			//String resultVar = tuple.get(2).getValue().toString();
