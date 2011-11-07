@@ -255,6 +255,7 @@ public class GUI {
 			}
 
 			Eval eval = new Eval();
+			shell.setText("SAM: " + myFile);
 			final Results results = eval.evaluate(myFile);
 			liveResults.update(results);
 
