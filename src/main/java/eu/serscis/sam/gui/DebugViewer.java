@@ -199,18 +199,37 @@ public class DebugViewer implements Updatable {
 			String callSite = tuple.get(0).getValue().toString();
 			String target = tuple.get(1).getValue().toString();
 			return "(" + callSite + " may store result in " + target + ")";
+		} else if (p.equals(Constants.didCall3P)) {
+			String caller = tuple.get(0).getValue().toString();
+			String target = tuple.get(1).getValue().toString();
+			String method = tuple.get(2).getValue().toString();
+			int i = method.indexOf('.');
+			method = method.substring(i + 1);
+			return caller + " called " + target + "." + method + "()";
 		} else if (p.equals(Constants.didCallP)) {
 			String caller = getInvocation(tuple, 0);
 			String callSite = tuple.get(2).getValue().toString();
 			String target = getInvocation(tuple, 3);
 			String method = tuple.get(5).getValue().toString();
+
 			//String method = tuple.get(4).getValue().toString();
 			//String arg = tuple.get(5).getValue().toString();
 			//String result = tuple.get(6).getValue().toString();
 			//msg = caller + "@" + callSite + " calls " + target + "." + method;
 			int i = method.indexOf('.');
 			method = method.substring(i + 1);
-			return caller + " called " + target + "." + method + "()";
+			String msg = caller + " called " + target + "." + method + "()";
+
+			String callerInvocation = tuple.get(1).getValue().toString();
+			String targetInvocation = tuple.get(4).getValue().toString();
+
+			if (callerInvocation.equals("") && targetInvocation.equals("")) {
+				return msg;
+			} else if (callerInvocation.equals(targetInvocation)) {
+				return msg + " [" + callerInvocation + "]";
+			} else {
+				return msg + " [" + callerInvocation + " -> " + targetInvocation + "]";
+			}
 		} else if (p.equals(Constants.didGetP)) {
 			String caller = getInvocation(tuple, 0);
 			String callSite = tuple.get(2).getValue().toString();
