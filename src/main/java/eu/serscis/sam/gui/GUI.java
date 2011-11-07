@@ -28,6 +28,9 @@
 
 package eu.serscis.sam.gui;
 
+import org.deri.iris.api.terms.ITerm;
+import java.io.FileWriter;
+import java.io.Writer;
 import java.util.LinkedList;
 import eu.serscis.sam.Constants;
 import org.deri.iris.api.basics.ILiteral;
@@ -69,7 +72,7 @@ public class GUI {
 	private LinkedList<ILiteral> myProblems;
 
 	public GUI(File file) throws Exception {
-		myFile = file;
+		myFile = file.getAbsoluteFile();
 
 		display = new Display();
 		white = new Color(display, 255, 255, 255);
@@ -114,6 +117,29 @@ public class GUI {
 				System.out.println("Reloading...");
 				evaluate();
 				System.out.println("Reloaded");
+			}
+		});
+
+		MenuItem exportCallsItem = new MenuItem(fileMenu, SWT.PUSH);
+		exportCallsItem.setText("Export calls");
+		exportCallsItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				try {
+					FileDialog dialog = new FileDialog(shell, SWT.SAVE);
+					dialog.setFilterExtensions(new String[] {"*.sam", "*"});
+					if (myFile != null) {
+						File suggested = new File(myFile.getParentFile(), "mustCall.sam");
+						dialog.setFilterPath(myFile.getParent());
+						System.out.println(suggested);
+						dialog.setFileName(suggested.getPath());
+					}
+					String path = dialog.open();
+					if (path != null) {
+						exportCalls(new File(path));
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
 			}
 		});
 
@@ -367,5 +393,61 @@ public class GUI {
 	private void addInfo(String msg) {
 		myProblems.add(null);
 		messageList.add(msg);
+	}
+
+	private String quote(ITerm term) {
+		return quote(term.getValue().toString());
+	}
+
+	private String quote(String s) {
+		return "\"" + s.replaceAll("\"", "\\\"") + "\"";
+	}
+
+	private void exportCalls(File file) throws Exception {
+		Results results = liveResults.getResults();
+
+		ILiteral lit = BASIC.createLiteral(true, Constants.didCallP, BASIC.createTuple(
+					TERM.createVariable("Source"),
+					TERM.createVariable("SourceInvocation"),
+					TERM.createVariable("CallSite"),
+					TERM.createVariable("Target"),
+					TERM.createVariable("TargetInvocation"),
+					TERM.createVariable("Method")));
+
+		IQuery query = BASIC.createQuery(lit);
+		IRelation rel = results.finalKnowledgeBase.execute(query);
+		String[] calls = new String[rel.size()];
+		for (int i = 0; i < calls.length; i++) {
+			ITuple call = rel.get(i);
+			String caller = call.get(0).getValue().toString();
+			if (!caller.equals("_testDriver")) {
+				calls[i] = "mustCall(" + quote(caller) + ", " + quote(call.get(3)) + ", " + quote(call.get(5)) + ").\n";
+			} else {
+				calls[i] = "";
+			}
+		}
+		Arrays.sort(calls);
+
+		String[] objects = getObjects(results);
+
+		Writer writer = new FileWriter(file);
+		try {
+			for (String call : calls) {
+				if (!call.equals("")) {
+					writer.write(call);
+				}
+			}
+			writer.write("\n");
+			writer.write("mayCall(\"_testDriver\", ?Target, ?Method) :- isObject(?Target), hasMethod(?Type, ?Method).\n");
+			writer.write("mayCall(\"_testDriver\", ?Target, ?Method) :- isObject(?Target), hasConstructor(?Type, ?Method).\n");
+			writer.write("\n");
+			for (String object : objects) {
+				if (!object.equals("_testDriver")) {
+					writer.write("checkCalls(" + quote(object) + ").\n");
+				}
+			}
+		} finally {
+			writer.close();
+		}
 	}
 }
