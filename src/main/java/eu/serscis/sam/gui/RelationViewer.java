@@ -60,7 +60,7 @@ public class RelationViewer implements Updatable {
 	public RelationViewer(Shell parent, final LiveResults results, final IPredicate pred) throws Exception {
 		ITuple args = results.getResults().model.declared.get(pred);
 
-		myShell = new Shell(parent, SWT.RESIZE);
+		myShell = new Shell(parent, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.MAX | SWT.RESIZE | SWT.TITLE);
 		myShell.setText(pred.toString() + args);
 		myResults = results;
 		myPred = pred;

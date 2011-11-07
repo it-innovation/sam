@@ -67,7 +67,7 @@ public class ObjectViewer implements Updatable {
 	private ResultsTable myWasCalled;
 
 	public ObjectViewer(Shell parent, final LiveResults results, final String name) throws Exception {
-		myShell = new Shell(parent, SWT.RESIZE);
+		myShell = new Shell(parent, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.MAX | SWT.RESIZE | SWT.TITLE);
 		myShell.setText(name);
 
 		myName = name;

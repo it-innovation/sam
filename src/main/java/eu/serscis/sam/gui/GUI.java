@@ -72,11 +72,13 @@ public class GUI {
 	private LinkedList<ILiteral> myProblems;
 
 	public GUI(File file) throws Exception {
-		myFile = file.getAbsoluteFile();
+		if (file != null) {
+			myFile = file.getAbsoluteFile();
+		}
 
 		display = new Display();
 		white = new Color(display, 255, 255, 255);
-		shell = new Shell(display, SWT.RESIZE);
+		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.MAX | SWT.RESIZE | SWT.TITLE);
 		shell.setText("SAM");
 
 		Menu menuBar = new Menu(shell, SWT.BAR);

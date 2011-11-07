@@ -67,7 +67,7 @@ public class DebugViewer implements Updatable {
 	private boolean accessControlOn;
 
 	public DebugViewer(final Shell parent, final LiveResults results, ILiteral problem) throws Exception {
-		myShell = new Shell(parent, SWT.RESIZE);
+		myShell = new Shell(parent, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.MAX | SWT.RESIZE | SWT.TITLE);
 		myShell.setText("Debug: " + problem);
 		myResults = results;
 		myProblem = problem;

@@ -56,7 +56,7 @@ public class ResultsTable {
 	}
 
 	public ResultsTable(Composite parent, String[] headings, final RowViewer rowViewer) {
-		myTable = new Table(parent, SWT.BORDER);
+		myTable = new Table(parent, SWT.BORDER | SWT.FULL_SELECTION);
 
 		for (String heading : headings) {
 			TableColumn column = new TableColumn(myTable, SWT.LEFT);
