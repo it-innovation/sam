@@ -82,7 +82,16 @@ public class Debugger {
 		Configuration configuration = Eval.createDefaultConfiguration();
 
 		this.rules = model.rules;
-		this.facts = model.facts;
+
+		/* Make a copy of the initial facts (creating a knowledgeBase modifies them, affecting
+		 * other calls to the debugger).
+		 */
+		this.facts = new HashMap<IPredicate,IRelation>();
+		for (Map.Entry<IPredicate,IRelation> entry: model.facts.entrySet()) {
+			IRelation copy = configuration.relationFactory.createRelation();
+			copy.addAll(entry.getValue());
+			facts.put(entry.getKey(), copy);
+		}
 
 		configuration.evaluationStrategyFactory = new IEvaluationStrategyFactory() {
 			public IEvaluationStrategy createEvaluator(IFacts facts, List<IRule> rules, Configuration configuration) throws EvaluationException {
