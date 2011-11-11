@@ -28,6 +28,7 @@
 
 package eu.serscis.sam;
 
+import eu.serscis.sam.node.AJavavarTerm;
 import eu.serscis.sam.node.ANeqBinop;
 import eu.serscis.sam.node.AEqBinop;
 import eu.serscis.sam.node.PBinop;
@@ -151,8 +152,11 @@ public class Model {
 		} else if (parsed instanceof AIntTerm) {
 			int val = Integer.valueOf(((AIntTerm) parsed).getNumber().getText());
 			return CONCRETE.createInt(val);
+		} else if (parsed instanceof AJavavarTerm) {
+			AJavavarTerm var = (AJavavarTerm) parsed;
+			throw new ParserException(var.getName(), "Can't use a Java variable here (or missing '?')");
 		} else {
-			throw new RuntimeException("Unknown term type:" + parsed);
+			throw new RuntimeException("Unknown term type:" + parsed + " : " + parsed.getClass());
 		}
 	}
 
