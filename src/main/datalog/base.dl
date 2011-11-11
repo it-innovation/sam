@@ -99,7 +99,7 @@ declare assertionArrow(?Number, ?Source, ?Target, ?Positive).
 declare mustCall(?Caller, ?Target, ?Method).
 declare mayCall(?Caller, ?Target, ?Method).
 declare checkCalls(?Object).
-declare created(?Factory, ?Object).
+declare didCreate(?Factory, ?Object).
 
 /* aggregation */
 
@@ -205,5 +205,5 @@ class Value {}
 
 
 /* The creator of an object is the factory that did the "new" operation. */
-created(?Factory, ?Object) :-
+didCreate(?Factory, ?Object) :-
     didCreate(?Factory, ?FactoryInvocation, ?CreationSite, ?Object).

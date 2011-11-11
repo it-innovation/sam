@@ -220,15 +220,15 @@ declare hasProblem.
 hasProblem :- errorEdge(?X, ?Y).
 hasProblem :- problemEdge(?X, ?Y).
 
-declare importantObject(?Object).
-importantObject(?Object) :- initialObject(?Object, ?Type).
-importantObject(?Object) :- created(?Object, ?Important), importantObject(?Important).
-importantObject(?Source) :- errorEdge(?Source, ?Target).
-importantObject(?Target) :- errorEdge(?Source, ?Target).
-importantObject(?Source) :- problemEdge(?Source, ?Target).
-importantObject(?Target) :- problemEdge(?Source, ?Target).
+declare showInProblemGraph(?Object).
+showInProblemGraph(?Object) :- initialObject(?Object, ?Type).
+showInProblemGraph(?Object) :- didCreate(?Object, ?Important), showInProblemGraph(?Important).
+showInProblemGraph(?Source) :- errorEdge(?Source, ?Target).
+showInProblemGraph(?Target) :- errorEdge(?Source, ?Target).
+showInProblemGraph(?Source) :- problemEdge(?Source, ?Target).
+showInProblemGraph(?Target) :- problemEdge(?Source, ?Target).
 
-isHidden(?Object) :- showOnlyProblemNodes, isObject(?Object), hasProblem, !importantObject(?Object).
+isHidden(?Object) :- showOnlyProblemNodes, isObject(?Object), hasProblem, !showInProblemGraph(?Object).
 
 
 

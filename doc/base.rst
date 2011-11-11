@@ -95,6 +95,10 @@ might happen.
    The code at `CallSite` created `NewChild` as the result of a constructor call made
    by object `Caller` in context `CallerInvocation`.
 
+.. function:: didCreate(?Factory, ?Object)
+
+   Simplified view of :func:`didCreate`/4.
+
 .. function:: didGetException(?Caller, ?CallerInvocation, ?CallSite, ?Exception)
 
    `Exception` was thrown by `Caller`'s `CallSite`'s target.
@@ -107,7 +111,3 @@ might happen.
 .. function:: getsAccess(?SourceObject, ?TargetObject)
 
    Some invocation of `SourceObject` may have access to `TargetObject` (through a field or local variable).
-
-.. function:: created(?Factory, ?Object)
-
-   `Factory` created `Object` (using the `new` operator). This is a simplified view onto :func:`didCreate`.
