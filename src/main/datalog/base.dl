@@ -95,8 +95,9 @@ declare debug.
 declare assertionMessage(?Number, ?Msg).
 declare failedAssertion(?Number).
 declare assertionArrow(?Number, ?Source, ?Target, ?Positive).
-declare mustCall(?Caller, ?Target, ?Method).
+declare mustCall(?Caller, ?CallerInvocation, ?Target, ?Method).
 declare mayCall(?Caller, ?Target, ?Method).
+declare mayCall(?Caller, ?CallerInvocation, ?Target, ?Method).
 declare checkCalls(?Object).
 declare didCreate(?Factory, ?Object).
 

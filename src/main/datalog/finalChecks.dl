@@ -50,14 +50,11 @@ error(?Msg) :- failedAssertion(?N), assertionMessage(?N, ?Msg).
 
 declare missingMustCall(?Source, ?Target, ?Method).
 missingMustCall(?Source, ?Target, ?Method) :-
-    mustCall(?Source, ?Target, ?Method),
-    !didCall(?Source, ?Target, ?Method).
+    mustCall(?Source, ?SourceInvocation, ?Target, ?Method),
+    !didCall(?Source, ?SourceInvocation, ?AnyCallSite, ?Target, ?AnyInvocation, ?Method).
 
 missingGoodAccess(?Source, ?Target) :-
     missingMustCall(?Source, ?Target, ?Method).
-
-/* error("mustCall but not didCall", ?Source, ?Target, ?Method) :-
-	missingMustCall(?Source, ?Target, ?Method). */
 
 error("Not an object", ?Target) :-
     grantsRole(?Target, ?Role, ?CallerIdentity),

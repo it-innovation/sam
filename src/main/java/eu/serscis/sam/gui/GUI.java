@@ -423,7 +423,7 @@ public class GUI {
 			ITuple call = rel.get(i);
 			String caller = call.get(0).getValue().toString();
 			if (!caller.equals("_testDriver")) {
-				calls[i] = "mustCall(" + quote(caller) + ", " + quote(call.get(3)) + ", " + quote(call.get(5)) + ").\n";
+				calls[i] = "mustCall(" + quote(caller) + ", " + quote(call.get(1)) + ", " + quote(call.get(3)) + ", " + quote(call.get(5)) + ").\n";
 			} else {
 				calls[i] = "";
 			}
