@@ -1,8 +1,12 @@
 // The access control policy:
 accessControlOn.
 accessAllowed("alice", "compiler").
+accessAllowed("alice", "output").
 accessAllowed("compiler", "billing").
 accessAllowed("compiler", "output").
+
+// All objects have well-known or guessable addresses.
+isPublic(?X) :- isObject(?X).
 
 class Compiler {
     private Object myLog;
@@ -43,24 +47,11 @@ config {
     }
 }
 
-field(?X, "ref", ?Y) :- isA(?X, "Unknown"), isObject(?Y), ?Y != "_testDriver".
-
-missingGoodAccess("compiler", "billing") :-
-    !didCall("compiler", ?X, ?CallSite, "billing", ?Y, "File.append").
-
-// Flag an error if an interaction caused by alice (but not involving alice)
-// happens that isn't in desiredAuthority.
-declare desiredAuthority(?Source, ?Target, ?Method).
-haveBadAccess(?Caller, ?Target) :-
-    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
-    ?Caller != "alice", ?Target != "alice",
-    !desiredAuthority(?Caller, ?Target, ?Method).
-
 // The only things that should be able to happen which don't involve Alice are:
 // 1. compiler invokes output.write()
 // 2. compiler invokes billing.append()
-desiredAuthority("compiler", "output", "File.write").
-desiredAuthority("compiler", "billing", "File.append").
-
+mayCall("compiler", "output", "File.write").
+mayCall("compiler", "billing", "File.append").
+checkCalls("billing").
 
 expectFailure.
