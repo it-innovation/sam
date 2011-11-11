@@ -1,5 +1,3 @@
-/* vim: set syntax=prolog : */
-
 /////////////////////////////////////////////////////////////////////////
 //
 // © University of Southampton IT Innovation Centre, 2011
@@ -67,6 +65,7 @@ declare showAllInvocations(?Object).
 declare showInvocation(?Object, ?Invocation).
 declare isHidden(?Source).
 declare showOnlyProblemNodes.
+declare hideUncalledReferences.
 
 declare didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
 declare didCall(?Caller, ?Target, ?Method).

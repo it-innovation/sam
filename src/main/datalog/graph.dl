@@ -1,5 +1,3 @@
-/* vim: set syntax=prolog : */
-
 /////////////////////////////////////////////////////////////////////////
 //
 // © University of Southampton IT Innovation Centre, 2011
@@ -46,9 +44,13 @@ declare hasNonValueType(?Object).
 
 /* Every unknown object knows the address of every public object, so don't bother showing that. */
 isBoring(?Source, ?Target) :-
-	isA(?Source, "Unknown"),
-	isPublic(?Target),
-	!didCall(?Source, ?C1, ?CallSite, ?Target, ?C2, ?Method).
+    isA(?Source, "Unknown"),
+    isPublic(?Target),
+    !didCall(?Source, ?C1, ?CallSite, ?Target, ?C2, ?Method).
+
+isBoring(?X, ?Y) :-
+    hideUncalledReferences,
+    hasRef(?X, ?Y), !didCall(?X, ?Y, ?M), !didCreate(?X, ?Y).
 
 isHidden("_testDriver").
 

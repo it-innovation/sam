@@ -46,6 +46,11 @@ imports have also been processed.
 
    If there is no problem, this is ignored and all nodes are shown.
 
+.. function:: hideUncalledReferences
+
+    Especially when using access control, the graph can get cluttered with references that
+    are held but not used. Setting this hides them.
+
 Notation
 --------
 
