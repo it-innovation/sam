@@ -148,6 +148,16 @@ Objects of type "Unknown" are willing to accept any argument when invoked,
 may invoke any object to which they have a reference, and may pass any argument
 they are able to. They aggregate all fields into a single field named `ref`.
 
+There is also a BaseUnknown type, which has the same behaviour definition as Unknown. However, `Unknown`
+objects have some useful extra properties by default:
+
+- `Unknown` objects are active by default (`BaseUnknown` objects can't act unless invoked)
+- `Unknown` objects have an access control policy that allows access by anyone
+- `Unknown` objects have references to all :func:`isPublic` objects
+
+You should use `Unknown` in most cases. Use `BaseUnknown` if you need to avoid these defaults
+(e.g. because you have some untrusted code that is still controlled by an access policy).
+
 
 The Value type
 --------------

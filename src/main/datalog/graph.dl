@@ -61,8 +61,8 @@ isHidden(?Object) :- isObject(?Object), !hasNonValueType(?Object).
 /* Graphing */
 
 graphNode(?Object, "shape=record") :- live(?Object), isPublic(?Object).
-graphNode(?Object, "fontcolor=red") :- live(?Object), isA(?Object, "Unknown").
-graphNode(?Object, "") :- live(?Object), isObject(?Object), !isA(?Object, "Unknown").
+graphNode(?Object, "fontcolor=red") :- live(?Object), isA(?Object, "BaseUnknown").
+graphNode(?Object, "") :- live(?Object), isObject(?Object), !isA(?Object, "BaseUnknown").
 
 graphEdge(?Object, ?Target, "color=red,style=dashed") :- missingGoodAccess(?Object, ?Target).
 errorEdge(?Object, ?Target) :- haveBadAccess(?Object, ?Target).

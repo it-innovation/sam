@@ -167,11 +167,11 @@ realInitialInvocation(?Object, ?Method, ?Invocation) :-
 local(?Object, ?Invocation, "this", ?Object) :- liveMethod(?Object, ?Invocation, ?AnyMethod).
 
 
-/* Unknown behaviour */
-class Unknown {
+/* BaseUnknown behaviour: the object will do anything it is allowed to do */
+class BaseUnknown {
 	private Object ref;
 
-	public Unknown(Object args*) {
+	public BaseUnknown(Object args*) {
 		this.*(args);
 	}
 
@@ -188,8 +188,27 @@ class Unknown {
 	}
 }
 
+/* Unknown objects additionally have many sensible defaults:
+ * - they are active by default
+ * - they allow access by anyone (i.e. have unknown access policies)
+ * - they have references to all public objects
+ */
+class Unknown extends BaseUnknown {
+}
+
 accessAllowed(?Source, ?Target, ?Method) :-
 	accessAllowed(?Source, ?Target), hasMethod(?CallSite, ?Method).
+
+// Unknown objects have unknown access policies
+accessAllowed(?Caller, ?Target) :-
+    isObject(?Caller),
+    isA(?Target, "Unknown").
+
+// Objects may always call themselves
+accessAllowed(?Caller, ?Caller) :- isObject(?Caller).
+
+// Unknown objects have access to all public objects
+field(?Object, "ref", ?Target) :- isA(?Object, "Unknown"), isPublic(?Target).
 
 /* A simplified version of didCall/6 useful for writing goals. */
 didCall(?Caller, ?Target, ?Method) :-
