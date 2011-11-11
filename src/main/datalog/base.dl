@@ -100,6 +100,14 @@ declare mayCall(?Caller, ?Target, ?Method).
 declare checkCalls(?Object).
 declare didCreate(?Factory, ?Object).
 
+declare hasIdentity(?Object, ?Identity).
+
+
+// RBAC (declared here so you don't get errors when turning off RBAC)
+declare PermittedRole(?Method, ?Role).
+declare grantsRole(?Target, ?Role, ?CallerIdentity).
+
+
 /* aggregation */
 
 /* realInvocationObject
@@ -225,3 +233,4 @@ class Value {}
 /* The creator of an object is the factory that did the "new" operation. */
 didCreate(?Factory, ?Object) :-
     didCreate(?Factory, ?FactoryInvocation, ?CreationSite, ?Object).
+

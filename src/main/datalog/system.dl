@@ -1,5 +1,3 @@
-/* vim: set syntax=prolog : */
-
 /////////////////////////////////////////////////////////////////////////
 //
 // © University of Southampton IT Innovation Centre, 2011
@@ -150,3 +148,27 @@ realNewObject(?Object, ?Invocation, ?NameHint, ?NewChild) :-
 	isInvocation(?Invocation),
 	!newObject(?Object, ?Invocation, ?ChildType, ?AnyChild),
 	STRING_CONCAT(?NameHint, ?Invocation, ?NewChild).
+
+// Created objects live in the same JVM as their factory, and so have their
+// messages signed with the same X.509 certificate
+hasIdentity(?Child, ?Identity) :- 
+    hasIdentity(?Factory, ?Identity),
+    didCreate(?Factory, ?Child).
+
+// Give all identities the Value type. This allows them to be passed
+// as arguments if necessary.
+isA(?X, "Value") :- hasIdentity(?Object, ?X).
+
+
+/* RBAC */
+
+/* Caller may invoke Target.Method if: */
+accessAllowed(?Caller, ?Target, ?Method) :-
+    hasIdentity(?Caller, ?Identity),           // Caller's identity is Identity
+    grantsRole(?Target, ?Role, ?Identity),     // Target grants Role to Identity
+    PermittedRole(?Method, ?Role).             // Role is allowed to invoke the method
+
+/* Objects may call others with the same identity. */
+accessAllowed(?Caller, ?Target) :-
+	hasIdentity(?Caller, ?Identity),
+	hasIdentity(?Target, ?Identity).

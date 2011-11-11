@@ -58,3 +58,7 @@ missingGoodAccess(?Source, ?Target) :-
 
 /* error("mustCall but not didCall", ?Source, ?Target, ?Method) :-
 	missingMustCall(?Source, ?Target, ?Method). */
+
+error("Not an object", ?Target) :-
+    grantsRole(?Target, ?Role, ?CallerIdentity),
+    !isObject(?Target).
