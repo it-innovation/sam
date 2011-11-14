@@ -51,6 +51,13 @@ imports have also been processed.
     Especially when using access control, the graph can get cluttered with references that
     are held but not used. Setting this hides them.
 
+.. function:: ignoreEdgeForRanking(?GraphSourceNode, ?GraphTargetNode)
+
+   Prevents edges from source to target from affecting the ranking. Unknown objects often
+   cause many extra edges to be added which distort the shape of the graph. Ignoring these
+   edges in the ranking calculation allows the graph to be structured according to the
+   intended model.
+
 Notation
 --------
 

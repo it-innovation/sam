@@ -63,14 +63,17 @@ public class Graph {
 		IQuery graphEdgeLabelQuery = BASIC.createQuery(graphEdgeLabelLiteral);
 		IRelation graphEdgeLabelResults = knowledgeBase.execute(graphEdgeLabelQuery);
 
-		graph(graphNodeResults, graphEdgeResults, graphEdgeLabelResults, outputPngFile);
+		IQuery ignoredForRankingQuery = BASIC.createQuery(BASIC.createLiteral(true, Constants.ignoreEdgeForRankingP, xAndY));
+		IRelation ignoredForRankingResults = knowledgeBase.execute(ignoredForRankingQuery);
+
+		graph(graphNodeResults, graphEdgeResults, graphEdgeLabelResults, ignoredForRankingResults, outputPngFile);
 	}
 
 	static private String format(ITerm term) {
 		return "\"" + term.getValue().toString() + "\"";
 	}
 
-	static private void graph(IRelation nodes, IRelation edges, IRelation labelledEdges, File pngFile) throws Exception {
+	static private void graph(IRelation nodes, IRelation edges, IRelation labelledEdges, IRelation ignoredForRanking, File pngFile) throws Exception {
 		File dotFile = new File("SAM-tmp.dot");
 
 		FileWriter writer = new FileWriter(dotFile);
@@ -94,6 +97,11 @@ public class Graph {
 			ITerm a = tuple.get(0);
 			ITerm b = tuple.get(1);
 			String edgeAttrs = tuple.get(2).getValue().toString();
+
+			ITuple pair = BASIC.createTuple(a, b);
+			if (ignoredForRanking.contains(pair)) {
+				edgeAttrs += ",constraint=false";
+			}
 
 			String reverse = format(b) + " -> " + format(a) + " [" + edgeAttrs;
 

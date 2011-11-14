@@ -74,6 +74,7 @@ public class Constants {
 	static public IPredicate failedAssertionP = BASIC.createPredicate("failedAssertion", 1);
 	static public IPredicate assertionArrowP = BASIC.createPredicate("assertionArrow", 4);
 	static public IPredicate isInvocationP = BASIC.createPredicate("isInvocation", 1);
+	static public IPredicate ignoreEdgeForRankingP = BASIC.createPredicate("ignoreEdgeForRanking", 2);
 
 	static <X> List<X> makeList(X... items) {
 		return Arrays.asList(items);
