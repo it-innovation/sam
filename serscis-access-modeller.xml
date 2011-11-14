@@ -44,5 +44,8 @@ systems (e.g. modelling factories).</description>
     <requires interface="http://repo.roscidus.com/java/openjdk-6-jdk">
       <environment insert="bin" name="PATH"/>
     </requires>
+    <requires interface="http://repo.roscidus.com/java/openjdk-6-jre">
+      <environment insert="bin" name="PATH"/>
+    </requires>
   </implementation>
 </interface>
