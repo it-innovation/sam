@@ -169,7 +169,7 @@ You will see four menus along the top:
 * `Relations` shows the internal Datalog relations.
 * `Help` provides access to the documentation.
 
-For example, if you select `Objects -> user` then you will be see results relevant to the `user`:
+For example, if you select `Objects -> user` then you will see results relevant to the `user` object:
 
 * Fields: The object's `myDataProvider` holds a reference to `dataProvider` (in the real system: it can never hold any other value).
 * Local variables: e.g. the constructor's `dataProvider` variable holds a reference to the `dataProvider` object.
@@ -186,6 +186,8 @@ are shown in bold. Less important reasons are displayed faded.
 
 So, this tells us that <user>'s `test()` method called <file>.get() because it got back <file> when it called <dataProvider>'s `newFile` method.
 
+Note that there may be many ways that something could be true. The SAM debugger displays one example showing how it could happen.
+
 
 Saving a baseline
 -----------------
@@ -193,11 +195,11 @@ Saving a baseline
 Our model so far only includes trusted actors with defined behaviour. The calls that happen in this model correspond to the calls that should be allowed
 to happen in the real system.
 
-Use `File -> Export calls` to save all the calls that happened to a new file (`data1MustCall.sam`). If you look in this file, you will see three sections:
+Use `File -> Export calls` to save all the calls that happened to a new file (:example:`includes/data1MustCall`). If you look in this file, you will see three sections:
 
-* a set of `mustCall` facts that say list every call that happened in the model.
-* a pair of `mayCall` rules that allow the special test driver object to call anything without triggering errors.
-* a set of `checkCalls` facts telling SAM that for the three existing objects, it should check not only that all calls may happen, but that no other calls happen either.
+* a set of :func:`mustCall` facts that list every call that happened in the model.
+* a pair of :func:`mayCall` rules that allow the special test driver object to call anything without triggering errors.
+* a set of :func:`checkCalls` facts telling SAM that for the three existing objects, it should check not only that all calls may happen, but that no other calls happen either.
 
 .. note::
 	SAM uses `Datalog <http://en.wikipedia.org/wiki/Datalog>`_ syntax to
@@ -215,12 +217,15 @@ Adding other clients
 --------------------
 
 Our model only considers a single client, which isn't very realistic. We could regard `user` as an aggregation of all possible users of the system, but
-this doesn't allow us to prove some useful properties. For example, the arrow from `user` to `file` now just means that, in the real system, some users
-can access some files. We need to separate out the users if we want to check whether one user can access another user's files, for example.
+this doesn't allow us to prove some useful properties. For example, the arrow from `user` to `file` would just mean that, in the real system, some users
+could access some files. We need to separate out the users if we want to check whether one user can access another user's files, for example.
 
-Luckily, it suffices to use just two model objects for this: one representing some particular user and another aggregating all other users of the system.
+Luckily, it suffices to use just two model objects for this: one representing some particular user and another aggregating all other users of the system. We then
+show that none of the other users can access that user's files. Since we could have chosen any user as the particular user being modelled, this result holds
+for all users.
+
 We also need to tell SAM that objects created by these other users should not be aggregated into `file`, but into a separate object. This is easily done by
-creating a new `test` block labelled with a `context`::
+creating a new `test` block labelled with a "context" ("Others")::
 
   config {
       Client user;
@@ -251,7 +256,7 @@ You can double-click on the warning message to see the reason:
 * <otherUsers> called <dataProvider>.newFile() [Others]
 * !mayCall('otherUsers', 'dataProvider', 'DataProvider.newFile').
 
-We don't really care who else uses the `dataProvider`; we only care about who uses our `file` object, so we can remove the `checkCalls("dataProvider").` fact.
+We don't really care who else uses the `dataProvider`; we only care about who uses our `file` object, so we can remove the `checkCalls("dataProvider")` line.
 After reloading, the model is now "OK", and the lack of an arrow from `otherUsers` to `file` means that none of the other users will ever invoke a method
 on our sample user's files.
 
@@ -282,20 +287,27 @@ to it from someone who has it. Modelling such systems usually shows that they ha
 design: instead of bundling authorisation with designation they separate these two aspects out, so that it is possible to know the address of an actor and
 try to invoke it even when you don't have permission. Security is provided in these systems by access control policies.
 
-To indicate that an object is publicly available (anyone could get a reference to it), use the `isPublic` tag. A border around the object indicates that it
-is public. To model a typical web-based distributed system we simply mark all objects as public ("an object is public if it is an object")::
+To indicate that an object is publicly available (anyone could get a reference to it), use the :func:`isPublic` tag. A border around the object indicates that it
+is public. To model a typical web-based distributed system we simply mark all objects as public ("something is public if it is an object")::
 
   isPublic(?X) :- isObject(?X).
 
-Since we have no access control, this immediately and unsurprisingly leads to the discovery of two problems:
+Since we have no access control, this immediately and unsurprisingly leads to the discovery of some problems:
+
+* `otherUsers` may invoke methods on `user` (or perhaps on the user's computer)
+* `otherUsers` may invoke methods on `file` (the user's files).
 
 .. image:: _images/data4.png
 
-`otherUsers` may invoke methods on `user` (or perhaps on the user's computer) and on `file` (the user's files).
+Orange arrows indicate calls that were involved in the problem. In this case, `otherUsers` was only able to call `file` because `user` used `dataProvider`
+to create `file` first.
 
 .. note::
   Why does <user> call <fileOthers>? The answer is that `otherUsers` calls `user.test()` in the context "Other". The files that `user` creates
-  in this context are aggregated into `fileOthers`.
+  in this context are aggregated into `fileOthers`. So we can't use this model to show that `otherUsers` never gets access to any of `user`'s files; only
+  that it doesn't get access to those that `user` creates on its own initiative.
+  We would need to tell SAM to aggregate new objects created by `user` in the context "Other" into a third group
+  if we wanted to show that. However, since this is just an effect of the incorrect call from `otherUsers` to `user`, we will not consider it further.
 
 Modelling role-based access control
 -----------------------------------
@@ -309,8 +321,10 @@ using :func:`hasIdentity`::
   hasIdentity("otherUsers", "otherUsers.crt").
   hasIdentity("dataProvider", "provider.crt").
 
-You can use any unique string for the identity. Here, we use the convention of adding .crt ("certificate") to the object name.
-When an object creates a new object, the new object gets the same identity as its parent.
+You can use any unique string for the identity. Here, we use the convention of adding .crt ("certificate") to the object name. In the real system,
+having an identity might mean knowing the private key that corresponds to the public key in your X.509 certificate, for example.
+When an object creates a new object, the new object gets the same identity as its parent (e.g. the `File` objects created by `dataProvider`
+will be on the same machine as `dataProvider` itself, so they also get the `provider.crt` identity).
 
 We will model a system with role-based access control. In such a system there is a mapping that assigns roles to actors based on
 their identities, and a policy saying which roles allow access to which methods. We can use the :func:`PermittedRole` annotation to
@@ -328,7 +342,7 @@ say which role is required to call each method::
 
 The :func:`grantsRole` rule says that "dataProvider" grants the "world" role to any object (anyone can create a new file).
 
-We could update `File` in a similar way, granting `user` and `otherUsers` the "user" role. However, that wouldn't work because
+We could update `File` in a similar way, granting `user` and `otherUsers` a "user" role. However, that wouldn't work because
 `otherUsers` would still be able to access `user`'s files. Instead, we will create a system where the user passes their identity
 (e.g. X.509 certificate) when creating a new `File`. The new `File` will store this and will grant the "owner" role to callers
 with this identity::
@@ -470,7 +484,7 @@ So, `serviceProvider` tried to process `file` because `otherUsers` asked it to, 
 
 Fixing this problem requires more changes to the design. When `serviceProvider`
 reads a file, it needs to first check that its caller would be able to read
-it (:example:`service6.sam`)::
+it (:example:`service6`)::
 
   class ServiceProvider {
       @PermittedRole("world")
