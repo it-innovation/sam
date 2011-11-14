@@ -368,7 +368,8 @@ public class GUI {
 
 			messageList.pack();
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			addWarning("" + ex, null);
+			ex.printStackTrace();
 		}
 
 		shell.layout();
