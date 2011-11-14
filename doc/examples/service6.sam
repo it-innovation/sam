@@ -1,0 +1,106 @@
+import "includes/service4mustCall.sam".
+
+// model a non-capability system:
+accessControlOn.
+hideUncalledReferences.
+isPublic(?X) :- isObject(?X).   // anyone can get a reference to any object
+
+class DataProvider {
+  @PermittedRole("world")
+  public File newFile(Identity owner) {
+    File file = new File(owner);
+    return file;
+  }
+}
+
+class File {
+  private Identity myOwner;
+  private Identity myReader;
+
+  public File(Identity owner) {
+    myOwner = owner;
+  }
+
+  @PermittedRole("owner")
+  @PermittedRole("reader")
+  public void get() {}
+
+  @PermittedRole("owner")
+  public void put() {}
+
+  @PermittedRole("owner")
+  public void grantReadAccess(Identity id) {
+    myReader = id;
+  }
+
+  @PermittedRole("owner")
+  @PermittedRole("reader")
+  public File checkCanRead(Identity id) {
+    File verified = this :- grantsRole(this, "owner", id);
+    verified = this :- grantsRole(this, "reader", id);
+    return verified;
+  }
+}
+
+class ServiceProvider {
+    @PermittedRole("world")
+    public Image process(File uncheckedFile) {
+        Image image = new File("serviceProvider.crt");
+        Identity caller = ?Identity :- didCall(?MyCaller, ?CallerInvocation, ?CallSite, this, ?TargetInvocation, ?Method), hasIdentity(?MyCaller, ?Identity);
+        File file = uncheckedFile :- grantsRole(uncheckedFile, ?Role, caller), PermittedRole("File.get", ?Role);
+        file.get();
+        image.grantReadAccess(caller);
+        image.put();
+        return image;
+    }
+}
+
+class Client {
+  private DataProvider myDataProvider;
+  private ServiceProvider myServiceProvider;
+
+  public Client(DataProvider dataProvider, ServiceProvider serviceProvider) {
+    myDataProvider = dataProvider;
+    myServiceProvider = serviceProvider;
+  }
+
+  public void test() {
+    File file = myDataProvider.newFile("user.crt");
+    file.put();
+    Identity serviceIdentity = ?Cert :- hasIdentity(myServiceProvider, ?Cert);
+    file.grantReadAccess(serviceIdentity);
+    Image result = myServiceProvider.process(file);
+    result.get();
+  }
+}
+
+config {
+    Client user;
+    Unknown otherUsers;
+    DataProvider dataProvider;
+    ServiceProvider serviceProvider;
+
+    test {
+        dataProvider = new DataProvider();
+        serviceProvider = new ServiceProvider();
+
+        user = new Client(dataProvider, serviceProvider);
+        user.test();
+    }
+
+    test "Others" {
+        otherUsers = new Unknown(dataProvider);
+        otherUsers.test();
+    }
+}
+
+
+hasIdentity("user", "user.crt").
+hasIdentity("otherUsers", "otherUsers.crt").
+hasIdentity("dataProvider", "dataProvider.crt").
+hasIdentity("serviceProvider", "serviceProvider.crt").
+
+grantsRole("dataProvider", "world", ?Object) :- isObject(?Object).
+grantsRole("serviceProvider", "world", ?Object) :- isObject(?Object).
+grantsRole(?File, "owner", ?Identity) :- field(?File, "myOwner", ?Identity).
+grantsRole(?File, "reader", ?Identity) :- field(?File, "myReader", ?Identity).

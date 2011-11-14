@@ -27,8 +27,9 @@ htmlonly:
 	sphinx-build -b html ${ALLSPHINXOPTS} ${SRCDIR}/doc ${SBUILDDIR}
 
 examples:
-	mkdir -p ${DISTDIR}/doc/examples
+	mkdir -p ${DISTDIR}/doc/examples/includes
 	cp ${SRCDIR}/doc/examples/*.sam ${DISTDIR}/doc/examples/
+	cp ${SRCDIR}/doc/examples/includes/*.sam ${DISTDIR}/doc/examples/includes/
 
 images: ${SAM_EXAMPLES}
 	mkdir -p ${DISTDIR}/doc/_images

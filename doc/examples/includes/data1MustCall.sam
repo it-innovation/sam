@@ -1,0 +1,11 @@
+mustCall("dataProvider", "", "file", "File.<init>").
+mustCall("user", "", "dataProvider", "DataProvider.newFile").
+mustCall("user", "", "file", "File.get").
+mustCall("user", "", "file", "File.put").
+
+mayCall("_testDriver", ?Target, ?Method) :- isObject(?Target), hasMethod(?Type, ?Method).
+mayCall("_testDriver", ?Target, ?Method) :- isObject(?Target), hasConstructor(?Type, ?Method).
+
+checkCalls("dataProvider").
+checkCalls("file").
+checkCalls("user").

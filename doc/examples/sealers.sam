@@ -1,6 +1,6 @@
 /* Imports */
 
-import "sealers-common.sam".
+import "includes/sealers-common.sam".
 
 class Sender {
   private Sealer mySealer;

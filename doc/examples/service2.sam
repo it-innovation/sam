@@ -1,0 +1,63 @@
+import "includes/service1mustCall.sam".
+
+hideUncalledReferences.
+
+class DataProvider {
+  public File newFile() {
+    File file = new File();
+    return file;
+  }
+}
+
+class File {
+  public void get() {}
+  public void put() {}
+}
+
+class ServiceProvider {
+    public Image process(File file) {
+        Image image = new File();
+        file.get();
+        image.put();
+        return image;
+    }
+}
+
+class Client {
+  private DataProvider myDataProvider;
+  private ServiceProvider myServiceProvider;
+
+  public Client(DataProvider dataProvider, ServiceProvider serviceProvider) {
+    myDataProvider = dataProvider;
+    myServiceProvider = serviceProvider;
+  }
+
+  public void test() {
+    File file = myDataProvider.newFile();
+    file.put();
+    Image result = myServiceProvider.process(file);
+    result.get();
+  }
+}
+
+config {
+    Client user;
+    Object otherUsers;
+    DataProvider dataProvider;
+    ServiceProvider serviceProvider;
+
+    test {
+        dataProvider = new DataProvider();
+        serviceProvider = new ServiceProvider();
+
+        user = new Client(dataProvider, serviceProvider);
+        user.test();
+    }
+
+    test "Others" {
+        otherUsers = new Unknown(dataProvider, serviceProvider);
+        otherUsers.test();
+    }
+}
+
+ignoreEdgeForRanking("serviceProvider", "otherUsers").

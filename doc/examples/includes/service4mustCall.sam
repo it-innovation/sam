@@ -1,0 +1,19 @@
+mustCall("dataProvider", "", "file", "File.<init>").
+mustCall("serviceProvider", "", "file", "File.get").
+mustCall("serviceProvider", "", "image", "File.<init>").
+mustCall("serviceProvider", "", "image", "File.grantReadAccess").
+mustCall("serviceProvider", "", "image", "File.put").
+mustCall("user", "", "dataProvider", "DataProvider.newFile").
+mustCall("user", "", "file", "File.grantReadAccess").
+mustCall("user", "", "file", "File.put").
+mustCall("user", "", "image", "File.get").
+mustCall("user", "", "serviceProvider", "ServiceProvider.process").
+
+mayCall("_testDriver", ?Target, ?Method) :- isObject(?Target), hasMethod(?Type, ?Method).
+mayCall("_testDriver", ?Target, ?Method) :- isObject(?Target), hasConstructor(?Type, ?Method).
+
+//checkCalls("dataProvider").
+checkCalls("file").
+checkCalls("image").
+//checkCalls("serviceProvider").
+checkCalls("user").
