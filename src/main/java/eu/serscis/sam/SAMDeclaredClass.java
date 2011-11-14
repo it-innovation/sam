@@ -73,6 +73,12 @@ class SAMDeclaredClass extends SAMClass {
 		IRelation hasMethodRel = model.getRelation(hasMethodP);
 		IRelation methodNameRel = model.getRelation(methodNameP);
 
+		ITerm constructorNameFull = TERM.createString(this.name + ".<init>");
+		// hasConstructor(type, "class.<init>")
+		hasConstructorRel.add(BASIC.createTuple(TERM.createString(this.name), constructorNameFull));
+		// methodName("class.<init>", "class")
+		methodNameRel.add(BASIC.createTuple(constructorNameFull, TERM.createString(this.name)));
+
 		List<PMethod> methods = body.getMethod();
 		for (PMethod m : methods) {
 			AMethod method = (AMethod) m;
@@ -90,13 +96,7 @@ class SAMDeclaredClass extends SAMClass {
 				if (!methodName.equals(this.name)) {
 					throw new RuntimeException("Constructor must be named after class (or missing return type): " + methodName + " in " + this.name);
 				}
-				methodNameFull = TERM.createString(this.name + ".<init>");
-
-				// hasConstructor(type, "class.<init>")
-				hasConstructorRel.add(BASIC.createTuple(TERM.createString(this.name), methodNameFull));
-
-				// methodName("class.method", "method")
-				methodNameRel.add(BASIC.createTuple(methodNameFull, TERM.createString(methodName)));
+				methodNameFull = constructorNameFull;
 			} else {
 				methodNameFull = TERM.createString(this.name + "." + methodName);
 
