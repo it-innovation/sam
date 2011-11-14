@@ -113,7 +113,7 @@ See :ref:`install` for more information about running SAM.
 
 SAM will open a window displaying the results:
 
-.. image:: _images/data1.png
+.. image:: _static/data1.png
 
 This shows that, given the behaviour and initial configuration:
 
@@ -179,18 +179,10 @@ For example, if you select `Objects -> user` then you will be see results releva
 You can double-click on any line in these tables to find out **why** the line is there. For example, if you double-click on the call to `file.get`
 in the `Called` tab, you will see the reason given as:
 
-* <user> called <file>.get()
-    * <user>.test may call <file>
-        * Client <user> exists
-        * <user>.test() ran
-        * <user>.test()'s file = <file>
-            * <user> got <file>
-                * <user> called <dataProvider>.newFile()
-    * File 'file' exists
-        * <dataProvider> created <file>
+.. image:: _static/sam-debugger.png
 
 Each item shows something that was true in the model. The children of each item show the reasons why it was true. Reasons that are typically important
-are shown in bold. Less important reasons (not shown above) are displayed faded.
+are shown in bold. Less important reasons are displayed faded.
 
 So, this tells us that <user>'s `test()` method called <file>.get() because it got back <file> when it called <dataProvider>'s `newFile` method.
 
