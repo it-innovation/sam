@@ -153,15 +153,15 @@ public class GUI {
 			}
 		});
 
-		relationsMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
-		relationsMenuHeader.setText("&Relations");
-		relationsMenu = new Menu(shell, SWT.DROP_DOWN);
-		relationsMenuHeader.setMenu(relationsMenu);
-
 		objectsMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
 		objectsMenuHeader.setText("&Objects");
 		objectsMenu = new Menu(shell, SWT.DROP_DOWN);
 		objectsMenuHeader.setMenu(objectsMenu);
+
+		relationsMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
+		relationsMenuHeader.setText("&Relations");
+		relationsMenu = new Menu(shell, SWT.DROP_DOWN);
+		relationsMenuHeader.setMenu(relationsMenu);
 
 		MenuItem helpMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
 		helpMenuHeader.setText("&Help");
