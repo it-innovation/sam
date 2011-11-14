@@ -188,7 +188,7 @@ public class DebugViewer implements Updatable {
 			} else {
 				arg = tuple.get(4).getValue().toString();
 			}
-			String msg = target + " received " + arg;
+			String msg = "<" + target + "> received <" + arg + ">";
 			if (!method.equals("Unknown.invoke")) {
 				msg += " (arg to " + method + ")";
 			} else {
@@ -205,7 +205,7 @@ public class DebugViewer implements Updatable {
 			String method = tuple.get(2).getValue().toString();
 			int i = method.indexOf('.');
 			method = method.substring(i + 1);
-			return caller + " called " + target + "." + method + "()";
+			return "<" + caller + "> called <" + target + ">." + method + "()";
 		} else if (p.equals(Constants.didCallP)) {
 			String caller = getInvocation(tuple, 0);
 			String callSite = tuple.get(2).getValue().toString();
@@ -218,7 +218,7 @@ public class DebugViewer implements Updatable {
 			//msg = caller + "@" + callSite + " calls " + target + "." + method;
 			int i = method.indexOf('.');
 			method = method.substring(i + 1);
-			String msg = caller + " called " + target + "." + method + "()";
+			String msg = "<" + caller + "> called <" + target + ">." + method + "()";
 
 			String callerInvocation = tuple.get(1).getValue().toString();
 			String targetInvocation = tuple.get(4).getValue().toString();
@@ -234,16 +234,25 @@ public class DebugViewer implements Updatable {
 			String caller = getInvocation(tuple, 0);
 			String callSite = tuple.get(2).getValue().toString();
 			String result = tuple.get(3).getValue().toString();
-			return "" + caller + " got " + result;
+			return "<" + caller + "> got <" + result + ">";
 		} else if (p.equals(Constants.didGetExceptionP)) {
 			String caller = getInvocation(tuple, 0);
 			String callSite = tuple.get(2).getValue().toString();
 			String result = tuple.get(3).getValue().toString();
-			return "" + caller + " got exception " + result;
+			return "<" + caller + "> got exception <" + result + ">";
+		} else if (p.equals(Constants.liveMethodP)) {
+			String object = tuple.get(0).getValue().toString();
+			String invocation = tuple.get(1).getValue().toString();
+			String[] method = tuple.get(2).getValue().toString().split("\\.");
+			String msg = "<" + object + ">." + method[1] + "() ran";
+			if (!invocation.equals("")) {
+				msg += " [" + invocation + "]";
+			}
+			return msg;
 		} else if (p.equals(Constants.isAP)) {
 			String name = tuple.get(0).getValue().toString();
 			String type = tuple.get(1).getValue().toString();
-			return type + " '" + name + "' exists";
+			return type + " <" + name + "> exists";
 		} else if (p.equals(Constants.accessAllowedP)) {
 			if (!accessControlOn) {
 				return null;		// Not interesting then
@@ -251,27 +260,27 @@ public class DebugViewer implements Updatable {
 			String caller = tuple.get(0).getValue().toString();
 			String target = tuple.get(1).getValue().toString();
 			String[] method = tuple.get(2).getValue().toString().split("\\.");
-			return "Access control: " + caller + " may call " + target + "." + method[1];
+			return "Access control: <" + caller + "> may call <" + target + ">." + method[1];
 		} else if (p.equals(Constants.fieldP)) {
 			String actor = tuple.get(0).getValue().toString();
 			String name = tuple.get(1).getValue().toString();
 			String value = tuple.get(2).getValue().toString();
-			return actor + "." + name + " = " + value;
+			return "<" + actor + ">." + name + " = <" + value + ">";
 		} else if (p.equals(Constants.localP)) {
 			String actor = getInvocation(tuple, 0);
 			String[] name = tuple.get(2).getValue().toString().split("\\.");
 			String value = tuple.get(3).getValue().toString();
-			return actor + "." + name[1] + "()'s " + name[2] + " = " + value;
+			return "<" + actor + ">." + name[1] + "()'s " + name[2] + " = <" + value + ">";
 		} else if (p.equals(Constants.mayCallObjectP)) {
 			String actor = getInvocation(tuple, 0);
 			String method = tuple.get(2).getValue().toString().split("\\.")[1].split("-")[0];
 			String target = tuple.get(3).getValue().toString();
-			return actor + "." + method + " may call " + target;
+			return "<" + actor + ">." + method + " may call <" + target + ">";
 		} else if (p.equals(Constants.didCreateP)) {
 			String actor = getInvocation(tuple, 0);
 			//String resultVar = tuple.get(2).getValue().toString();
-			String type = tuple.get(3).getValue().toString();
-			return actor + " created " + type;
+			String child = tuple.get(3).getValue().toString();
+			return "<" + actor + "> created <" + child + ">";
 		}
 
 		return null;
