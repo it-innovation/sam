@@ -231,6 +231,8 @@ initialObject("_testDriver", "_TestDriver").
  */
 class Value {}
 
+isA(true, "Value").
+isA(false, "Value").
 
 /* The creator of an object is the factory that did the "new" operation. */
 didCreate(?Factory, ?Object) :-

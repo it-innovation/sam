@@ -127,6 +127,7 @@ Productions
   expr = {new} new type l_par args? star? r_par
        | {call} name dot [method]:pattern l_par args? star? r_par
        | {string} string_literal
+       | {bool} bool
        | {copy} name;
   string_args = string_literal string_args_tail*;
   string_args_tail = comma string_literal;
