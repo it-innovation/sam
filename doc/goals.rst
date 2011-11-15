@@ -66,10 +66,10 @@ Predicates
    creates errors automatically in many cases (e.g. if `denyAccess`
    fails), but you can also specify them manually, e.g.::
 
-     error("Store contains non-data item", ?Store, ?Item) :-
+     error("Store contains non-Value item", ?Store, ?Item) :-
        isA(?Store, "Store"),
        field(?Store, "data", ?Item),
-       !isA(?Item, "Data").
+       !isA(?Item, "Value").
 
 .. function:: haveBadAccess(?SourceObject, ?TargetObject)
 

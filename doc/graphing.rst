@@ -3,10 +3,6 @@
 Graphing
 ========
 
-Two graphs are created: "initial" is produced after all the "initial"
-imports are processed and then "access" is produced once the "final"
-imports have also been processed.
-
 .. function:: graphNode(?Node, ?Attrs)
 
    Specify the GraphViz attributes for a node. For example::
@@ -42,7 +38,7 @@ imports have also been processed.
 
    - it is one of the initial objects
    - it is at one end of a debug arrow (an orange or red one), or
-   - it :func:`created` an important object
+   - it :func:`didCreate` an important object
 
    If there is no problem, this is ignored and all nodes are shown.
 

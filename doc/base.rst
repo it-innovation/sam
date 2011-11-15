@@ -41,13 +41,7 @@ Objects
    access graph. This is useful for objects that are widely accessible, to avoid
    cluttering up the graph.
 
-   Objects with Unknown behaviour and which are not known to be confined should
-   typically be given access to all public objects. For example, to give all Unknown
-   objects access to all public objects::
-
-     field(?Object, "ref", ?Target) :- isA(?Object, "Unknown"), isPublic(?Target).
-
-   This means that all objects of type Unknown automatically get a reference
+   All objects of type Unknown automatically get a reference
    to all public objects (and will therefore also invoke them, unless
    :ref:`access` rules prevent this).
 
