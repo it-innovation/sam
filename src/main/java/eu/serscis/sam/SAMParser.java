@@ -292,7 +292,13 @@ public class SAMParser {
 	private void addImport(AImport aImport) throws Exception {
 		String path = getString(aImport.getStringLiteral());
 
-		new SAMParser(model, new File(dir, path));
+		try {
+			new SAMParser(model, new File(dir, path));
+		} catch (LexerException ex) {
+			throw new ParserException(aImport.getStringLiteral(), ex.getMessage());
+		} catch (ParserException ex) {
+			throw new ParserException(aImport.getStringLiteral(), ex.getMessage());
+		}
 	}
 
 	/* Get the nth line of a file. */

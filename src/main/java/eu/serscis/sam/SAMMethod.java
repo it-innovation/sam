@@ -136,8 +136,7 @@ class SAMMethod {
 					TName tname = ((AVarTerm) term).getName();
 					String name = tname.getText();
 					if (name.equals("CallerInvocation")) {
-						System.out.println("WARNING: use of ?CallerInvocation; use $Context instead");
-						return null;
+						throw new ParserException(tname, "Possible old use of ?CallerInvocation; use $Context instead");
 					}
 					ITerm var = TERM.createVariable("User_" + name);
 					return var;
