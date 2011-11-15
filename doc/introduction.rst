@@ -11,7 +11,8 @@ which may create new objects at runtime) and systems where behaviour of some
 of the objects is unknown or not trusted.
 
 A typical approach is to model a system initially with most objects having
-unknown behaviour, and then to refine the model until the security goals are met.
+defined (trusted) behaviour, and then to explore the effects of making them
+undefined or of adding additional actors with undefined behaviour into the system.
 
 Once you have a model that meets the goals, it should tell you:
 

@@ -15,8 +15,8 @@ class File {
 }
 
 class ServiceProvider {
-    public Image process(File file) {
-        Image image = new File("serviceProvider.crt");
+    public File process(File file) {
+        File image = new File("serviceProvider.crt");
         file.get();
         image.put();
         return image;
@@ -27,7 +27,7 @@ class Client {
   public void test(DataProvider dataProvider, ServiceProvider serviceProvider) {
     File file = dataProvider.newFile();
     file.put();
-    Image result = serviceProvider.process(file);
+    File result = serviceProvider.process(file);
     result.get();
   }
 }

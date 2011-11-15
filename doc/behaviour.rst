@@ -174,26 +174,19 @@ rules. The syntax is::
 
   [TYPE] NAME = VAR :- QUERY;
 
-For example, a `Matcher` stores an object if both arguments are equal::
+For example, an object that only stores value types (int, string, etc) rather than references
+can be modelled as::
 
-  class Matcher {
-      private Object matches;
+  class ValueStore {
+      private Object myValue;
 
-      public void match(Object a, Object b) {
-          matches = a :- a = b;
+      public void store(Object value) {
+          myValue = value :- isA(value, "Value");
       }
   }
 
-This corresponds to the following Java version (which isn't valid SAM code)::
+You can use any Datalog query as the test and you can mix Java variables, Datalog variables and "special"
+variables freely. The special variables recognised are:
 
-  class Matcher {
-      private Object matches;
-
-      public void match(Object a, Object b) {
-          if (a == b) {
-              matches = a;
-          }
-      }
-  }
-
-You can use any Datalog query as the test.
+* `$Context` -- the context in which the variable is being assigned
+* `$Caller` -- the object (or objects) which called this method (in `$Context`)

@@ -101,9 +101,7 @@ See :ref:`Configuration` for more information.
 
 Running the scenario
 --------------------
-Putting these together gives this complete model file (:example:`data1`).
-
-You can run the model like this:
+Putting these together gives a complete model file (:example:`data1`). You can run the model like this:
 
 .. code-block:: sh
 
@@ -376,8 +374,8 @@ Now we want to add a visualisation service to the system. A user gives the servi
 graph of the data in the file::
 
   class ServiceProvider {
-      public Image process(File file) {
-          Image image = new File();
+      public File process(File file) {
+          File image = new File();
           file.get();
           image.put();
           return image;
@@ -396,7 +394,7 @@ graph of the data in the file::
     public void test() {
       File file = myDataProvider.newFile();
       file.put();
-      Image result = myServiceProvider.process(file);
+      File result = myServiceProvider.process(file);
       result.get();
     }
   }
@@ -423,6 +421,12 @@ Adding back in the `otherUsers` object shows that this design is still safe when
 
 .. image:: _images/service2.png
 
+.. note::
+
+  Unknown objects aggregate all child objects they may create themselves. So `otherUsers` may represent
+  further data provider services and files (also with `Unknown` behaviour), in addition to the
+  objects we defined explicitly. The arrow from `serviceProvider` to `otherUsers` indicates
+  `serviceProvider` reading from these files.
 
 Adding a service in a non-capabilities system
 ---------------------------------------------
@@ -506,8 +510,8 @@ We can then update the service provider to check that its caller has read access
 
   class ServiceProvider {
       @PermittedRole("world")
-      public Image process(File uncheckedFile) {
-          Image image = new File("serviceProvider.crt");
+      public File process(File uncheckedFile) {
+          File image = new File("serviceProvider.crt");
 
           Identity caller = ?Identity :- hasIdentity($Caller, ?Identity);
           File checkResult = uncheckedFile.checkCanRead(caller);
@@ -531,14 +535,14 @@ Finally, we assign `file = uncheckedFile` only if `uncheckedFile.checkCanRead` c
 Unknown providers
 -----------------
 
-The model shows that other people can access the sample user's files, provided that the user only uses providers with the defined behaviour. Of course,
+The model shows that other people can't access the sample user's files, provided that the user only uses providers with the defined behaviour. Of course,
 if the user uploads data to a malicious hosting provider then we must assume that that data is compromised. However, it is still useful to ask whether this
 could affect the integrity of data at the good providers.
 
-We could create a new `otherProviders` object with Unknown behaviour and have `user` call that, but we can achieve the same thing by reusing `otherUsers`
+We could create a new `otherProviders` object with `Unknown` behaviour and have `user` call that, but we can achieve the same thing by reusing `otherUsers`
 (two `Unknown` objects with the ability to communicate with each other won't do anything that a single `Unknown` object wouldn't).
 
-Here, we have renamed `otherUsers` to `others` and changes the API of `Client` to allow testing with different providers (:example:`service7`) ::
+Here, we have renamed `otherUsers` to `others` and changed the API of `Client` to allow testing with different providers (:example:`service7`) ::
 
   class Client {
     public void test(DataProvider dataProvider, ServiceProvider serviceProvider) {
@@ -546,7 +550,7 @@ Here, we have renamed `otherUsers` to `others` and changes the API of `Client` t
       file.put();
       Identity serviceIdentity = ?Cert :- hasIdentity(serviceProvider, ?Cert);
       file.grantReadAccess(serviceIdentity);
-      Image result = serviceProvider.process(file);
+      File result = serviceProvider.process(file);
       result.get();
     }
   }
@@ -566,7 +570,7 @@ Here, we have renamed `otherUsers` to `others` and changes the API of `Client` t
       }
 
       test "Others" {
-          others = new Unknown(dataProvider);
+          others = new Unknown(dataProvider, serviceProvider);
           others.test();
           user.test(others, others);
       }
@@ -580,7 +584,7 @@ This reveals a number of new problems:
 
 * `others` may be able to read from `file` because `file.myReader = <others.crt>`, which happened because `user` granted access. This happened because `user` tried to create a new file using the `Unknown` provider and it returned the address of the existing `file` object instead. Thinking it was a new file, `user` then granted the unknown provider read access on it.
 
-* `serviceProvider` may read `file` if `others` ask it to process it and our `checkCanRead` method returned true to say that `others` had access (due to the previous problem).
+* `serviceProvider` may read `file` if `others` ask it to process it. Our `checkCanRead` method returned true to say that `others` had access (due to the previous problem).
 
 * `user` may be tricked into accessing `image` because the `Unknown` service provider may return the address of the existing `image` instead of generating a new output file.
 
@@ -588,7 +592,7 @@ At this point, we could add yet more access control checks to the design, or we 
 
 .. image:: _images/service8.png
 
-This shows that `user` may safely use services and data hosting provided by parties with unknown behaviour, without the possibility of exposing access to
+This shows that, when using object-capabilities, `user` may safely use services and data hosting provided by parties with unknown behaviour, without the possibility of exposing access to
 data held at their trusted sites.
 
 Conclusions

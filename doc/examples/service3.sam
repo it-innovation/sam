@@ -29,8 +29,8 @@ class File {
 
 class ServiceProvider {
     @PermittedRole("world")
-    public Image process(File file) {
-        Image image = new File("serviceProvider.crt");
+    public File process(File file) {
+        File image = new File("serviceProvider.crt");
         file.get();
         image.put();
         return image;
@@ -49,7 +49,7 @@ class Client {
   public void test() {
     File file = myDataProvider.newFile("user.crt");
     file.put();
-    Image result = myServiceProvider.process(file);
+    File result = myServiceProvider.process(file);
     result.get();
   }
 }

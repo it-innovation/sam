@@ -36,8 +36,8 @@ class File {
 
 class ServiceProvider {
     @PermittedRole("world")
-    public Image process(File file, Identity reader) {
-        Image image = new File("serviceProvider.crt");
+    public File process(File file, Identity reader) {
+        File image = new File("serviceProvider.crt");
         file.get();
         image.grantReadAccess(reader);
         image.put();
@@ -59,7 +59,7 @@ class Client {
     file.put();
     Identity serviceIdentity = ?Cert :- hasIdentity(myServiceProvider, ?Cert);
     file.grantReadAccess(serviceIdentity);
-    Image result = myServiceProvider.process(file, "user.crt");
+    File result = myServiceProvider.process(file, "user.crt");
     result.get();
   }
 }

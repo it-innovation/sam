@@ -43,8 +43,8 @@ class File {
 
 class ServiceProvider {
     @PermittedRole("world")
-    public Image process(File uncheckedFile) {
-        Image image = new File("serviceProvider.crt");
+    public File process(File uncheckedFile) {
+        File image = new File("serviceProvider.crt");
 
         Identity caller = ?Identity :- hasIdentity($Caller, ?Identity);
         File checkResult = uncheckedFile.checkCanRead(caller);
@@ -63,7 +63,7 @@ class Client {
     file.put();
     Identity serviceIdentity = ?Cert :- hasIdentity(serviceProvider, ?Cert);
     file.grantReadAccess(serviceIdentity);
-    Image result = serviceProvider.process(file);
+    File result = serviceProvider.process(file);
     result.get();
   }
 }
@@ -83,7 +83,7 @@ config {
     }
 
     test "Others" {
-        others = new Unknown(dataProvider);
+        others = new Unknown(dataProvider, serviceProvider);
         others.test();
         user.test(others, others);
     }
