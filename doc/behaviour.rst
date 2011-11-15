@@ -48,7 +48,7 @@ Types are currently ignored (and treated safely as "Object").
 Where `NAME` is a variable name, `TYPE` is a class name, `METHOD` is a method name,
 and `ARGS` is a comma-separated list of variable names.
 
-Each `ANNOTATION` is of the form "@NAME(ARGS)", where NAME is the name of a datalog predicate, and
+Each `ANNOTATION` is of the form "@NAME(ARGS)", where NAME is the name of a Datalog predicate, and
 asserts a fact for this method. For example, the annotations in this code::
 
   class Foo {
@@ -92,13 +92,13 @@ Methods
 .. function:: mayAccept(?Method, ?ParamVar, ?Pos)
 
    Objects of this type accept an argument value passes in the given position
-   and store it in a variable namd ParamVar. The first argument has position 0.
+   and store it in a variable named ParamVar. The first argument has position 0.
    If `Pos` is -1, then the parameter may accept values passed in any position.
 
 .. function:: mayAccept(?Method, ?ParamVar, ?Pos, ?Value)
 
    Objects of this type accept these argument values and store them in the
-   local variable namd ParamVar.
+   local variable named ParamVar.
 
 .. function:: hasCallSite(?Method, ?CallSite)
 

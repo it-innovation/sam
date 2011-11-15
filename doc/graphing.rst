@@ -79,7 +79,7 @@ This diagram shows:
 * A has a field which may point to B.
 * Some method of A has a local variable which may point to C.
 * C has unknown behaviour (it will try to do anything it is able to do).
-* A has access to D, but shouldn’t. This was caused by P calling A (the orange arrow).
+* A has access to D, but shouldn't. This was caused by P calling A (the orange arrow).
 * A has a field which may point to E, and may invoke E.
 
 When invocations are being displayed, they are shown as additional green nodes:

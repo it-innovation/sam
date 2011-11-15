@@ -7,7 +7,7 @@ A model contains several sections:
 
 * A model of the behaviour of the objects in the system. This behaviour corresponds to the design or source code.
 
-* The scenerio being modelled, which consists of:
+* The scenario being modelled, which consists of:
 
   * The objects initially present and their connections.
   * The test cases to be tried.
@@ -34,7 +34,7 @@ The steps are as follows (these are typical when making a SAM model):
 
 Behaviour
 ---------
-We'll start by modelling the data hosting provider as a factory, similar to the one descibed in the :ref:`Concepts` page.
+We'll start by modelling the data hosting provider as a factory, similar to the one described in the :ref:`Concepts` page.
 
 A `DataProvider` object creates new objects of type "File", corresponding to the following Java
 code::
@@ -147,7 +147,7 @@ in the real system will ever call any method on the real `DataProvider` object.
 Therefore, two kinds of property are possible:
 
 * *Safety properties*, which assert that something can never happen in the real system.
-* *Liveness possibilties*, which assert that something isn't prevented by the model.
+* *Liveness possibilities*, which assert that something isn't prevented by the model.
 
 Because our model is an over-approximation of the real system, safety properties provide
 a much stronger guarantee than liveness properties. Liveness properties are mainly useful
@@ -502,7 +502,7 @@ calling `File.get` (:example:`service6`)::
   }
 
 This demonstrates how Datalog can be embedded into the Java syntax to make the language more expressive where necessary. Care must be taken when
-doing this that the implementor of the real system will be able to turn this into real code (for example, it is easy to rely on a private field in
+doing this that the implementer of the real system will be able to turn this into real code (for example, it is easy to rely on a private field in
 another object using this syntax, but the real software would not be able to do that). In this case, we assume that the the code will able to query
 its own access control policy, even though we don't model the access control system itself.
 

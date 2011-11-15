@@ -3,7 +3,7 @@
 Access Control
 ==============
 
-SAM normally modells pure object-capability systems, but it can also be used to
+SAM normally models pure object-capability systems, but it can also be used to
 model identity-based access control systems.
 
 .. function:: accessControlOn

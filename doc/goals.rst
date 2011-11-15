@@ -53,7 +53,7 @@ Predicates
 
 .. function:: requireAccess(?Object, ?Target)
 
-   Check that the model does not exclude the possiblilty of `Object`
+   Check that the model does not exclude the possibility of `Object`
    getting access to `Target`. Note that (unlike `denyAccess` above), this
    check cannot be exact: a real system could conform to the model but
    still not allow this. However, it is a useful sanity check that your
