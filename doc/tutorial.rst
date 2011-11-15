@@ -495,8 +495,8 @@ calling `File.get` (:example:`service6`)::
     ...
     @PermittedRole("owner")
     @PermittedRole("reader")
-    public File checkCanRead(Identity id) {
-      File verified = true :- grantsRole(this, ?Role, id), PermittedRole("File.get", ?Role);
+    public boolean checkCanRead(Identity id) {
+      boolean verified = true :- grantsRole(this, ?Role, id), PermittedRole("File.get", ?Role);
       return verified;
     }
   }
@@ -514,7 +514,7 @@ We can then update the service provider to check that its caller has read access
           File image = new File("serviceProvider.crt");
 
           Identity caller = ?Identity :- hasIdentity($Caller, ?Identity);
-          File checkResult = uncheckedFile.checkCanRead(caller);
+          boolean checkResult = uncheckedFile.checkCanRead(caller);
 
           File file = uncheckedFile :- mayReturn(uncheckedFile, $Context, "File.checkCanRead", true);
           file.get();
