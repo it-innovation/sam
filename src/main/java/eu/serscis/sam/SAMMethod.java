@@ -122,6 +122,7 @@ class SAMMethod {
 	public List<ILiteral> processJavaDl(PTerm value, ALiterals parsed) throws ParserException {
 		final Set<String> javaVars = new HashSet<String>();
 		final List<ILiteral> extraLiterals = new LinkedList<ILiteral>();
+		final boolean[] need_caller = {false};
 
 		TermProcessor termFn = new TermProcessor() {
 			public ITerm process(PTerm term) throws ParserException {
@@ -130,6 +131,27 @@ class SAMMethod {
 					ITerm var = TERM.createVariable("Java_" + tname.getText());
 					extraLiterals.add(getValue(var, tname));
 					return var;
+				} else if (term instanceof AVarTerm) {
+					// Rename user variables to avoid conflicts
+					TName tname = ((AVarTerm) term).getName();
+					String name = tname.getText();
+					if (name.equals("CallerInvocation")) {
+						System.out.println("WARNING: use of ?CallerInvocation; use $Context instead");
+						return null;
+					}
+					ITerm var = TERM.createVariable("User_" + name);
+					return var;
+				} else if (term instanceof ASpecialTerm) {
+					TName tname = ((ASpecialTerm) term).getName();
+					String name = tname.getText();
+					if (name.equals("Context")) {
+						return TERM.createVariable("CallerInvocation");
+					} else if (name.equals("Caller")) {
+						need_caller[0] = true;
+						return TERM.createVariable("CallerOfThisMethod");
+					} else {
+						throw new ParserException(tname, "Unknown special variable: " + tname);
+					}
 				}
 				return null;
 			}
@@ -161,6 +183,20 @@ class SAMMethod {
 		literals.add(isA);
 		literals.add(live);
 		literals.add(eq);
+
+		if (need_caller[0]) {
+			// didCall(?CallerOfThisMethod, ?Caller_AnyInvocation, ?Caller_CallSite, ?Caller, ?CallerInvocation, method)
+
+			ILiteral didCall = BASIC.createLiteral(true, didCallP, BASIC.createTuple(
+						TERM.createVariable("CallerOfThisMethod"),
+						TERM.createVariable("Caller_AnyInvocation"),
+						TERM.createVariable("Caller_CallSite"),
+						TERM.createVariable("Caller"),			// == this, not our caller! (badly named)
+						TERM.createVariable("CallerInvocation"),	// == our invocation
+						methodNameFull));
+			literals.add(didCall);
+		}
+
 		return literals;
 	}
 

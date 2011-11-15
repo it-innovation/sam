@@ -484,18 +484,35 @@ So, `serviceProvider` tried to process `file` because `otherUsers` asked it to, 
 
 Fixing this problem requires more changes to the design. When `serviceProvider`
 reads a file, it needs to first check that its caller would be able to read
-it (:example:`service6`)::
+it. We'll add an extra method `checkCanRead`, which takes an identity as an argument and returns `true` if that identity has a role that allows
+calling `File.get` (:example:`service6`)::
+
+  class File {
+    ...
+    @PermittedRole("owner")
+    @PermittedRole("reader")
+    public File checkCanRead(Identity id) {
+      File verified = true :- grantsRole(this, ?Role, id), PermittedRole("File.get", ?Role);
+      return verified;
+    }
+  }
+
+This demonstrates how Datalog can be embedded into the Java syntax to make the language more expressive where necessary. Care must be taken when
+doing this that the implementor of the real system will be able to turn this into real code (for example, it is easy to rely on a private field in
+another object using this syntax, but the real software would not be able to do that). In this case, we assume that the the code will able to query
+its own access control policy, even though we don't model the access control system itself.
+
+We can then update the service provider to check that its caller has read access on the file::
 
   class ServiceProvider {
       @PermittedRole("world")
       public Image process(File uncheckedFile) {
           Image image = new File("serviceProvider.crt");
-          Identity caller = ?Identity :-
-                didCall(?MyCaller, ?CallerInvocation, ?CallSite, this, ?TargetInvocation, ?Method),
-                hasIdentity(?MyCaller, ?Identity);
-          File file = uncheckedFile :-
-                grantsRole(uncheckedFile, ?Role, caller),
-                PermittedRole("File.get", ?Role);
+
+          Identity caller = ?Identity :- hasIdentity($Caller, ?Identity);
+          File checkResult = uncheckedFile.checkCanRead(caller);
+
+          File file = uncheckedFile :- mayReturn(uncheckedFile, $Context, "File.checkCanRead", true);
           file.get();
           image.grantReadAccess(caller);
           image.put();
@@ -503,24 +520,76 @@ it (:example:`service6`)::
       }
   }
 
-Here, we have to go beyond the Java-like syntax and embed some Datalog into the behaviour. The `caller` line says:
+Here we say that the Java variable `caller` may be set to `Identity` if the caller of this method has that identity. Again, we assume some API
+that lets the programmer of the real system discover the identity of the caller. See :ref:`Behaviour` for a full description of the Datalog syntax.
 
-  `caller` may be assigned the value `Identity` if:
-    * `MyCaller` :func:`didCall` this object in context `CallerInvocation` (the current context), and
-    * `MyCaller` :func:`hasIdentity` `Identity`
-
-The `file` line says:
-
-  `file` may be assigned from `uncheckedFile` if:
-    * `uncheckedFile` grants `Role` to `caller`, and
-    * `Role` grants access to `File.get`
+Finally, we assign `file = uncheckedFile` only if `uncheckedFile.checkCanRead` could return `true`.
 
 .. image:: _images/service6.png
 
-This model can be verified, but it is not ideal. Whoever implements the software needs to check that their code behaves according to the
-model, but there's no obvious way for the real software to find out whether `uncheckedFile` would grant a suitable role to `caller`. We could
-continue extending the design to cope with this case, or we might decide to go with the much simpler capability-based design above.
 
+Unknown providers
+-----------------
+
+The model shows that other people can access the sample user's files, provided that the user only uses providers with the defined behaviour. Of course,
+if the user uploads data to a malicious hosting provider then we must assume that that data is compromised. However, it is still useful to ask whether this
+could affect the integrity of data at the good providers.
+
+We could create a new `otherProviders` object with Unknown behaviour and have `user` call that, but we can achieve the same thing by reusing `otherUsers`
+(two `Unknown` objects with the ability to communicate with each other won't do anything that a single `Unknown` object wouldn't).
+
+Here, we have renamed `otherUsers` to `others` and changes the API of `Client` to allow testing with different providers (:example:`service7`) ::
+
+  class Client {
+    public void test(DataProvider dataProvider, ServiceProvider serviceProvider) {
+      File file = dataProvider.newFile("user.crt");
+      file.put();
+      Identity serviceIdentity = ?Cert :- hasIdentity(serviceProvider, ?Cert);
+      file.grantReadAccess(serviceIdentity);
+      Image result = serviceProvider.process(file);
+      result.get();
+    }
+  }
+
+  config {
+      Client user;
+      Unknown others;
+      DataProvider dataProvider;
+      ServiceProvider serviceProvider;
+
+      test {
+          dataProvider = new DataProvider();
+          serviceProvider = new ServiceProvider();
+
+          user = new Client();
+          user.test(dataProvider, serviceProvider);
+      }
+
+      test "Others" {
+          others = new Unknown(dataProvider);
+          others.test();
+          user.test(others, others);
+      }
+  }
+
+.. image:: _images/service7.png
+
+This reveals a number of new problems:
+
+* `user` may be tricked into accessing `file` (representing files it created in the base case) from the `Others` case, because the `Unknown` service provider's `process` method may return the address of the existing `file` instead of creating a new one.
+
+* `others` may be able to read from `file` because `file.myReader = <others.crt>`, which happened because `user` granted access. This happened because `user` tried to create a new file using the `Unknown` provider and it returned the address of the existing `file` object instead. Thinking it was a new file, `user` then granted the unknown provider read access on it.
+
+* `serviceProvider` may read `file` if `others` ask it to process it and our `checkCanRead` method returned true to say that `others` had access (due to the previous problem).
+
+* `user` may be tricked into accessing `image` because the `Unknown` service provider may return the address of the existing `image` instead of generating a new output file.
+
+At this point, we could add yet more access control checks to the design, or we could decide to try the scenario using capability-based access control (:example:`service8`):
+
+.. image:: _images/service8.png
+
+This shows that `user` may safely use services and data hosting provided by parties with unknown behaviour, without the possibility of exposing access to
+data held at their trusted sites.
 
 Conclusions
 -----------
@@ -531,5 +600,8 @@ access control system and showed that it is able to provide the same security pr
 
 We then extended our scenario with a service (data-processing) provider. Using object capabilities the required security properties were proven again,
 while the identity-based system required further updates to support delegation to allow this use case to work. Adding untrusted users back into the
-model revealed that the access policies contained a subtle flaw and that further design work would be needed to create a secure system with this
-approach.
+model revealed that the access policies contained a subtle flaw and that the real system would need to perform additional checks to prevent this.
+
+Finally, we extended the model again to consider a user using both trusted and untrusted services. SAM detected a number of additional vulnerabilities
+in the design using identity-based access control. The capability-based design continued to maintain the required security properties while requiring
+considerably less code.

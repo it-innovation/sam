@@ -47,6 +47,7 @@ Tokens
   string_literal = '"' string_character* '"';
   query_start = '?-';
   question = '?';
+  dollar = '$';
   star = '*';
   dots = '...';
   dot = '.';
@@ -97,6 +98,7 @@ Productions
        | {string} string_literal
        | {int} number
        | {bool} bool
+       | {special} dollar name
        | {composite} name l_par terms r_par;
 
   query = query_start literals dot;

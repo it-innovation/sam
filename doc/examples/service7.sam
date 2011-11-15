@@ -58,27 +58,19 @@ class ServiceProvider {
 }
 
 class Client {
-  private DataProvider myDataProvider;
-  private ServiceProvider myServiceProvider;
-
-  public Client(DataProvider dataProvider, ServiceProvider serviceProvider) {
-    myDataProvider = dataProvider;
-    myServiceProvider = serviceProvider;
-  }
-
-  public void test() {
-    File file = myDataProvider.newFile("user.crt");
+  public void test(DataProvider dataProvider, ServiceProvider serviceProvider) {
+    File file = dataProvider.newFile("user.crt");
     file.put();
-    Identity serviceIdentity = ?Cert :- hasIdentity(myServiceProvider, ?Cert);
+    Identity serviceIdentity = ?Cert :- hasIdentity(serviceProvider, ?Cert);
     file.grantReadAccess(serviceIdentity);
-    Image result = myServiceProvider.process(file);
+    Image result = serviceProvider.process(file);
     result.get();
   }
 }
 
 config {
     Client user;
-    Unknown otherUsers;
+    Unknown others;
     DataProvider dataProvider;
     ServiceProvider serviceProvider;
 
@@ -86,19 +78,20 @@ config {
         dataProvider = new DataProvider();
         serviceProvider = new ServiceProvider();
 
-        user = new Client(dataProvider, serviceProvider);
-        user.test();
+        user = new Client();
+        user.test(dataProvider, serviceProvider);
     }
 
     test "Others" {
-        otherUsers = new Unknown(dataProvider);
-        otherUsers.test();
+        others = new Unknown(dataProvider);
+        others.test();
+        user.test(others, others);
     }
 }
 
 
 hasIdentity("user", "user.crt").
-hasIdentity("otherUsers", "otherUsers.crt").
+hasIdentity("others", "others.crt").
 hasIdentity("dataProvider", "dataProvider.crt").
 hasIdentity("serviceProvider", "serviceProvider.crt").
 
@@ -108,3 +101,5 @@ grantsRole(?File, "owner", ?Identity) :- field(?File, "myOwner", ?Identity).
 grantsRole(?File, "reader", ?Identity) :- field(?File, "myReader", ?Identity).
 
 ignoreEdgeForRanking(?Source, ?Target) :- isObject(?Source), isA(?Target, "Unknown").
+
+expectFailure.

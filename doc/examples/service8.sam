@@ -1,0 +1,56 @@
+import "includes/service6mustCall.sam".
+
+hideUncalledReferences.
+
+class DataProvider {
+  public File newFile(Identity owner) {
+    File file = new File(owner);
+    return file;
+  }
+}
+
+class File {
+  public void get() {}
+  public void put() {}
+}
+
+class ServiceProvider {
+    public Image process(File file) {
+        Image image = new File("serviceProvider.crt");
+        file.get();
+        image.put();
+        return image;
+    }
+}
+
+class Client {
+  public void test(DataProvider dataProvider, ServiceProvider serviceProvider) {
+    File file = dataProvider.newFile();
+    file.put();
+    Image result = serviceProvider.process(file);
+    result.get();
+  }
+}
+
+config {
+    Client user;
+    Unknown others;
+    DataProvider dataProvider;
+    ServiceProvider serviceProvider;
+
+    test {
+        dataProvider = new DataProvider();
+        serviceProvider = new ServiceProvider();
+
+        user = new Client();
+        user.test(dataProvider, serviceProvider);
+    }
+
+    test "Others" {
+        others = new Unknown(dataProvider, serviceProvider);
+        others.test();
+        user.test(others, others);
+    }
+}
+
+ignoreEdgeForRanking(?Object, "others") :- isObject(?Object).
