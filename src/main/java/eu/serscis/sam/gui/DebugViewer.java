@@ -199,6 +199,16 @@ public class DebugViewer implements Updatable {
 			String callSite = tuple.get(0).getValue().toString();
 			String target = tuple.get(1).getValue().toString();
 			return "(" + callSite + " may store result in " + target + ")";
+		} else if (p.equals(Constants.mayReturnP)) {
+			String object = tuple.get(0).getValue().toString();
+			String invocation = tuple.get(1).getValue().toString();
+			String[] method = tuple.get(2).getValue().toString().split("\\.");
+			String value = tuple.get(3).getValue().toString();
+			String msg = "<" + object + ">." + method[1] + " returned <" + value + ">";
+			if (!invocation.equals("")) {
+				msg += " [" + invocation + "]";
+			}
+			return msg;
 		} else if (p.equals(Constants.didCall3P)) {
 			String caller = tuple.get(0).getValue().toString();
 			String target = tuple.get(1).getValue().toString();
@@ -273,9 +283,14 @@ public class DebugViewer implements Updatable {
 			return "<" + actor + ">." + name[1] + "()'s " + name[2] + " = <" + value + ">";
 		} else if (p.equals(Constants.mayCallObjectP)) {
 			String actor = getInvocation(tuple, 0);
+			String invocation = tuple.get(1).getValue().toString();
 			String method = tuple.get(2).getValue().toString().split("\\.")[1].split("-")[0];
 			String target = tuple.get(3).getValue().toString();
-			return "<" + actor + ">." + method + " may call <" + target + ">";
+			String msg = "<" + actor + ">." + method + " tries to call <" + target + ">";
+			if (!invocation.equals("")) {
+				msg += " [" + invocation + "]";
+			}
+			return msg;
 		} else if (p.equals(Constants.didCreateP)) {
 			String actor = getInvocation(tuple, 0);
 			//String resultVar = tuple.get(2).getValue().toString();
