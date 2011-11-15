@@ -531,6 +531,17 @@ Finally, we assign `file = uncheckedFile` only if `uncheckedFile.checkCanRead` c
 
 .. image:: _images/service6.png
 
+.. note::
+
+  Why do we need to do the :func:`mayReturn` test, rather than just `file = uncheckedFile := checkResult = true`?
+
+  The reason is that we are aggregating two kinds of calls into the `Other` case:
+
+  * in some, a genuine file is passed and `checkResult = false`.
+  * in others, a fake file is passed and `checkResult = true`.
+
+  Therefore, in the aggregated model, `checkResult` could be `true` and `uncheckedFile` could be <file>, which doesn't allow us to verify the property (it is an over-aggregation). The `mayReturn` makes a stronger check: we only use a particular `uncheckedFile` if that object returned `true`, not if any possible other value of `uncheckedFile` could return `true`.
+
 
 Unknown providers
 -----------------
