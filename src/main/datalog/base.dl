@@ -88,7 +88,7 @@ declare didGetException(?Caller, ?CallerInvocation, ?CallSite, ?Exception).
 declare mayReturn(?Object, ?Invocation, ?Method, ?Value).
 declare mayThrow(?Object, ?Invocation, ?Method, ?Exception).
 declare didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue).
-declare maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue).
+declare mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue).
 declare mayCreate(?CallSite, ?ChildType, ?NameHint).
 declare newObject(?Object, ?Invocation, ?ChildType, ?NewObject).
 declare isPublic(?Object).

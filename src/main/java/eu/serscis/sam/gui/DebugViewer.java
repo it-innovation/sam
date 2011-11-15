@@ -179,7 +179,7 @@ public class DebugViewer implements Updatable {
 		ITuple tuple = atom.getTuple();
 		IPredicate p = atom.getPredicate();
 
-		if (p.getPredicateSymbol().equals("maySend")) {
+		if (p.getPredicateSymbol().equals("mayReceive")) {
 			String target = tuple.get(0).getValue().toString();
 			String method = tuple.get(2).getValue().toString();
 			String arg;

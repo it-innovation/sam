@@ -3,8 +3,8 @@
 Composition problem
 ===================
 
-We will now move on to a more realistic example, where will we detect a problem with
-combining two access control techniques. The situation is:
+In this example, we detect a problem with combining two access control
+techniques. The situation is:
 
 1. The `File` interface provides a `readOnly` method, which returns a read-only proxy to the file.
 2. A reference can be wrapped by a `Logger`, which logs all operations performed.

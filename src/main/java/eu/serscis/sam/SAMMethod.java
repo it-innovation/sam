@@ -460,7 +460,7 @@ class SAMMethod {
 		}
 	}
 
-	/* maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?Value) :-
+	/* mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?Value) :-
 	 * 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	 *	local|field,
 	 */

@@ -128,7 +128,7 @@ Call-sites
 
    This call-site may call methods with any name.
 
-.. function:: maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue)
+.. function:: mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue)
 
    Target.method may get called with `ArgValue` as parameter number `Pos` (or as any
    parameter if `Pos` is `-1`).

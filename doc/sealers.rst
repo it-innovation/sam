@@ -90,7 +90,7 @@ We can now update the definition of the `Unsealer`::
     public Object unseal(Box box) {
       box.offerContent();
       Object value = myTempContents :-
-          maySend(this, ?CallerInvocation, "Unsealer.acceptContent", ?Pos, myTempContents);
+          mayReceive(this, $Context, "Unsealer.acceptContent", ?Pos, myTempContents);
       return value;
     }
 
@@ -101,8 +101,6 @@ We can now update the definition of the `Unsealer`::
 
 The real behaviour is that an `Unsealer` sets `myTempContents` to `null`, asks the box to send its contents, and then returns `myTempContents`. We can't model
 setting the field to `null`, but we can add a restriction that `acceptContent` received that value in the same invocation context as the call to `unseal`.
-
-.. note:: FIXME: `?CallerInvocation` is a bad name for this. So is `maySend`.
 
 With this change, we can pass an `Unknown` object holding a value to an `Unsealer` and it will unseal it successfully.
 

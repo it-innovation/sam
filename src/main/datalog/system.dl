@@ -94,20 +94,20 @@ mayThrow(?Caller, ?CallerInvocation, ?CallerMethod, ?Exception) :-
 
 /* (normal call; sender and receiver use fixed args) */
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue),
+	mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue),
 	isA(?Target, ?TargetType),
 	mayAccept(?Method, ?ParamVar, ?Pos, ?ArgValue).
 
 /* (no position information from sender; e.g. Unknown sender,
  *  OR no position information for either; e.g. Unknown to Unknown) */
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	maySend(?Target, ?TargetInvocation, ?Method, -1, ?ArgValue),
+	mayReceive(?Target, ?TargetInvocation, ?Method, -1, ?ArgValue),
 	isA(?Target, ?TargetType),
 	mayAccept(?Method, ?ParamVar, ?Pos, ?ArgValue).
 
 /* (no position information for receiver; e.g. Unknown receiver) */
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	maySend(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue),
+	mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue),
 	isA(?Target, ?TargetType),
 	mayAccept(?Method, ?ParamVar, -1, ?ArgValue).
 

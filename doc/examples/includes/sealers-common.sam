@@ -41,7 +41,7 @@ class Unsealer {
   public Object unseal(Box box) {
     box.offerContent();
     Object value = myTempContents :-
-        maySend(this, $Context, "Unsealer.acceptContent", ?Pos, myTempContents);
+        mayReceive(this, $Context, "Unsealer.acceptContent", ?Pos, myTempContents);
     return value;
   }
 

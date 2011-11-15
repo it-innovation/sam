@@ -478,7 +478,7 @@ public class Debugger {
 
 			ITuple tuple = problem.getAtom().getTuple();
 			IPredicate p = problem.getAtom().getPredicate();
-			if (p.getPredicateSymbol().equals("maySend")) {
+			if (p.getPredicateSymbol().equals("mayReceive")) {
 				String target = tuple.get(0).getValue().toString();
 				String method = tuple.get(2).getValue().toString();
 				String arg;
@@ -578,7 +578,7 @@ public class Debugger {
 			    p.equals(didCreate) ||
 			    p.equals(getsAccess) ||
 			    p.getPredicateSymbol().equals("error") ||
-			    p.getPredicateSymbol().equals("maySend")) {	// /4 or /5
+			    p.getPredicateSymbol().equals("mayReceive")) {	// /4 or /5
 				Step child = new Step(myStep, literal);
 				myStep.children.add(child);
 				myStep = child;
