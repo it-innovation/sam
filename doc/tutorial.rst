@@ -202,7 +202,7 @@ Use `File -> Export calls` to save all the calls that happened to a new file (:e
 .. note::
 	SAM uses `Datalog <http://en.wikipedia.org/wiki/Datalog>`_ syntax to
 	state facts and rules. Literal strings must be in double-quotes.
-	Variable names (not used yet) are preceded by "?".
+	Variable names are preceded by "?".
 
 Now import this file by adding this line to your model file::
 
