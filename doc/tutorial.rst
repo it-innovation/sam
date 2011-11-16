@@ -336,9 +336,9 @@ say which role is required to call each method::
     }
   }
 
-  grantsRole("dataProvider", "world", ?Object) :- isObject(?Object).
+  grantsRole("dataProvider", "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
 
-The :func:`grantsRole` rule says that "dataProvider" grants the "world" role to any object (anyone can create a new file).
+The :func:`grantsRole` rule says that "dataProvider" grants the "world" role to any identity the exists (anyone can create a new file).
 
 We could update `File` in a similar way, granting `user` and `otherUsers` a "user" role. However, that wouldn't work because
 `otherUsers` would still be able to access `user`'s files. Instead, we will create a system where the user passes their identity

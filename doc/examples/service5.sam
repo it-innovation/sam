@@ -90,8 +90,8 @@ hasIdentity("otherUsers", "otherUsers.crt").
 hasIdentity("dataProvider", "dataProvider.crt").
 hasIdentity("serviceProvider", "serviceProvider.crt").
 
-grantsRole("dataProvider", "world", ?Object) :- isObject(?Object).
-grantsRole("serviceProvider", "world", ?Object) :- isObject(?Object).
+grantsRole("dataProvider", "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
+grantsRole("serviceProvider", "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
 grantsRole(?File, "owner", ?Identity) :- field(?File, "myOwner", ?Identity).
 grantsRole(?File, "reader", ?Identity) :- field(?File, "myReader", ?Identity).
 

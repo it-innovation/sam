@@ -64,5 +64,5 @@ hasIdentity("user", "user.crt").
 hasIdentity("otherUsers", "otherUsers.crt").
 hasIdentity("dataProvider", "provider.crt").
 
-grantsRole("dataProvider", "world", ?Object) :- isObject(?Object).
+grantsRole("dataProvider", "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
 grantsRole(?File, "owner", ?Identity) :- field(?File, "myOwner", ?Identity).
