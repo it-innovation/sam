@@ -60,13 +60,17 @@ public class DebugViewer implements Updatable {
 	private final Tree myTree;
 	private final Text myText;
 	private final LiveResults myResults;
-	private final ILiteral myProblem;
+	private final IQuery myProblem;
 	private final Map<TreeItem,Details> extraData = new HashMap<TreeItem,Details>();
 	private final Color PRETTY_COLOUR = new Color(Display.getCurrent(), 0, 50, 150);
 	private final Color GREY = new Color(Display.getCurrent(), 100, 100, 100);
 	private boolean accessControlOn;
 
 	public DebugViewer(final Shell parent, final LiveResults results, ILiteral problem) throws Exception {
+		this(parent, results, BASIC.createQuery(problem));
+	}
+
+	public DebugViewer(final Shell parent, final LiveResults results, IQuery problem) throws Exception {
 		myShell = new Shell(parent, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.MAX | SWT.RESIZE | SWT.TITLE);
 		myShell.setText("Debug: " + problem);
 		myResults = results;
@@ -340,11 +344,13 @@ public class DebugViewer implements Updatable {
 		}
 
 		public void noteQuery(IQuery ruleQ) {
-			String msg = "Rule body:\n";
-			for (ILiteral literal : ruleQ.getLiterals()) {
-				msg += literal + "\n";
+			if (currentItem != null) {
+				String msg = "Rule body:\n";
+				for (ILiteral literal : ruleQ.getLiterals()) {
+					msg += literal + "\n";
+				}
+				extraData.get(currentItem).notes += msg;
 			}
-			extraData.get(currentItem).notes += msg;
 		}
 
 

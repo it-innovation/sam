@@ -65,6 +65,8 @@ public class ObjectViewer implements Updatable {
 	private ResultsTable myFields;
 	private ResultsTable myCalled;
 	private ResultsTable myWasCalled;
+	private ResultsTable myHasRoles;
+	private ResultsTable myGrantsRoles;
 
 	public ObjectViewer(Shell parent, final LiveResults results, final String name) throws Exception {
 		myShell = new Shell(parent, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.MAX | SWT.RESIZE | SWT.TITLE);
@@ -119,6 +121,30 @@ public class ObjectViewer implements Updatable {
 		});
 		calledTab.setControl(myCalled.getTable());
 
+		TabItem hasRolesTab = new TabItem(folder, 0);
+		hasRolesTab.setText("Has roles");
+		myHasRoles = new ResultsTable(folder, new String[] {"Identity", "Object", "Role"}, new RowViewer() {
+			public void openRow(ITuple row) throws Exception {
+				ILiteral hasIdentity = BASIC.createLiteral(true, Constants.hasIdentityP,
+					BASIC.createTuple(TERM.createString(myName), row.get(0)));
+				ILiteral grantsRole = BASIC.createLiteral(true, Constants.grantsRoleP,
+					BASIC.createTuple(row.get(1), row.get(2), row.get(0)));
+				new DebugViewer(myShell, results, BASIC.createQuery(hasIdentity, grantsRole));
+			}
+		});
+		hasRolesTab.setControl(myHasRoles.getTable());
+
+		TabItem grantsRolesTab = new TabItem(folder, 0);
+		grantsRolesTab.setText("Grants roles");
+		myGrantsRoles = new ResultsTable(folder, new String[] {"Role", "Identity"}, new RowViewer() {
+			public void openRow(ITuple row) throws Exception {
+				ILiteral lit = BASIC.createLiteral(true, Constants.grantsRoleP,
+					BASIC.createTuple(TERM.createString(name), row.get(1), row.get(2), row.get(3)));
+				new DebugViewer(myShell, results, lit);
+			}
+		});
+		grantsRolesTab.setControl(myGrantsRoles.getTable());
+
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 1;
 		gridLayout.marginHeight = 0;
@@ -150,6 +176,8 @@ public class ObjectViewer implements Updatable {
 		populateLocals();
 		populateWasCalled();
 		populateCalled();
+		populateHasRoles();
+		populateGrantsRoles();
 
 		myResults.whenUpdated(this);
 	}
@@ -215,5 +243,38 @@ public class ObjectViewer implements Updatable {
 		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query, bindings);
 
 		myCalled.fillTable(rel);
+	}
+
+	private void populateHasRoles() throws Exception {
+		/* grantsRole(?Object, ?Role, ?Identity), hasIdentity(myName, ?Identity) */
+		ITuple args = BASIC.createTuple(
+				TERM.createVariable("Object"),
+				TERM.createVariable("Role"),
+				TERM.createVariable("Identity"));
+
+		ILiteral lit = BASIC.createLiteral(true, Constants.grantsRoleP, args);
+
+		ILiteral hasIdentity = BASIC.createLiteral(true, Constants.hasIdentityP,
+				BASIC.createTuple(
+					TERM.createString(myName),
+					TERM.createVariable("Identity")));
+
+		IQuery query = BASIC.createQuery(lit, hasIdentity);
+		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query);
+
+		myHasRoles.fillTable(rel);
+	}
+
+	private void populateGrantsRoles() throws Exception {
+		ITuple args = BASIC.createTuple(
+				TERM.createString(myName),
+				TERM.createVariable("Role"),
+				TERM.createVariable("Identity"));
+
+		ILiteral lit = BASIC.createLiteral(true, Constants.grantsRoleP, args);
+		IQuery query = BASIC.createQuery(lit);
+		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query);
+
+		myGrantsRoles.fillTable(rel);
 	}
 }

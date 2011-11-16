@@ -123,16 +123,17 @@ public class Debugger {
 	 * explain it visually.
 	 */
 	public void debug(final ILiteral problem, final IRelation edges) throws Exception {
+		IQuery query = BASIC.createQuery(problem);
 		Recorder recorder = new Recorder(problem);
-		debug(problem, recorder);
+		debug(query, recorder);
 		recorder.showImportantSteps(edges);
 	}
 
 	/* Why was this true? Find a simple example which would cause it and
 	 * tell reporter.
 	 */
-	public void debug(final ILiteral problem, Reporter reporter) throws Exception {
-		knowledgeBase.execute(BASIC.createQuery(problem));
+	public void debug(final IQuery problem, Reporter reporter) throws Exception {
+		knowledgeBase.execute(problem);
 		exploreGraph(problem, new HashSet<ILiteral>(), reporter);
 	}
 
@@ -172,7 +173,76 @@ public class Debugger {
 		return BASIC.createQuery(newLiterals);
 	}
 
-	private void exploreGraph(ILiteral problem, Set<ILiteral> seen, Reporter reporter) throws Exception {
+	private void exploreGraph(IQuery ruleQ, Set<ILiteral> seen, Reporter reporter) throws Exception {
+		reporter.noteQuery(ruleQ);
+
+		/* Check internal variable assignments that make this rule true, and select the
+		 * one that was true first.
+		 */
+
+		List<IVariable> queryVars = new LinkedList<IVariable>();
+		IRelation internalAssignments = knowledgeBase.execute(ruleQ, queryVars);
+
+		long bestTrue = -1;
+		List<ILiteral> bestLiterals = null;
+		List<ILiteral> bestNegatives = null;
+
+		for (int t = 0; t < internalAssignments.size(); ++t ) {
+			ITuple resultTuple = internalAssignments.get(t);
+
+			List<ILiteral> newLiterals = new LinkedList<ILiteral>();
+			List<ILiteral> negatives = new LinkedList<ILiteral>();
+
+			long lastTrue = -1;
+
+			for (ILiteral literal : ruleQ.getLiterals()) {
+				Map<IVariable,ITerm> varMap = getVarMap(queryVars, resultTuple);
+				ITuple result = TermMatchingAndSubstitution.substituteVariablesInToTuple(literal.getAtom().getTuple(), varMap);
+				IAtom newAtom = updateAtom(literal.getAtom(), result);
+
+				ILiteral newLiteral = BASIC.createLiteral(literal.isPositive(), newAtom);
+
+				if (newLiteral.isPositive()) {
+					long whenTrue;
+					if (newLiteral.getAtom().isBuiltin()) {
+						whenTrue = 0;
+					} else {
+						DebugRelation rel = debugRelations.get(literal.getAtom().getPredicate());
+						whenTrue = rel.getFirstTrue(newLiteral.getAtom().getTuple());
+					}
+					if (whenTrue > lastTrue) {
+						lastTrue = whenTrue;
+					}
+					if (whenTrue != 0) {
+						newLiterals.add(newLiteral);
+					}
+				} else {
+					negatives.add(newLiteral);
+				}
+			}
+
+			//System.out.println(indent + newLiterals + " first true at " + lastTrue);
+
+			// this result was first true at "lastTrue"
+
+			if (bestTrue == -1 || lastTrue < bestTrue) {
+				bestTrue = lastTrue;
+				bestLiterals = newLiterals;
+				bestNegatives = negatives;
+			}
+		}
+
+		//System.out.println(indent + "best true: " + bestLiterals + " at " + bestTrue);
+
+		for (ILiteral lit : bestLiterals) {
+			explainPositive(lit, seen, reporter);
+		}
+		for (ILiteral lit : bestNegatives) {
+			explainNegative(lit, reporter);
+		}
+	}
+
+	private void explainPositive(ILiteral problem, Set<ILiteral> seen, Reporter reporter) throws Exception {
 		reporter.enter(problem);
 
 		try {
@@ -191,72 +261,8 @@ public class Debugger {
 			}
 
 			IQuery ruleQ = unify(rule, problem, true);
-			reporter.noteQuery(ruleQ);
 
-			/* Check internal variable assignments that make this rule true, and select the
-			 * one that was true first.
-			 */
-
-			List<IVariable> queryVars = new LinkedList<IVariable>();
-			IRelation internalAssignments = knowledgeBase.execute(ruleQ, queryVars);
-
-			long bestTrue = -1;
-			List<ILiteral> bestLiterals = null;
-			List<ILiteral> bestNegatives = null;
-
-			for (int t = 0; t < internalAssignments.size(); ++t ) {
-				ITuple resultTuple = internalAssignments.get(t);
-
-				List<ILiteral> newLiterals = new LinkedList<ILiteral>();
-				List<ILiteral> negatives = new LinkedList<ILiteral>();
-
-				long lastTrue = -1;
-
-				for (ILiteral literal : ruleQ.getLiterals()) {
-					Map<IVariable,ITerm> varMap = getVarMap(queryVars, resultTuple);
-					ITuple result = TermMatchingAndSubstitution.substituteVariablesInToTuple(literal.getAtom().getTuple(), varMap);
-					IAtom newAtom = updateAtom(literal.getAtom(), result);
-
-					ILiteral newLiteral = BASIC.createLiteral(literal.isPositive(), newAtom);
-
-					if (newLiteral.isPositive()) {
-						long whenTrue;
-						if (newLiteral.getAtom().isBuiltin()) {
-							whenTrue = 0;
-						} else {
-							DebugRelation rel = debugRelations.get(literal.getAtom().getPredicate());
-							whenTrue = rel.getFirstTrue(newLiteral.getAtom().getTuple());
-						}
-						if (whenTrue > lastTrue) {
-							lastTrue = whenTrue;
-						}
-						if (whenTrue != 0) {
-							newLiterals.add(newLiteral);
-						}
-					} else {
-						negatives.add(newLiteral);
-					}
-				}
-
-				//System.out.println(indent + newLiterals + " first true at " + lastTrue);
-
-				// this result was first true at "lastTrue"
-
-				if (bestTrue == -1 || lastTrue < bestTrue) {
-					bestTrue = lastTrue;
-					bestLiterals = newLiterals;
-					bestNegatives = negatives;
-				}
-			}
-
-			//System.out.println(indent + "best true: " + bestLiterals + " at " + bestTrue);
-
-			for (ILiteral lit : bestLiterals) {
-				exploreGraph(lit, seen, reporter);
-			}
-			for (ILiteral lit : bestNegatives) {
-				explainNegative(lit, reporter);
-			}
+			exploreGraph(ruleQ, seen, reporter);
 		} finally {
 			reporter.leave(problem);
 		}
