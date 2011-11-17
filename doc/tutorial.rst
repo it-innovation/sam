@@ -509,7 +509,7 @@ calling `File.get` (:example:`service6`)::
 
 This demonstrates how Datalog can be embedded into the Java syntax to make the language more expressive where necessary. Care must be taken when
 doing this that the implementer of the real system will be able to turn this into real code (for example, it is easy to rely on a private field in
-another object using this syntax, but the real software would not be able to do that). In this case, we assume that the the code will able to query
+another object using this syntax, but the real software would not be able to do that). In this case, we assume that the code will able to query
 its own access control policy, even though we don't model the access control system itself.
 
 We can then update the service provider to check that its caller has read access on the file::
@@ -539,7 +539,7 @@ Finally, we assign `file = uncheckedFile` only if `uncheckedFile.checkCanRead` c
 
 .. note::
 
-  Why do we need to do the :func:`mayReturn` test, rather than just `file = uncheckedFile := checkResult = true`?
+  Why do we need to do the :func:`mayReturn` test, rather than just `file = uncheckedFile :- checkResult = true`?
 
   The reason is that we are aggregating two kinds of calls into the `Other` case:
 
@@ -616,7 +616,7 @@ Conclusions
 -----------
 
 We have modelled a simple system with a data provider and some users. We have shown the using an object-capabilities
-model the system implements our desired security properties (e.g. that a user's files can't be access by other users). We also modelled an identity-based
+model the system implements our desired security properties (e.g. that a user's files can't be accessed by other users). We also modelled an identity-based
 access control system and showed that it is able to provide the same security properties, although with more complexity.
 
 We then extended our scenario with a service (data-processing) provider. Using object capabilities the required security properties were proven again,
