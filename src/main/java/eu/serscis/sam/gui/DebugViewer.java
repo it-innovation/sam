@@ -103,18 +103,30 @@ public class DebugViewer implements Updatable {
 			public void widgetSelected(SelectionEvent e) {
 				TreeItem item = (TreeItem) e.item;
 				Details details = extraData.get(item);
-				myText.setText(details != null ? details.notes : "");
+				String msg = details != null ? details.notes : "";
+				if (details.negativeQuery != null) {
+					msg += details.negativeQuery;
+				}
+				myText.setText(msg);
 				myShell.layout();
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
 				TreeItem item = (TreeItem) e.item;
 				Details details = extraData.get(item);
-				if (details != null && details.lit != null) {
-					try {
-						new DebugViewer(parent, results, details.lit);
-					} catch (Exception ex) {
-						ex.printStackTrace();
+				if (details != null) {
+					IQuery query = null;
+					if (details.lit != null) {
+						query = BASIC.createQuery(details.lit);
+					} else if (details.negativeQuery != null) {
+						query = details.negativeQuery;
+					}
+					if (query != null) {
+						try {
+							new DebugViewer(parent, results, query);
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
 					}
 				}
 			}
@@ -389,13 +401,14 @@ public class DebugViewer implements Updatable {
 			ruleItem.setForeground(GREY);
 
 			Details details = new Details(null);
-			details.notes += unified;
+			details.negativeQuery = unified;
 
 			extraData.put(ruleItem, details);
 		}
 	}
 
 	private class Details {
+		private IQuery negativeQuery;
 		private ILiteral lit;
 		private String notes = "";
 
