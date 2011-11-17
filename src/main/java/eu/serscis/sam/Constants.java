@@ -77,6 +77,7 @@ public class Constants {
 	static public IPredicate ignoreEdgeForRankingP = BASIC.createPredicate("ignoreEdgeForRanking", 2);
 	static public IPredicate grantsRoleP = BASIC.createPredicate("grantsRole", 3);
 	static public IPredicate hasIdentityP = BASIC.createPredicate("hasIdentity", 2);
+	static public IPredicate guiObjectTabP = BASIC.createPredicate("guiObjectTab", 4);
 
 	static <X> List<X> makeList(X... items) {
 		return Arrays.asList(items);

@@ -1,4 +1,5 @@
 import "includes/service4mustCall.sam".
+import "includes/rbacTabs.sam".
 
 // model a non-capability system:
 accessControlOn.

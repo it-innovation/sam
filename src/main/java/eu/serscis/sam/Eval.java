@@ -119,6 +119,7 @@ public class Eval {
 		results.phase = Results.Phase.Test;
 
 		parseResource(results.model, "finalChecks.dl");
+		parseResource(results.model, "gui.sam");
 
 		IRelation phase = results.model.getRelation(Constants.phaseP);
 		phase.add(BASIC.createTuple(new ITerm[] { TERM.createString("test") }));

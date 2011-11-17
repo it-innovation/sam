@@ -31,6 +31,7 @@ Reference
    goals
    graphing
    access
+   gui
 
 * :ref:`genindex`
 * :ref:`search`

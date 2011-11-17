@@ -113,12 +113,22 @@ public class GUI {
 
 		MenuItem reloadItem = new MenuItem(fileMenu, SWT.PUSH);
 		reloadItem.setText("&Reload\tF5");
+		/*
 		reloadItem.setAccelerator(SWT.F5);
 		reloadItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				System.out.println("Reloading...");
-				evaluate();
-				System.out.println("Reloaded");
+			}
+		});
+		*/
+
+		// Do it this way so it works in any window
+		display.addFilter(SWT.KeyDown, new Listener() {
+			public void handleEvent(Event ev) {
+				if (ev.keyCode == SWT.F5 ) {
+					System.out.println("Reloading...");
+					evaluate();
+					System.out.println("Reloaded");
+				}
 			}
 		});
 

@@ -30,6 +30,10 @@ package eu.serscis.sam.gui;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 import org.deri.iris.api.terms.IVariable;
 import org.deri.iris.api.terms.ITerm;
 import eu.serscis.sam.Constants;
@@ -54,19 +58,17 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.RowLayout;
+import org.deri.iris.utils.TermMatchingAndSubstitution;
 import static org.deri.iris.factory.Factory.*;
 
-public class ObjectViewer {
+public class ObjectViewer implements Updatable {
 	private final String myName;
 	private final LiveResults myResults;
 	private final Shell myShell;
+	private final TabFolder myFolder;
 
-	private ResultsTable myLocals;
-	private ResultsTable myFields;
-	private ResultsTable myCalled;
-	private ResultsTable myWasCalled;
-	private ResultsTable myHasRoles;
-	private ResultsTable myGrantsRoles;
+	private Set<ITuple> myTabConfig = new HashSet<ITuple>();
+	private List<Tab> myTabs = new LinkedList<Tab>();
 
 	public ObjectViewer(Shell parent, final LiveResults results, final String name) throws Exception {
 		myShell = new Shell(parent, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.MAX | SWT.RESIZE | SWT.TITLE);
@@ -75,67 +77,7 @@ public class ObjectViewer {
 		myName = name;
 		myResults = results;
 
-		TabFolder folder = new TabFolder(myShell, 0);
-
-		IQuery fieldsQ = BASIC.createQuery(
-				BASIC.createLiteral(true, Constants.fieldP,
-					BASIC.createTuple(
-						TERM.createString(myName),
-						TERM.createVariable("FieldName"),
-						TERM.createVariable("Value"))));
-
-		IQuery localsQ = BASIC.createQuery(
-				BASIC.createLiteral(true, Constants.localP,
-					BASIC.createTuple(
-						TERM.createString(myName),
-						TERM.createVariable("Invocation"),
-						TERM.createVariable("VarName"),
-						TERM.createVariable("Value"))));
-
-		IQuery wasCalledQ = BASIC.createQuery(
-				BASIC.createLiteral(true, Constants.didCallP,
-					BASIC.createTuple(
-						TERM.createVariable("Caller"),
-						TERM.createVariable("CallerInvocation"),
-						TERM.createVariable("CallSite"),
-						TERM.createString(myName),
-						TERM.createVariable("TargetInvocation"),
-						TERM.createVariable("Method"))));
-
-		IQuery calledQ = BASIC.createQuery(
-				BASIC.createLiteral(true, Constants.didCallP,
-					BASIC.createTuple(
-						TERM.createString(myName),
-						TERM.createVariable("CallerInvocation"),
-						TERM.createVariable("CallSite"),
-						TERM.createVariable("Target"),
-						TERM.createVariable("TargetInvocation"),
-						TERM.createVariable("Method"))));
-
-		IQuery hasRolesQ = BASIC.createQuery(
-				BASIC.createLiteral(true, Constants.grantsRoleP,
-					BASIC.createTuple(
-						TERM.createVariable("Object"),
-						TERM.createVariable("Role"),
-						TERM.createVariable("Identity"))),
-
-				BASIC.createLiteral(true, Constants.hasIdentityP,
-					BASIC.createTuple(
-						TERM.createString(myName),
-						TERM.createVariable("Identity"))));
-
-		IQuery grantsRolesQ = BASIC.createQuery(
-				BASIC.createLiteral(true, Constants.grantsRoleP,
-					BASIC.createTuple(
-						TERM.createString(myName),
-						TERM.createVariable("Role"),
-						TERM.createVariable("Identity"))));
-
-		addTab(folder, "Fields", fieldsQ);
-		addTab(folder, "Local variables", localsQ);
-		addTab(folder, "Was called", wasCalledQ);
-		addTab(folder, "Has roles", hasRolesQ);
-		addTab(folder, "Grants roles", grantsRolesQ);
+		myFolder = new TabFolder(myShell, 0);
 
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 1;
@@ -148,18 +90,98 @@ public class ObjectViewer {
 		layoutData.verticalAlignment = GridData.FILL;
 		layoutData.grabExcessHorizontalSpace = true;
 		layoutData.grabExcessVerticalSpace = true;
-		folder.setLayoutData(layoutData);
+		myFolder.setLayoutData(layoutData);
 
 		myShell.setLayout(gridLayout);
+
+		update();
 
 		myShell.open();
 	}
 
-	private void addTab(TabFolder folder, String tabLabel, IQuery query) throws Exception {
-		TabItem tabItem = new TabItem(folder, 0);
-		tabItem.setText(tabLabel);
+	// Checks if the tab configuration has changed
+	public void update() throws Exception {
+		if (myShell.isDisposed()) {
+			return;
+		}
 
-		ResultsTable table = new ResultsTable(folder, query, myResults);
-		tabItem.setControl(table.getTable());
+		IQuery query = BASIC.createQuery(BASIC.createLiteral(true, Constants.guiObjectTabP,
+					BASIC.createTuple(
+						TERM.createVariable("?SortKey"),
+						TERM.createVariable("?TabName"),
+						TERM.createVariable("?Predicate"),
+						TERM.createVariable("?ObjectVar"))));
+		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query);
+
+		Set<ITuple> newTabConfig = new HashSet<ITuple>();
+		for (int i = rel.size() - 1; i >= 0; i--) {
+			newTabConfig.add(rel.get(i));
+		}
+
+		if (newTabConfig.equals(myTabConfig)) {
+			//System.out.println("No change in tabs");
+		} else {
+			for (Tab tab: myTabs) {
+				tab.dispose();
+			}
+			ITuple[] rows = new ITuple[rel.size()];
+			for (int i = 0; i < rows.length; i++) {
+				rows[i] = rel.get(i);
+			}
+			Arrays.sort(rows);
+			for (int i = 0; i < rows.length; i++) {
+				ITuple tuple = rows[i];
+				String tabName = tuple.get(1).getValue().toString();
+				String predName = tuple.get(2).getValue().toString();
+				String varName = tuple.get(3).getValue().toString();
+
+				String[] predParts = predName.split("/");
+				if (predParts.length != 2) {
+					throw new RuntimeException("Bad tab configuration '" + tabName + "': predicate should be 'name/arity', not " + predName);
+				}
+				IPredicate pred = BASIC.createPredicate(predParts[0], Integer.valueOf(predParts[1]));
+				ITuple args = myResults.getResults().model.getDefinition(pred);
+				if (args == null) {
+					throw new RuntimeException("No such predicate " + pred + ", in configuration for GUI tab '" +tabName + "'");
+				}
+
+				IVariable var = TERM.createVariable(varName);
+				Map<IVariable,ITerm> map = new HashMap<IVariable,ITerm>();
+				map.put(var, TERM.createString(myName));
+
+				if (!args.getVariables().contains(var)) {
+					throw new RuntimeException("Declaration " + pred + args + " has no variable '" + var + "' requested for GUI tab '" + tabName + "'");
+				}
+
+				ITuple thisObjectArgs = TermMatchingAndSubstitution.substituteVariablesInToTuple(args, map);
+
+				IQuery tabQuery = BASIC.createQuery(BASIC.createLiteral(true, pred, thisObjectArgs));
+				myTabs.add(new Tab(tabName, tabQuery));
+			}
+			myTabConfig = newTabConfig;
+		}
+
+		myResults.whenUpdated(this);
+	}
+
+	private class Tab {
+		private TabItem myTabItem;
+		private ResultsTable myTable;
+		private IQuery myQuery;
+
+		private Tab(String tabLabel, IQuery query) throws Exception {
+			myQuery = query;
+
+			myTabItem = new TabItem(myFolder, 0);
+			myTabItem.setText(tabLabel);
+
+			myTable = new ResultsTable(myFolder, query, myResults);
+			myTabItem.setControl(myTable.getTable());
+		}
+
+		private void dispose() {
+			myTable.getTable().dispose();
+			myTabItem.dispose();
+		}
 	}
 }

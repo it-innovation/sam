@@ -109,6 +109,8 @@ declare hasIdentity(?Object, ?Identity).
 declare PermittedRole(?Method, ?Role).
 declare grantsRole(?Target, ?Role, ?CallerIdentity).
 
+// GUI
+declare guiObjectTab(?Position, ?Label, ?Predicate, ?ObjectVar).
 
 /* aggregation */
 
