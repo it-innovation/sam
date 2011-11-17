@@ -56,7 +56,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.RowLayout;
 import static org.deri.iris.factory.Factory.*;
 
-public class ObjectViewer implements Updatable {
+public class ObjectViewer {
 	private final String myName;
 	private final LiveResults myResults;
 	private final Shell myShell;
@@ -77,73 +77,65 @@ public class ObjectViewer implements Updatable {
 
 		TabFolder folder = new TabFolder(myShell, 0);
 
-		TabItem fieldsTab = new TabItem(folder, 0);
-		fieldsTab.setText("Fields");
-		myFields = new ResultsTable(folder, new String[] {"Field", "Value"}, new RowViewer() {
-			public void openRow(ITuple row) throws Exception {
-				ILiteral lit = BASIC.createLiteral(true, Constants.fieldP,
-					BASIC.createTuple(TERM.createString(name), row.get(0), row.get(1)));
-				new DebugViewer(myShell, results, lit);
-			}
-		});
-		fieldsTab.setControl(myFields.getTable());
+		IQuery fieldsQ = BASIC.createQuery(
+				BASIC.createLiteral(true, Constants.fieldP,
+					BASIC.createTuple(
+						TERM.createString(myName),
+						TERM.createVariable("FieldName"),
+						TERM.createVariable("Value"))));
 
-		TabItem localsTab = new TabItem(folder, 0);
-		localsTab.setText("Local variables");
-		myLocals = new ResultsTable(folder, new String[] {"Invocation", "Var name", "Value"}, new RowViewer() {
-			public void openRow(ITuple row) throws Exception {
-				ILiteral lit = BASIC.createLiteral(true, Constants.localP,
-					BASIC.createTuple(TERM.createString(name), row.get(0), row.get(1), row.get(2)));
-				new DebugViewer(myShell, results, lit);
-			}
-		});
-		localsTab.setControl(myLocals.getTable());
+		IQuery localsQ = BASIC.createQuery(
+				BASIC.createLiteral(true, Constants.localP,
+					BASIC.createTuple(
+						TERM.createString(myName),
+						TERM.createVariable("Invocation"),
+						TERM.createVariable("VarName"),
+						TERM.createVariable("Value"))));
 
-		TabItem wasCalledTab = new TabItem(folder, 0);
-		wasCalledTab.setText("Was called");
-		myWasCalled = new ResultsTable(folder, new String[] {"Caller", "Caller invocation", "Call-site", "Target invocation", "Method"}, new RowViewer() {
-			public void openRow(ITuple row) throws Exception {
-				ILiteral lit = BASIC.createLiteral(true, Constants.didCallP,
-					BASIC.createTuple(row.get(0), row.get(1), row.get(2), TERM.createString(name), row.get(3), row.get(4)));
-				new DebugViewer(myShell, results, lit);
-			}
-		});
-		wasCalledTab.setControl(myWasCalled.getTable());
+		IQuery wasCalledQ = BASIC.createQuery(
+				BASIC.createLiteral(true, Constants.didCallP,
+					BASIC.createTuple(
+						TERM.createVariable("Caller"),
+						TERM.createVariable("CallerInvocation"),
+						TERM.createVariable("CallSite"),
+						TERM.createString(myName),
+						TERM.createVariable("TargetInvocation"),
+						TERM.createVariable("Method"))));
 
-		TabItem calledTab = new TabItem(folder, 0);
-		calledTab.setText("Called");
-		myCalled = new ResultsTable(folder, new String[] {"Caller invocation", "Call-site", "Target", "Target invocation", "Method"}, new RowViewer() {
-			public void openRow(ITuple row) throws Exception {
-				ILiteral lit = BASIC.createLiteral(true, Constants.didCallP,
-					BASIC.createTuple(TERM.createString(name), row.get(0), row.get(1), row.get(2), row.get(3), row.get(4)));
-				new DebugViewer(myShell, results, lit);
-			}
-		});
-		calledTab.setControl(myCalled.getTable());
+		IQuery calledQ = BASIC.createQuery(
+				BASIC.createLiteral(true, Constants.didCallP,
+					BASIC.createTuple(
+						TERM.createString(myName),
+						TERM.createVariable("CallerInvocation"),
+						TERM.createVariable("CallSite"),
+						TERM.createVariable("Target"),
+						TERM.createVariable("TargetInvocation"),
+						TERM.createVariable("Method"))));
 
-		TabItem hasRolesTab = new TabItem(folder, 0);
-		hasRolesTab.setText("Has roles");
-		myHasRoles = new ResultsTable(folder, new String[] {"Identity", "Object", "Role"}, new RowViewer() {
-			public void openRow(ITuple row) throws Exception {
-				ILiteral hasIdentity = BASIC.createLiteral(true, Constants.hasIdentityP,
-					BASIC.createTuple(TERM.createString(myName), row.get(0)));
-				ILiteral grantsRole = BASIC.createLiteral(true, Constants.grantsRoleP,
-					BASIC.createTuple(row.get(1), row.get(2), row.get(0)));
-				new DebugViewer(myShell, results, BASIC.createQuery(hasIdentity, grantsRole));
-			}
-		});
-		hasRolesTab.setControl(myHasRoles.getTable());
+		IQuery hasRolesQ = BASIC.createQuery(
+				BASIC.createLiteral(true, Constants.grantsRoleP,
+					BASIC.createTuple(
+						TERM.createVariable("Object"),
+						TERM.createVariable("Role"),
+						TERM.createVariable("Identity"))),
 
-		TabItem grantsRolesTab = new TabItem(folder, 0);
-		grantsRolesTab.setText("Grants roles");
-		myGrantsRoles = new ResultsTable(folder, new String[] {"Role", "Identity"}, new RowViewer() {
-			public void openRow(ITuple row) throws Exception {
-				ILiteral lit = BASIC.createLiteral(true, Constants.grantsRoleP,
-					BASIC.createTuple(TERM.createString(name), row.get(1), row.get(2), row.get(3)));
-				new DebugViewer(myShell, results, lit);
-			}
-		});
-		grantsRolesTab.setControl(myGrantsRoles.getTable());
+				BASIC.createLiteral(true, Constants.hasIdentityP,
+					BASIC.createTuple(
+						TERM.createString(myName),
+						TERM.createVariable("Identity"))));
+
+		IQuery grantsRolesQ = BASIC.createQuery(
+				BASIC.createLiteral(true, Constants.grantsRoleP,
+					BASIC.createTuple(
+						TERM.createString(myName),
+						TERM.createVariable("Role"),
+						TERM.createVariable("Identity"))));
+
+		addTab(folder, "Fields", fieldsQ);
+		addTab(folder, "Local variables", localsQ);
+		addTab(folder, "Was called", wasCalledQ);
+		addTab(folder, "Has roles", hasRolesQ);
+		addTab(folder, "Grants roles", grantsRolesQ);
 
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 1;
@@ -158,123 +150,16 @@ public class ObjectViewer implements Updatable {
 		layoutData.grabExcessVerticalSpace = true;
 		folder.setLayoutData(layoutData);
 
-		update();
-
 		myShell.setLayout(gridLayout);
 
 		myShell.open();
 	}
 
-	public void update() throws Exception {
-		if (myShell.isDisposed()) {
-			return;
-		}
+	private void addTab(TabFolder folder, String tabLabel, IQuery query) throws Exception {
+		TabItem tabItem = new TabItem(folder, 0);
+		tabItem.setText(tabLabel);
 
-		//System.out.println("refresh " + myName);
-
-		populateFields();
-		populateLocals();
-		populateWasCalled();
-		populateCalled();
-		populateHasRoles();
-		populateGrantsRoles();
-
-		myResults.whenUpdated(this);
-	}
-
-	private void populateLocals() throws Exception {
-		ITuple args = BASIC.createTuple(
-				TERM.createString(myName),
-				TERM.createVariable("Invocation"),
-				TERM.createVariable("VarName"),
-				TERM.createVariable("Value"));
-
-		ILiteral lit = BASIC.createLiteral(true, Constants.localP, args);
-		IQuery query = BASIC.createQuery(lit);
-		List<IVariable> bindings = new LinkedList<IVariable>();
-		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query, bindings);
-
-		myLocals.fillTable(rel);
-	}
-
-	private void populateFields() throws Exception {
-		ITuple args = BASIC.createTuple(
-				TERM.createString(myName),
-				TERM.createVariable("FieldName"),
-				TERM.createVariable("Value"));
-
-		ILiteral lit = BASIC.createLiteral(true, Constants.fieldP, args);
-		IQuery query = BASIC.createQuery(lit);
-		List<IVariable> bindings = new LinkedList<IVariable>();
-		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query, bindings);
-
-		myFields.fillTable(rel);
-	}
-
-	private void populateWasCalled() throws Exception {
-		ITuple args = BASIC.createTuple(
-				TERM.createVariable("Caller"),
-				TERM.createVariable("CallerInvocation"),
-				TERM.createVariable("CallSite"),
-				TERM.createString(myName),
-				TERM.createVariable("TargetInvocation"),
-				TERM.createVariable("Method"));
-
-		ILiteral lit = BASIC.createLiteral(true, Constants.didCallP, args);
-		IQuery query = BASIC.createQuery(lit);
-		List<IVariable> bindings = new LinkedList<IVariable>();
-		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query, bindings);
-
-		myWasCalled.fillTable(rel);
-	}
-
-	private void populateCalled() throws Exception {
-		ITuple args = BASIC.createTuple(
-				TERM.createString(myName),
-				TERM.createVariable("CallerInvocation"),
-				TERM.createVariable("CallSite"),
-				TERM.createVariable("Target"),
-				TERM.createVariable("TargetInvocation"),
-				TERM.createVariable("Method"));
-
-		ILiteral lit = BASIC.createLiteral(true, Constants.didCallP, args);
-		IQuery query = BASIC.createQuery(lit);
-		List<IVariable> bindings = new LinkedList<IVariable>();
-		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query, bindings);
-
-		myCalled.fillTable(rel);
-	}
-
-	private void populateHasRoles() throws Exception {
-		/* grantsRole(?Object, ?Role, ?Identity), hasIdentity(myName, ?Identity) */
-		ITuple args = BASIC.createTuple(
-				TERM.createVariable("Object"),
-				TERM.createVariable("Role"),
-				TERM.createVariable("Identity"));
-
-		ILiteral lit = BASIC.createLiteral(true, Constants.grantsRoleP, args);
-
-		ILiteral hasIdentity = BASIC.createLiteral(true, Constants.hasIdentityP,
-				BASIC.createTuple(
-					TERM.createString(myName),
-					TERM.createVariable("Identity")));
-
-		IQuery query = BASIC.createQuery(lit, hasIdentity);
-		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query);
-
-		myHasRoles.fillTable(rel);
-	}
-
-	private void populateGrantsRoles() throws Exception {
-		ITuple args = BASIC.createTuple(
-				TERM.createString(myName),
-				TERM.createVariable("Role"),
-				TERM.createVariable("Identity"));
-
-		ILiteral lit = BASIC.createLiteral(true, Constants.grantsRoleP, args);
-		IQuery query = BASIC.createQuery(lit);
-		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query);
-
-		myGrantsRoles.fillTable(rel);
+		ResultsTable table = new ResultsTable(folder, query, myResults);
+		tabItem.setControl(table.getTable());
 	}
 }

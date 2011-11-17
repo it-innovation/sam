@@ -51,7 +51,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.RowLayout;
 import static org.deri.iris.factory.Factory.*;
 
-public class RelationViewer implements Updatable {
+public class RelationViewer {
 	private final Shell myShell;
 	private final ResultsTable myTable;
 	private final LiveResults myResults;
@@ -65,16 +65,9 @@ public class RelationViewer implements Updatable {
 		myResults = results;
 		myPred = pred;
 
-		String[] headings = new String[args.size()];
-		for (int i = 0; i < headings.length; i++) {
-			headings[i] = args.get(i).toString();
-		}
-		myTable = new ResultsTable(myShell, headings, new RowViewer() {
-			public void openRow(ITuple row) throws Exception {
-				ILiteral lit = BASIC.createLiteral(true, pred, row);
-				new DebugViewer(myShell, results, lit);
-			}
-		});
+		IQuery query = BASIC.createQuery(BASIC.createLiteral(true, myPred, args));
+
+		myTable = new ResultsTable(myShell, query, results);
 
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 1;
@@ -89,28 +82,8 @@ public class RelationViewer implements Updatable {
 		tableLayoutData.grabExcessVerticalSpace = true;
 		myTable.getTable().setLayoutData(tableLayoutData);
 
-		update();
-
 		myShell.setLayout(gridLayout);
 
 		myShell.open();
-	}
-
-	public void update() throws Exception {
-		if (myShell.isDisposed()) {
-			return;
-		}
-
-		//System.out.println("refresh " + myShell.getText());
-
-		Results results = myResults.getResults();
-
-		ITuple args = results.model.declared.get(myPred);
-		ILiteral lit = BASIC.createLiteral(true, myPred, args);
-		IQuery query = BASIC.createQuery(lit);
-		IRelation rel = results.finalKnowledgeBase.execute(query);
-		myTable.fillTable(rel);
-
-		myResults.whenUpdated(this);
 	}
 }

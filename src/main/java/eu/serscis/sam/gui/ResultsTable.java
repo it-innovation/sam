@@ -28,9 +28,17 @@
 
 package eu.serscis.sam.gui;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import org.deri.iris.storage.IRelation;
+import org.deri.iris.api.terms.IVariable;
+import org.deri.iris.api.terms.ITerm;
 import org.deri.iris.api.basics.ITuple;
+import org.deri.iris.api.basics.IQuery;
+import org.deri.iris.api.basics.ILiteral;
 import org.eclipse.swt.layout.GridData;
 import eu.serscis.sam.Graph;
 import eu.serscis.sam.Eval;
@@ -46,19 +54,23 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.RowLayout;
 import static org.deri.iris.factory.Factory.*;
+import org.deri.iris.utils.TermMatchingAndSubstitution;
 
-public class ResultsTable {
+public class ResultsTable implements Updatable {
 	private ITuple[] rows;
+	private final IQuery myQuery;
 	private final Table myTable;
+	private final LiveResults myResults;
+	private List<IVariable> myBindings;
 
-	public ResultsTable(Composite parent, String[] headings) {
-		this(parent, headings, null);
-	}
-
-	public ResultsTable(Composite parent, String[] headings, final RowViewer rowViewer) {
+	public ResultsTable(Composite parent, IQuery query, LiveResults results) throws Exception {
 		myTable = new Table(parent, SWT.BORDER | SWT.FULL_SELECTION);
+		myQuery = query;
+		myResults = results;
 
-		for (String heading : headings) {
+		List<IVariable> vars = query.getVariables();
+		for (IVariable var : vars) {
+			String heading = var.toString();
 			TableColumn column = new TableColumn(myTable, SWT.LEFT);
 			column.setText(heading);
 		}
@@ -71,17 +83,17 @@ public class ResultsTable {
 		tableLayoutData.grabExcessVerticalSpace = true;
 		myTable.setLayoutData(tableLayoutData);
 
-		if (rowViewer != null) {
-			myTable.addSelectionListener(new SelectionAdapter() {
-				public void widgetDefaultSelected(SelectionEvent e) {
-					try {
-						rowViewer.openRow(rows[myTable.getSelectionIndex()]);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
+		myTable.addSelectionListener(new SelectionAdapter() {
+			public void widgetDefaultSelected(SelectionEvent e) {
+				try {
+					showDebugger(rows[myTable.getSelectionIndex()]);
+				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
-			});
-		}
+			}
+		});
+
+		update();
 	}
 
 	public void fillTable(IRelation rel) {
@@ -113,5 +125,36 @@ public class ResultsTable {
 
 	public Table getTable() {
 		return myTable;
+	}
+
+	public void update() throws Exception {
+		if (myTable.isDisposed()) {
+			return;
+		}
+		myBindings = new LinkedList<IVariable>();
+		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(myQuery, myBindings);
+		fillTable(rel);
+
+		myResults.whenUpdated(this);
+	}
+
+	private void showDebugger(ITuple row) throws Exception {
+		// Go through myQuery replacing all the variables with values
+
+		Map<IVariable,ITerm> varMap = new HashMap<IVariable,ITerm>();
+		int i = 0;
+		for (IVariable var : myBindings) {
+			varMap.put(var, row.get(i));
+			i++;
+		}
+
+		List<ILiteral> lits = new LinkedList<ILiteral>();
+		for (ILiteral literal : myQuery.getLiterals()) {
+			ITuple oldTuple = literal.getAtom().getTuple();
+			ITuple newTuple = TermMatchingAndSubstitution.substituteVariablesInToTuple(oldTuple, varMap);
+			lits.add(BASIC.createLiteral(true, literal.getAtom().getPredicate(), newTuple));
+		}
+
+		new DebugViewer(myTable.getShell(), myResults, BASIC.createQuery(lits));
 	}
 }
