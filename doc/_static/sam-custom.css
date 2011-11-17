@@ -7,3 +7,8 @@ div.highlight-none div.highlight pre {
 table th {
 	background-color: white;
 }
+
+div.figure {
+	text-align: center;
+	font-style: italic;
+}

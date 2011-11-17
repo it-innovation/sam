@@ -1,5 +1,7 @@
 .. highlight:: java
 
+.. _Tutorial:
+
 SAM tutorial
 ============
 
@@ -111,7 +113,9 @@ See :ref:`install` for more information about running SAM.
 
 SAM will open a window displaying the results:
 
-.. image:: _static/data1.png
+.. figure:: _static/data1.png
+
+   The SAM GUI.
 
 This shows that, given the behaviour and initial configuration:
 
@@ -177,7 +181,9 @@ For example, if you select `Objects -> user` then you will see results relevant 
 You can double-click on any line in these tables to find out **why** the line is there. For example, if you double-click on the call to `file.get`
 in the `Called` tab, you will see the reason given as:
 
-.. image:: _static/sam-debugger.png
+.. figure:: _static/sam-debugger.png
+
+   Using the SAM debugger.
 
 Each item shows something that was true in the model. The children of each item show the reasons why it was true. Reasons that are typically important
 are shown in bold. Less important reasons are displayed faded.
@@ -246,7 +252,7 @@ creating a new `test` block labelled with a "context" ("Others")::
 If you run this model (:example:`data2`), SAM will show a new `otherUsers` object (representing all the other users) and a new `fileOthers` object
 (representing all the files they may create).
 
-.. image:: _images/data2.png
+.. sam-output:: data2
 
 It will also show a red arrow from `otherUsers` to `dataProvider`, indicating that an object from the baseline got called when it didn't before.
 You can double-click on the warning message to see the reason:
@@ -274,7 +280,7 @@ so any safety property that is valid with `Unknown` behaviour will be valid for 
 In the display, the `otherUsers` object is now shown in red to indicate `Unknown` behaviour, but the model is otherwise unchanged (the arrow from `otherUsers` to `fileOthers` becomes solid because `otherUsers` may now store the file reference in a field, but nothing else changes). This shows that `otherUsers`
 still cannot get access to `user`'s `file`.
 
-.. image:: _images/data3.png
+.. sam-output:: data3
 
 
 Modelling non-capability systems
@@ -295,7 +301,7 @@ Since we have no access control, this immediately and unsurprisingly leads to th
 * `otherUsers` may invoke methods on `user` (or perhaps on the user's computer)
 * `otherUsers` may invoke methods on `file` (the user's files).
 
-.. image:: _images/data4.png
+.. sam-output:: data4
 
 Orange arrows indicate calls that were involved in the problem. In this case, `otherUsers` was only able to call `file` because `user` used `dataProvider`
 to create `file` first.
@@ -365,7 +371,7 @@ with this identity::
 We must update `DataProvider` to pass through the `owner` argument, and update `Client` to provide its identity (:example:`data5`).
 SAM now reports that the model is safe:
 
-.. image:: _images/data5.png
+.. sam-output:: data5
 
 Adding a service
 ----------------
@@ -415,11 +421,11 @@ graph of the data in the file::
 
 Modelling this with a single client, using capabilities and no access control (:example:`service1`) creates a new baseline:
 
-.. image:: _images/service1.png
+.. sam-output:: service1
 
 Adding back in the `otherUsers` object shows that this design is still safe when using object-capabilities (:example:`service2`):
 
-.. image:: _images/service2.png
+.. sam-output:: service2
 
 .. note::
 
@@ -433,7 +439,7 @@ Adding a service in a non-capabilities system
 
 Turning on access control and the RBAC policy shows that required access is missing (:example:`service3`):
 
-.. image:: _images/service3.png
+.. sam-output:: service3
 
 The user needs some way to grant `serviceProvider` read access to the data (`file`), and `serviceProvider` needs to grant `user` access
 to the resulting image. We can add an extra method to `File` for this::
@@ -465,11 +471,11 @@ to the resulting image. We can add an extra method to `File` for this::
 This is the same pattern that we used for the "owner" role. After updating `Client` to grant access on `file` and `serviceProvider` to grant
 access on `image`, all required access is possible again (:example:`service4`):
 
-.. image:: _images/service4.png
+.. sam-output:: service4
 
 However, adding `otherUsers` back in shows that this design is not safe (:example:`service5`):
 
-.. image:: _images/service5.png
+.. sam-output:: service5
 
 `serviceProvider` may read `file` and `image` in response to calls from `otherUsers`. For example, double-clicking on the `file` problem shows the
 reason as:
@@ -529,7 +535,7 @@ that lets the programmer of the real system discover the identity of the caller.
 
 Finally, we assign `file = uncheckedFile` only if `uncheckedFile.checkCanRead` could return `true`.
 
-.. image:: _images/service6.png
+.. sam-output:: service6
 
 .. note::
 
@@ -587,7 +593,7 @@ Here, we have renamed `otherUsers` to `others` and changed the API of `Client` t
       }
   }
 
-.. image:: _images/service7.png
+.. sam-output:: service7
 
 This reveals a number of new problems:
 
@@ -601,7 +607,7 @@ This reveals a number of new problems:
 
 At this point, we could add yet more access control checks to the design, or we could decide to try the scenario using capability-based access control (:example:`service8`):
 
-.. image:: _images/service8.png
+.. sam-output:: service8
 
 This shows that, when using object-capabilities, `user` may safely use services and data hosting provided by parties with unknown behaviour, without the possibility of exposing access to
 data held at their trusted sites.

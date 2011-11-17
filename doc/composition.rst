@@ -102,7 +102,7 @@ The `?X` here will match with any object. So these assertions say:
 Analysing this model reveals that it is not safe: `delegate` can bypass the
 logger (:example:`compose`):
 
-.. image:: _images/compose.png
+.. sam-output:: compose
 
 The debug example is:
 

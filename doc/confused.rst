@@ -55,7 +55,7 @@ Following Authodox, we define the actions we think should be possible as a resul
 
 Running this example (:example:`confused`) shows that it is not safe:
 
-.. image:: _images/confused.png
+.. sam-output:: confused
 
 The debug example is:
 

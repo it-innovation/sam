@@ -201,5 +201,28 @@ def example_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
 	node = nodes.reference(rawtext, name, refuri = 'examples/' + name)
 	return ([node], [])
 
+from sphinx.util.compat import Directive
+from docutils.parsers.rst.directives.images import Image
+from docutils.parsers.rst import directives
+
+class SAMOutput(Directive):
+	 has_content = True
+
+	 def run(self):
+		name, = self.content
+		source = name + '.sam'
+
+		image_reference = directives.uri('_images/' + name + '.png')
+		self.options['uri'] = image_reference
+
+		source_link = nodes.reference(self.content, source, refuri = 'examples/' + name + '.sam')
+		#text = nodes.text('', 'Output from ' + source)
+		image_node = nodes.image('_images/' + name + '.png', **self.options)
+		figure_node = nodes.figure('', image_node)
+		caption = nodes.caption("hi", 'Output from ', source_link)
+		figure_node += caption
+		return [figure_node]
+
 def setup(app):
 	app.add_role('example', example_role)
+	app.add_directive('sam-output', SAMOutput)
