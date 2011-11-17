@@ -55,13 +55,13 @@ We can always safely aggregate any subset of the objects into a single object.
 The aggregated object has access to everything that any of the original objects
 did, and may do anything that they may have done. For example, this system:
 
-    .. graphviz::
+.. graphviz::
 
       digraph msg { rankdir=LR; A->B; A->C; B->D; C->E; }
 
 Can be aggregated like this:
 
-    .. graphviz::
+.. graphviz::
 
       digraph msg { rankdir=LR; A->"B,C"; "B,C"->"D,E"; }
 

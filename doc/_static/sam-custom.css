@@ -12,3 +12,7 @@ div.figure {
 	text-align: center;
 	font-style: italic;
 }
+
+div p.graphviz {
+	text-align: center;
+}
