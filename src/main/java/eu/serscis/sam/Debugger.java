@@ -133,7 +133,14 @@ public class Debugger {
 	 * tell reporter.
 	 */
 	public void debug(final IQuery problem, Reporter reporter) throws Exception {
-		knowledgeBase.execute(problem);
+		IRelation results = knowledgeBase.execute(problem);
+		if (results.size() == 0) {
+			reporter.noteQuery(problem);
+			for (ILiteral lit : problem.getLiterals()) {
+				explainNegative(lit, reporter);
+			}
+			return;
+		}
 		exploreGraph(problem, new HashSet<ILiteral>(), reporter);
 	}
 

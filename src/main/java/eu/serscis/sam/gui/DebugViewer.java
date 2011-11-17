@@ -361,7 +361,11 @@ public class DebugViewer implements Updatable {
 		/* We are about to explain why literal is false. */
 		public void enterNegative(ILiteral literal) {
 			optNegativeNeedHeader = literal;
-			currentItem = new TreeItem(currentItem, 0);
+			if (currentItem == null) {
+				currentItem = new TreeItem(myTree, 0);
+			} else {
+				currentItem = new TreeItem(currentItem, 0);
+			}
 			currentItem.setForeground(GREY);
 			currentItem.setText("" + literal + "; none of these was true:");
 			extraData.put(currentItem, new Details(literal));
