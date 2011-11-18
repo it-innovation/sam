@@ -190,3 +190,38 @@ variables freely. The special variables recognised are:
 
 * `$Context` -- the context in which the variable is being assigned
 * `$Caller` -- the object (or objects) which called this method (in `$Context`)
+
+Note on "private"
+-----------------
+There is a subtle difference between SAM and Java in the meaning of "private":
+
+* In SAM, a private member can only be accessed by the object iself.
+* In Java, a private member can be accessed by any other instance of the same class.
+
+For example, in Java you can do this::
+
+  class WebStore {
+    private Database customerInformation;
+
+    public void comparePricesWithCompetition(WebStore competitor) {
+      competitor.getPublicPrices();
+      ...
+      competitor.customerInformation.download();
+      ...
+    }
+  }
+
+In SAM, replacing any behaviour definition with `Unknown` should only allow more access to occur, not less. Therefore, if we took this
+interpretation of `private` then `Unknown` would need access to all private fields and methods of all objects, which would clearly not be
+useful.
+
+However, we also want to avoid reporting that a SAM model is safe when the identical Java code would not be. SAM's solution is that:
+
+* all methods must be public, and
+* there is no syntax for accessing fields on another object.
+
+Therefore:
+
+* If you define a behaviour (class) in SAM then the definition automatically says that the real system can't call fields on another object directly, since
+  there is no way to express this in SAM syntax.
+* If you leave the behaviour undefined then the real system would still be safe even if all members were public.
