@@ -5,7 +5,7 @@ Installation
 
 Linux
 -----
-To install, you will need `0install <http://0install.net>`_. For example, on Ubuntu::
+To install, use `0install <http://0install.net>`_. For example, on Ubuntu::
 
   $ sudo apt-get install zeroinstall-injector
 
@@ -15,16 +15,26 @@ To get SAM (creating a command called "sam")::
 
 Windows
 -------
-Get 0install from `0install.de <http://0install.de/downloads/?lang=en>`_.
+1. Get 0install from `0install.de <http://0install.de/downloads/?lang=en>`_.
+2. Get Java from `<http://java.com>`_.
+3. Run Zero Install, `Add other application` and paste in the URI `<http://www.serscis.eu/0install/serscis-access-modeller>`_.
+4. Click the `Run` button to start it.
+  
+.. figure:: _static/install-windows.png
 
-Then create a file called `sam.bat` containing this one line::
+   Using the graphical installer on Windows.
 
-  @0launch http://www.serscis.eu/0install/serscis-access-modeller %*
+The remaining dependencies (IRIS, SWT, GraphViz) will be downloaded automatically (Java is not downloaded
+automatically due to unclear licensing terms).
+
+You can also install a "sam" command, as on Linux::
+
+  C:\> 0alias sam http://www.serscis.eu/0install/serscis-access-modeller 
 
 Running
 -------
 
-To run SAM::
+To run SAM from the command-line::
 
   $ sam
 
