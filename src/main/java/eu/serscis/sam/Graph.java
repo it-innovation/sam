@@ -74,7 +74,7 @@ public class Graph {
 	}
 
 	static private void graph(IRelation nodes, IRelation edges, IRelation labelledEdges, IRelation ignoredForRanking, File pngFile) throws Exception {
-		File dotFile = new File("SAM-tmp.dot");
+		File dotFile = File.createTempFile("SAM-tmp", ".dot");
 
 		FileWriter writer = new FileWriter(dotFile);
 		writer.write("digraph a {\n");
