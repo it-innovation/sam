@@ -53,6 +53,7 @@ import java.io.File;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.RowLayout;
 import static org.deri.iris.factory.Factory.*;
@@ -273,116 +274,124 @@ public class GUI {
 	}
 
 	private void evaluate() {
-		try {
-			relationsMenuHeader.setEnabled(false);
-			objectsMenuHeader.setEnabled(false);
-			messageList.removeAll();
-			myProblems = new LinkedList<ILiteral>();
-
-			for (MenuItem item : relationsMenu.getItems()) {
-				item.dispose();
-			}
-
-			for (MenuItem item : objectsMenu.getItems()) {
-				item.dispose();
-			}
-
-			if (myFile == null) {
-				addInfo("Open a file to start");
-				return;
-			}
-
-			Eval eval = new Eval();
-			shell.setText("SAM: " + myFile);
-			final Results results = eval.evaluate(myFile);
-			liveResults.update(results);
-
-			if (results.exception != null) {
-				results.exception.printStackTrace();
-				String msg = results.exception.getMessage();
-				if (msg == null) {
-					msg = results.exception.toString();
-				}
-				addWarning(msg, null);
-			} else if (results.phase != Results.Phase.Success) {
-				addWarning("Problem in " + results.phase + " phase", null);
-			} else {
-				addInfo("OK");
-			}
-
-			for (ILiteral errorLit : results.errors) {
-				ITuple tuple = errorLit.getAtom().getTuple();
-				String msg = tuple.get(0).getValue().toString();
-				for (int part = 1; part < tuple.size(); part++) {
-					msg += ", " + tuple.get(part).getValue();
-				}
-
-				addWarning(msg, errorLit);
-			}
-
-			if (results.finalKnowledgeBase != null) {
-				File tmpFile = File.createTempFile("sam-", "-graph.png");
-				Image image;
+		BusyIndicator.showWhile(display, new Runnable() {
+			public void run() {
 				try {
-					Graph.graph(results.finalKnowledgeBase, tmpFile);
-					InputStream is = new FileInputStream(tmpFile);
-					try {
-						image = new Image(display, is);
-					} finally {
-						is.close();
-					}
-				} finally {
-					tmpFile.delete();
+					realEvaluate();
+				} catch (Exception ex) {
+					addWarning("" + ex, null);
+					ex.printStackTrace();
 				}
 
-				mainImage.setImage(image);
-				mainImage.pack();
-
-				relationsMenuHeader.setEnabled(true);
-				objectsMenuHeader.setEnabled(true);
-
-				/* Populate Relations menu */
-				IPredicate[] relations = results.model.declared.keySet().toArray(new IPredicate[] {});
-				Arrays.sort(relations);
-				for (final IPredicate pred : relations) {
-					MenuItem item = new MenuItem(relationsMenu, SWT.PUSH);
-					final ITuple args = results.model.declared.get(pred);
-					item.setText(pred.toString() + args);
-					item.addSelectionListener(new SelectionAdapter() {
-						public void widgetSelected(SelectionEvent e) {
-							try {
-								new RelationViewer(shell, liveResults, pred);
-							} catch (Throwable ex) {
-								ex.printStackTrace();
-							}
-						}
-					});
-				}
-
-				/* Populate Objects menu */
-				String[] objects = getObjects(results);
-				for (final String name : objects) {
-					MenuItem item = new MenuItem(objectsMenu, SWT.PUSH);
-					item.setText(name);
-					item.addSelectionListener(new SelectionAdapter() {
-						public void widgetSelected(SelectionEvent e) {
-							try {
-								new ObjectViewer(shell, liveResults, name);
-							} catch (Throwable ex) {
-								ex.printStackTrace();
-							}
-						}
-					});
-				}
+				shell.layout();
 			}
+		});
+	}
 
-			messageList.pack();
-		} catch (Exception ex) {
-			addWarning("" + ex, null);
-			ex.printStackTrace();
+	private void realEvaluate() throws Exception {
+		relationsMenuHeader.setEnabled(false);
+		objectsMenuHeader.setEnabled(false);
+		messageList.removeAll();
+		myProblems = new LinkedList<ILiteral>();
+
+		for (MenuItem item : relationsMenu.getItems()) {
+			item.dispose();
 		}
 
-		shell.layout();
+		for (MenuItem item : objectsMenu.getItems()) {
+			item.dispose();
+		}
+
+		if (myFile == null) {
+			addInfo("Open a file to start");
+			return;
+		}
+
+		Eval eval = new Eval();
+		shell.setText("SAM: " + myFile);
+		final Results results = eval.evaluate(myFile);
+		liveResults.update(results);
+
+		if (results.exception != null) {
+			results.exception.printStackTrace();
+			String msg = results.exception.getMessage();
+			if (msg == null) {
+				msg = results.exception.toString();
+			}
+			addWarning(msg, null);
+		} else if (results.phase != Results.Phase.Success) {
+			addWarning("Problem in " + results.phase + " phase", null);
+		} else {
+			addInfo("OK");
+		}
+
+		for (ILiteral errorLit : results.errors) {
+			ITuple tuple = errorLit.getAtom().getTuple();
+			String msg = tuple.get(0).getValue().toString();
+			for (int part = 1; part < tuple.size(); part++) {
+				msg += ", " + tuple.get(part).getValue();
+			}
+
+			addWarning(msg, errorLit);
+		}
+
+		if (results.finalKnowledgeBase != null) {
+			File tmpFile = File.createTempFile("sam-", "-graph.png");
+			Image image;
+			try {
+				Graph.graph(results.finalKnowledgeBase, tmpFile);
+				InputStream is = new FileInputStream(tmpFile);
+				try {
+					image = new Image(display, is);
+				} finally {
+					is.close();
+				}
+			} finally {
+				tmpFile.delete();
+			}
+
+			mainImage.setImage(image);
+			mainImage.pack();
+
+			relationsMenuHeader.setEnabled(true);
+			objectsMenuHeader.setEnabled(true);
+
+			/* Populate Relations menu */
+			IPredicate[] relations = results.model.declared.keySet().toArray(new IPredicate[] {});
+			Arrays.sort(relations);
+			for (final IPredicate pred : relations) {
+				MenuItem item = new MenuItem(relationsMenu, SWT.PUSH);
+				final ITuple args = results.model.declared.get(pred);
+				item.setText(pred.toString() + args);
+				item.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(SelectionEvent e) {
+						try {
+							new RelationViewer(shell, liveResults, pred);
+						} catch (Throwable ex) {
+							ex.printStackTrace();
+						}
+					}
+				});
+			}
+
+			/* Populate Objects menu */
+			String[] objects = getObjects(results);
+			for (final String name : objects) {
+				MenuItem item = new MenuItem(objectsMenu, SWT.PUSH);
+				item.setText(name);
+				item.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(SelectionEvent e) {
+						try {
+							new ObjectViewer(shell, liveResults, name);
+						} catch (Throwable ex) {
+							ex.printStackTrace();
+						}
+					}
+				});
+			}
+		}
+
+		messageList.pack();
 	}
 
 	private String[] getObjects(Results results) throws Exception {
