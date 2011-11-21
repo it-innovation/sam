@@ -439,7 +439,7 @@ class SAMMethod {
 							 TERM.createVariable("Value"));
 			head = BASIC.createLiteral(true, BASIC.createAtom(fieldP, tuple));
 		} else {
-			throw new RuntimeException("Undeclared variable: " + varName);
+			throw new ParserException(assign.getName(), "Undeclared variable: " + varName);
 		}
 
 		IRule rule = BASIC.createRule(makeList(head), body);
