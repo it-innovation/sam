@@ -389,6 +389,8 @@ public class GUI {
 					}
 				});
 			}
+		} else {
+			mainImage.setImage(null);
 		}
 
 		messageList.pack();
