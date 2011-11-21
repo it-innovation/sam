@@ -24,10 +24,10 @@ class ServiceProvider {
 }
 
 class Client {
-  public void test(DataProvider dataProvider, ServiceProvider serviceProvider) {
-    File file = dataProvider.newFile();
+  public void test(DataProvider myDataProvider, ServiceProvider myServiceProvider) {
+    File file = myDataProvider.newFile();
     file.put();
-    File result = serviceProvider.process(file);
+    File result = myServiceProvider.process(file);
     result.get();
   }
 }

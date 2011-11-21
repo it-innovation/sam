@@ -99,18 +99,23 @@ Predicates
    If assertion ?Number fails and it relates two objects, an assertionArrow fact will be
    recorded. This is used to add red arrows to the diagram.
 
-.. function:: mustCall(?Caller, ?CallerInvocation, ?Target, ?Method)
+.. function:: mustCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method)
 
    The :func:`didCall` relation must contain this call. Otherwise, fail the model.
+   For `Unknown` callers, the call-site does not need to match.
 
 .. function:: checkCalls(?Object)
 
    Ensure that every call on `Object` is in `mayCall`.
 
-.. function:: mayCall(?Caller, ?CallerInvocation, ?Target, ?Method)
+.. function:: mayCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method)
 
    Calls that can be made on objects marked with :func:`checkCalls` without generating an error.
    Everything in :func:`mustCall` is automatically added to `mayCall` too.
+
+.. function:: mayCall(?Caller, ?CallerInvocation, ?Target, ?Method)
+
+   Like :func:`mayCall`/5, but allow calls from any call-site.
 
 .. function:: mayCall(?Caller, ?Target, ?Method)
 

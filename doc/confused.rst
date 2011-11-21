@@ -9,25 +9,19 @@ model is based on the example in the `Authodox <http://web.comlab.ox.ac.uk/peopl
 
 1. Alice (an untrusted user) has access to a compiler.
 2. The compiler has access to a billing log.
-3. Alice should be able to cause her output file to be written to and the compiler's log to be appended to (and nothing else).
+3. When invoked by Alice, the compiler should write to the output file and to its billing log.
 
-The four objects are configured like this::
+The objects are configured like this::
 
   config {
-      File billing;
-      Compiler compiler;
-      File output;
-      Unknown alice;
-
-      setup {
-          billing = new File();
-          compiler = new Compiler(billing);
-          output = new File();
-          alice = new Unknown(compiler, output);
-      }
-
       test {
-          alice.test();
+          File billing = new File();
+          Compiler compiler = new Compiler(billing);
+          File input = new File();
+          File output = new File();
+          Object alice = new Unknown();
+
+          alice.test(compiler, input, output);
       }
   }
 
@@ -42,27 +36,50 @@ the allowed interactions can be defined using :func:`accessAllowed`::
 
   accessControlOn.
   accessAllowed("alice", "compiler").
+  accessAllowed("alice", "input").
   accessAllowed("alice", "output").
-  accessAllowed("compiler", "billing").
-  accessAllowed("compiler", "output").
+  accessAllowed("compiler", "billing", "File.write").
+  accessAllowed("compiler", "output", "File.write").
+  accessAllowed("compiler", "input", "File.read").
 
-Following Authodox, we define the actions we think should be possible as a result of Alice's actions
-(using :func:`mayCall`)::
-
-  mayCall("compiler", "output", "File.write").
-  mayCall("compiler", "billing", "File.append").
-  checkCalls("billing").
+As usual, we first run the scanerio with defined behaviour for `alice` to get
+the baseline (:example:`includes/confusedMustCall`), remove the
+:func:`checkCalls` for objects we don't care about, and then try again after
+giving `alice` the `Unknown` behaviour.
 
 Running this example (:example:`confused`) shows that it is not safe:
 
 .. sam-output:: confused
 
-The debug example is:
+The debug example shows that:
 
-.. code-block:: none
+  * <compiler>.exec:output.write called <billing>.write()
+      * <compiler>.exec()'s output = <billing>
+          * <compiler> received <billing> (arg to Compiler.exec)
 
-  debug()
-     <= compiler: billing.write()
-        <= alice: compiler.exec()
-        <= compiler: received billing (arg to Compiler.exec)
-           <= alice: compiler.exec()
+So, if Alice tells the compiler that the output file is the compiler's billing file, the compiler will
+overwrite the billing file (and Alice won't have to pay for using the service).
+
+Comparison with Authodox
+------------------------
+
+We have actually changed the scenario slightly from the Authodox original (`<http://www.cs.ox.ac.uk/people/toby.murray/tools/authodox/doc/index.html#authodox-tutorial>`_). The Authodox tutorial says that:
+
+* The compiler will **Write** to the output file
+* The compiler will **Append** to the billing file
+
+The original problem statement (`<http://cap-lore.com/CapTheory/ConfusedDeputy.html>`_) does not mention "appending", and talks of "writing" in both cases; and while the paper does not mention the exact operating system used, under POSIX systems appending and writing would both be done using the "write" system call.
+
+This change was neccesary because otherwise Authodox would not be able to detect the problem, since the compiler writes to the billing file in the baseline case and in the attack case. However, the change makes
+the example unconvincing, since it is highly unlikely that someone doing the modelling would make
+the change, unless they already knew about the problem.
+
+In SAM, this modification is not necessary. When SAM records a baseline it also records the particular
+call-site used to make each call. So, SAM doesn't just record that `compiler` called `billing.write`, it
+records that `compiler` called `billing.write` from the call-site `myLog.write()`.
+
+In the attack scenario, SAM is therefore able to detect the unexpected access. The compiler is now writing
+to the billing file from the `output.write()` call-site.
+
+Another change is that the SAM model includes the input and output files. These were omitted from the
+Authodox model for simplicity, but in SAM it's easy to add them so we do.

@@ -59,12 +59,12 @@ class ServiceProvider {
 }
 
 class Client {
-  public void test(DataProvider dataProvider, ServiceProvider serviceProvider) {
-    File file = dataProvider.newFile("user.crt");
+  public void test(DataProvider myDataProvider, ServiceProvider myServiceProvider) {
+    File file = myDataProvider.newFile("user.crt");
     file.put();
-    Identity serviceIdentity = ?Cert :- hasIdentity(serviceProvider, ?Cert);
+    Identity serviceIdentity = ?Cert :- hasIdentity(myServiceProvider, ?Cert);
     file.grantReadAccess(serviceIdentity);
-    File result = serviceProvider.process(file);
+    File result = myServiceProvider.process(file);
     result.get();
   }
 }

@@ -234,7 +234,7 @@ public class DebugViewer implements Updatable {
 			return "<" + caller + "> called <" + target + ">." + method + "()";
 		} else if (p.equals(Constants.didCallP)) {
 			String caller = getInvocation(tuple, 0);
-			String callSite = tuple.get(2).getValue().toString();
+			String[] callSite = tuple.get(2).getValue().toString().split("\\.", 2);
 			String target = getInvocation(tuple, 3);
 			String method = tuple.get(5).getValue().toString();
 
@@ -244,7 +244,7 @@ public class DebugViewer implements Updatable {
 			//msg = caller + "@" + callSite + " calls " + target + "." + method;
 			int i = method.indexOf('.');
 			method = method.substring(i + 1);
-			String msg = "<" + caller + "> called <" + target + ">." + method + "()";
+			String msg = "<" + caller + ">." + callSite[1] + " called <" + target + ">." + method + "()";
 
 			String callerInvocation = tuple.get(1).getValue().toString();
 			String targetInvocation = tuple.get(4).getValue().toString();

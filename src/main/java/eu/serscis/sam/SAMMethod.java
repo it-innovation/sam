@@ -49,7 +49,7 @@ class SAMMethod {
 	private String localPrefix;
 	private AMethod method;
 	private ITerm methodNameFull;
-	private int nextCallSite = 1;
+	private Set<String> callSites = new HashSet<String>();
 
 
 	public SAMMethod(SAMClass parent, AMethod m, ITerm methodNameFull) throws Exception {
@@ -199,6 +199,25 @@ class SAMMethod {
 		return literals;
 	}
 
+	private String mintCallSite(AAssign optAssign, String base) {
+		String prefix = methodNameFull.getValue() + ":";
+		if (optAssign != null) {
+			prefix += optAssign.getName().getText() + "=";
+		}
+		prefix += base;
+		String result = prefix;
+		int i = 0;
+
+		while (callSites.contains(result)) {
+			i++;
+			result = prefix + "-" + i;
+		}
+
+		callSites.add(result);
+
+		return result;
+	}
+
 	private void processCode(List<PStatement> statements) throws Exception {
 		for (PStatement ps : statements) {
 			if (ps instanceof AAssignStatement) {
@@ -207,17 +226,14 @@ class SAMMethod {
 				AAssign assign = (AAssign) s.getAssign();
 				PExpr expr = (PExpr) s.getExpr();
 
-				String callSite = methodNameFull.getValue() + "-" + nextCallSite;
-				nextCallSite++;
-
-				// hasCallSite(methodFull, callSite).
-				IRelation rel = parent.model.getRelation(hasCallSiteP);
-				rel.add(BASIC.createTuple(methodNameFull, TERM.createString(callSite)));
+				String callSite = null;
 
 				IPredicate valueP = null;
 
 				if (expr instanceof ACallExpr) {
 					ACallExpr callExpr = (ACallExpr) expr;
+					String targetMethod = parsePattern(callExpr.getMethod());
+					callSite = mintCallSite(assign, callExpr.getName().getText() + "." + targetMethod);
 
 					// mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Value) :-
 					//	isA(?Caller, ?Type),
@@ -247,23 +263,23 @@ class SAMMethod {
 					addArgs(callSite, (AArgs) callExpr.getArgs(), callExpr.getStar());
 
 					// callsMethod(callSite, method)
-					String targetMethod = parsePattern(callExpr.getMethod());
 					if ("*".equals(targetMethod)) {
-						rel = parent.model.getRelation(callsAnyMethodP);
+						IRelation rel = parent.model.getRelation(callsAnyMethodP);
 						rel.add(BASIC.createTuple(TERM.createString(callSite)));
 					} else {
-						rel = parent.model.getRelation(callsMethodP);
+						IRelation rel = parent.model.getRelation(callsMethodP);
 						rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetMethod)));
 					}
 
 					valueP = didGetP;
 				} else if (expr instanceof ANewExpr) {
 					ANewExpr newExpr = (ANewExpr) expr;
+					callSite = mintCallSite(assign, "new-" + ((AType) newExpr.getType()).getName().getText());
 
 					String varName = assign.getName().getText();
 
 					// mayCreate(callSite, newType, name)
-					rel = parent.model.getRelation(mayCreateP);
+					IRelation rel = parent.model.getRelation(mayCreateP);
 					String newType = ((AType) newExpr.getType()).getName().getText();
 					rel.add(BASIC.createTuple(TERM.createString(callSite),
 								  TERM.createString(newType),
@@ -312,6 +328,13 @@ class SAMMethod {
 
 					assignVar(assign, makeList(value));
 				}
+
+				if (callSite != null) {
+					// hasCallSite(methodFull, callSite).
+					IRelation rel = parent.model.getRelation(hasCallSiteP);
+					rel.add(BASIC.createTuple(methodNameFull, TERM.createString(callSite)));
+				}
+
 			} else if (ps instanceof ADeclStatement) {
 				ADeclStatement decl = (ADeclStatement) ps;
 				declareLocal(decl.getType(), decl.getName());

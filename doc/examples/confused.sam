@@ -1,9 +1,13 @@
+import "includes/confusedMustCall.sam".
+
 // The access control policy:
 accessControlOn.
 accessAllowed("alice", "compiler").
+accessAllowed("alice", "input").
 accessAllowed("alice", "output").
-accessAllowed("compiler", "billing").
-accessAllowed("compiler", "output").
+accessAllowed("compiler", "billing", "File.write").
+accessAllowed("compiler", "output", "File.write").
+accessAllowed("compiler", "input", "File.read").
 
 // All objects have well-known or guessable addresses.
 isPublic(?X) :- isObject(?X).
@@ -15,43 +19,36 @@ class Compiler {
         myLog = log;
     }
 
-    public void exec(Object target) {
-        myLog.append();
-        target.write();
+    public void exec(File input, File output) {
+        input.read();
+        myLog.write();
+        output.write();
     }
 }
 
 class File {
-    public void write() {
-    }
-
-    public void append() {
-    }
+    public void read() { }
+    public void write() { }
 }
 
 config {
-    File billing;
-    Compiler compiler;
-    File output;
-    Unknown alice;
-
-    setup {
-        billing = new File();
-        compiler = new Compiler(billing);
-        output = new File();
-        alice = new Unknown(compiler, output);
-    }
-
     test {
-        alice.test();
+        File billing = new File();
+        Compiler compiler = new Compiler(billing);
+        File input = new File();
+        File output = new File();
+        Object alice = new Unknown();
+
+        alice.test(compiler, input, output);
     }
 }
 
-// The only things that should be able to happen which don't involve Alice are:
-// 1. compiler invokes output.write()
-// 2. compiler invokes billing.append()
-mayCall("compiler", "output", "File.write").
-mayCall("compiler", "billing", "File.append").
-checkCalls("billing").
+class Alice {
+    public void test(Compiler compiler, File input, File output) {
+        input.write();
+        compiler.exec(input, output);
+        output.read();
+    }
+}
 
 expectFailure.

@@ -49,8 +49,17 @@ error(?Msg) :- failedAssertion(?N), assertionMessage(?N, ?Msg).
 /* Check that all mustCall calls were made. */
 
 declare missingMustCall(?Source, ?Target, ?Method).
+
+// Known objects must call from the correct call-site
 missingMustCall(?Source, ?Target, ?Method) :-
-    mustCall(?Source, ?SourceInvocation, ?Target, ?Method),
+    mustCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?Method),
+    !isA(?Source, "Unknown"),
+    !didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?AnyInvocation, ?Method).
+
+// Unknown objects may call from any call-site
+missingMustCall(?Source, ?Target, ?Method) :-
+    mustCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?Method),
+    isA(?Source, "Unknown"),
     !didCall(?Source, ?SourceInvocation, ?AnyCallSite, ?Target, ?AnyInvocation, ?Method).
 
 missingGoodAccess(?Source, ?Target) :-
