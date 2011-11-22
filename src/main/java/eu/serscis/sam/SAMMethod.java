@@ -483,43 +483,56 @@ class SAMMethod {
 		}
 	}
 
-	/* mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?Value) :-
-	 * 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
-	 *	local|field,
+	/* maySend(?Caller, ?CallSite, ?Pos, ?Value) :-
+	 *	string|field|this.
+	 *
+	 * maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?Value) :-
+	 *	local.
 	 */
 	private void addArg(String callSite, int pos, PExpr expr) throws ParserException {
-		ILiteral didCall = BASIC.createLiteral(true, didCallP, BASIC.createTuple(
-					TERM.createVariable("Caller"),
-					TERM.createVariable("CallerInvocation"),
-					TERM.createString(callSite),
-					TERM.createVariable("Target"),
-					TERM.createVariable("TargetInvocation"),
-					TERM.createVariable("Method")
-					));
-
 		IRule rule;
 
 		if (expr instanceof AStringExpr) {
-			ILiteral head = BASIC.createLiteral(true, maySendP, BASIC.createTuple(
-						TERM.createVariable("Target"),
-						TERM.createVariable("TargetInvocation"),
-						TERM.createVariable("Method"),
-						CONCRETE.createInt(pos),
-						TERM.createString(getString(((AStringExpr) expr).getStringLiteral()))
-						));
+			ILiteral head = BASIC.createLiteral(true, maySend4P, BASIC.createTuple(
+					TERM.createVariable("Caller"),
+					TERM.createString(callSite),
+					CONCRETE.createInt(pos),
+					TERM.createString(getString(((AStringExpr) expr).getStringLiteral()))));
 
-			rule = BASIC.createRule(makeList(head), makeList(didCall));
+			ILiteral isA = BASIC.createLiteral(true, isAP, BASIC.createTuple(
+						TERM.createVariable("Caller"),
+						TERM.createString(this.parent.name)));
+			rule = BASIC.createRule(makeList(head), makeList(isA));
+			parent.model.rules.add(rule);
 		} else {
 			TName varName = ((ACopyExpr) expr).getName();
-			ILiteral head = BASIC.createLiteral(true, maySendP, BASIC.createTuple(
-						TERM.createVariable("Target"),
-						TERM.createVariable("TargetInvocation"),
-						TERM.createVariable("Method"),
-						CONCRETE.createInt(pos),
-						TERM.createVariable("Value")
-						));
+			boolean isLocal = locals.contains(varName.getText());
 
-			rule = BASIC.createRule(makeList(head), makeList(didCall, getValue(varName)));
+			ILiteral head;
+
+			if (isLocal) {
+				head = BASIC.createLiteral(true, maySend5P, BASIC.createTuple(
+						TERM.createVariable("Caller"),
+						TERM.createVariable("CallerInvocation"),
+						TERM.createString(callSite),
+						CONCRETE.createInt(pos),
+						TERM.createVariable("Value")));
+			} else {
+				head = BASIC.createLiteral(true, maySend4P, BASIC.createTuple(
+						TERM.createVariable("Caller"),
+						TERM.createString(callSite),
+						CONCRETE.createInt(pos),
+						TERM.createVariable("Value")));
+			}
+
+			if (varName.getText().equals("this")) {
+				ILiteral isA = BASIC.createLiteral(true, isAP, BASIC.createTuple(
+							TERM.createVariable("Caller"),
+							TERM.createString(this.parent.name)));
+				rule = BASIC.createRule(makeList(head), makeList(getValue(varName), isA));
+			} else {
+				rule = BASIC.createRule(makeList(head), makeList(getValue(varName)));
+			}
 		}
 
 		parent.model.rules.add(rule);

@@ -128,10 +128,15 @@ Call-sites
 
    This call-site may call methods with any name.
 
-.. function:: mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue)
+.. function:: maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue)
 
-   Target.method may get called with `ArgValue` as parameter number `Pos` (or as any
+   CallSite may send the value `ArgValue` as parameter number `Pos` (or as any
    parameter if `Pos` is `-1`).
+
+.. function:: maySend(?Caller, ?CallSite, ?Pos, ?ArgValue)
+
+   As for `maySend/5`, but the value may be sent in any context (e.g. it is a field
+   or a literal).
 
 .. function:: mayCreate(?CallSite, ?ChildType, ?NameHint)
 

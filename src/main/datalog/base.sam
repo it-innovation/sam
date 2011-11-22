@@ -69,6 +69,7 @@ declare hideUncalledReferences.
 declare ignoreEdgeForRanking(?GraphSourceNode, ?GraphTargetNode).
 
 declare didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
+declare didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
 declare didCall(?Caller, ?Target, ?Method).
 declare mayAccept(?Method, ?ParamVar, ?Pos).
 declare mayAccept(?Method, ?ParamVar, ?Pos, ?Value).
@@ -88,6 +89,8 @@ declare didGetException(?Caller, ?CallerInvocation, ?CallSite, ?Exception).
 declare mayReturn(?Object, ?Invocation, ?Method, ?Value).
 declare mayThrow(?Object, ?Invocation, ?Method, ?Exception).
 declare didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue).
+declare maySend(?Caller, ?CallSite, ?Pos, ?ArgValue).
+declare maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue).
 declare mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue).
 declare mayCreate(?CallSite, ?ChildType, ?NameHint).
 declare newObject(?Object, ?Invocation, ?ChildType, ?NewObject).
@@ -223,9 +226,9 @@ accessAllowed(?Caller, ?Caller) :- isObject(?Caller).
 // Unknown objects have access to all public objects
 field(?Object, "ref", ?Target) :- isA(?Object, "Unknown"), isPublic(?Target).
 
-/* A simplified version of didCall/6 useful for writing goals. */
+/* A simplified version of didCall/5 useful for writing goals. */
 didCall(?Caller, ?Target, ?Method) :-
-	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
 
 initialObject("_testDriver", "_TestDriver").
 

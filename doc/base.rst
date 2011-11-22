@@ -76,9 +76,13 @@ might happen.
 
    `Target` was invoked with the given value passed as an argument.
 
-.. function:: didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method)
+.. function:: didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method)
 
    `Caller`'s `CallSite` called `Target`'s `Method`.
+
+.. function:: didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method)
+
+   `Caller`'s `CallSite` called `Target`'s `Method`, switching to the `TargetInvocation` context.
 
 .. function:: didCall(?Caller, ?Target, ?Method)
 
@@ -105,3 +109,8 @@ might happen.
 .. function:: getsAccess(?SourceObject, ?TargetObject)
 
    Some invocation of `SourceObject` may have access to `TargetObject` (through a field or local variable).
+
+.. function:: mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue)
+
+   Target.method may get called with `ArgValue` as parameter number `Pos` (or as any
+   parameter if `Pos` is `-1`).
