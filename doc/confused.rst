@@ -55,7 +55,7 @@ The debug example shows that:
 
   * <compiler>.exec:output.write called <billing>.write()
       * <compiler>.exec()'s output = <billing>
-          * <compiler> received <billing> (arg to Compiler.exec)
+          * <compiler>.exec() received argument <billing>
 
 So, if Alice tells the compiler that the output file is the compiler's billing file, the compiler will
 overwrite the billing file (and Alice won't have to pay for using the service).

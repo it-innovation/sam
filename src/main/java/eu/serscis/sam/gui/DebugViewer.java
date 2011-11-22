@@ -197,18 +197,17 @@ public class DebugViewer implements Updatable {
 
 		if (p.getPredicateSymbol().equals("mayReceive")) {
 			String target = tuple.get(0).getValue().toString();
-			String method = tuple.get(2).getValue().toString();
+			String invocation = tuple.get(1).getValue().toString();
+			String method = tuple.get(2).getValue().toString().split("\\.", 2)[1];
 			String arg;
 			if (tuple.size() == 4) {
 				arg = tuple.get(3).getValue().toString();
 			} else {
 				arg = tuple.get(4).getValue().toString();
 			}
-			String msg = "<" + target + "> received <" + arg + ">";
-			if (!method.equals("Unknown.invoke")) {
-				msg += " (arg to " + method + ")";
-			} else {
-				msg += " (as an argument)";
+			String msg = "<" + target + ">." + method + "() received argument <" + arg + ">";
+			if (!invocation.equals("")) {
+				msg += " [" + invocation + "]";
 			}
 			return msg;
 		} else if (p.equals(Constants.mayStoreP)) {
