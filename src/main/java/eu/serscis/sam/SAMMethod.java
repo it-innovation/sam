@@ -100,7 +100,7 @@ class SAMMethod {
 
 	private void processAnnotation(PAnnotation a) throws Exception {
 		TName name;
-		AStringArgs args = null;
+		ALiteralArgs args = null;
 
 		if (a instanceof ANoargsAnnotation) {
 			ANoargsAnnotation annotation = (ANoargsAnnotation) a;
@@ -108,7 +108,7 @@ class SAMMethod {
 		} else {
 			AArgsAnnotation annotation = (AArgsAnnotation) a;
 			name = annotation.getName();
-			args = (AStringArgs) annotation.getStringArgs();
+			args = (ALiteralArgs) annotation.getLiteralArgs();
 		}
 
 		ITerm[] values = getAnnotationArgs(methodNameFull, args);
@@ -566,23 +566,34 @@ class SAMMethod {
 		}
 	}
 
-	private ITerm[] getAnnotationArgs(ITerm methodName, AStringArgs args) throws ParserException {
+	private static ITerm createLiteralTerm(PLiteralArg arg) throws ParserException {
+		if (arg instanceof AStringLiteralArg) {
+			return TERM.createString(getString(((AStringLiteralArg) arg).getStringLiteral()));
+		} else if (arg instanceof AIntLiteralArg) {
+			int val = Integer.valueOf(((AIntLiteralArg) arg).getNumber().getText());
+			return CONCRETE.createInt(val);
+		} else {
+			throw new RuntimeException("Unknown literal expression: " + arg);
+		}
+	}
+
+	private ITerm[] getAnnotationArgs(ITerm methodName, ALiteralArgs args) throws ParserException {
 		if (args == null) {
 			return new ITerm[] {methodName};
 		}
 
-		int n = args.getStringArgsTail().size() + 2;
+		int n = args.getLiteralArgsTail().size() + 2;
 		ITerm[] values = new ITerm[n];
 
 		values[0] = methodName;
 
 		int pos = 1;
-		values[pos] = TERM.createString(getString(args.getStringLiteral()));
 
-		for (PStringArgsTail tail : args.getStringArgsTail()) {
+		values[pos] = createLiteralTerm(args.getLiteralArg());
+
+		for (PLiteralArgsTail tail : args.getLiteralArgsTail()) {
 			pos += 1;
-			String value = getString(((AStringArgsTail) tail).getStringLiteral());
-			values[pos] = TERM.createString(value);
+			values[pos] = createLiteralTerm(((ALiteralArgsTail) tail).getLiteralArg());
 		}
 
 		return values;

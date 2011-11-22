@@ -71,7 +71,7 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?CallerInvocation, ?Meth
 	!methodDoesContextMapping(?Method).
 
 /* Parent calls the child's constructor */
-didCall(?Caller, ?Invocation, ?CallSite, ?NewChild, ?Invocation, ?Method) :-
+didCall(?Caller, ?Invocation, ?CallSite, ?NewChild, ?Method) :-
 	didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild),
 	isA(?NewChild, ?ChildType),
 	hasConstructor(?ChildType, ?Method).

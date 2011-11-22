@@ -92,6 +92,7 @@ public class Eval {
 		ClassLoader loader = Eval.class.getClassLoader();
 
 		parseResource(results.model, "base.sam");
+		parseResource(results.model, "switch.sam");
 		parseResource(results.model, "checks.sam");
 		parseResource(results.model, "graph.sam");
 

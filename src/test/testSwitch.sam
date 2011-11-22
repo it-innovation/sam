@@ -1,0 +1,40 @@
+class File {}
+
+class Box {
+    private Object myContents;
+
+    public void put(Object contents) {
+        myContents = contents;
+    }
+
+    public Object get() {
+        return myContents;
+    }
+}
+
+class User {
+    @SwitchPos(0)
+    @SwitchCase("x", "ForX")
+    @SwitchCase("y", "ForY")
+    public void test(Object a) {
+        Box box = new Box();
+        box.put(a);
+
+        Object b = box.get(a);
+        b.run(a);
+    }
+}
+
+config {
+    test {
+        Object x = new Unknown();
+        Object y = new Unknown();
+        User user = new User();
+        user.test(x);
+        user.test(y);
+    }
+}
+
+assert hasRef("boxForX", "x").
+assert hasRef("boxForY", "y").
+assert !hasRef("x", "y").

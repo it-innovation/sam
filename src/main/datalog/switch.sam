@@ -1,0 +1,109 @@
+/////////////////////////////////////////////////////////////////////////
+//
+// © University of Southampton IT Innovation Centre, 2011
+//
+// Copyright in this library belongs to the University of Southampton
+// University Road, Highfield, Southampton, UK, SO17 1BJ
+//
+// This software may not be used, sold, licensed, transferred, copied
+// or reproduced in whole or in part in any manner or form or in or
+// on any media by any person other than in accordance with the terms
+// of the Licence Agreement supplied with the software, or otherwise
+// without the prior written consent of the copyright owners.
+//
+// This software is distributed WITHOUT ANY WARRANTY, without even the
+// implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+// PURPOSE, except where stated in the Licence Agreement supplied with
+// the software.
+//
+//	Created By :			Thomas Leonard
+//	Created Date :			2011-11-22
+//	Created for Project :		SERSCIS
+//
+/////////////////////////////////////////////////////////////////////////
+//
+//  License : GNU Lesser General Public License, version 2.1
+//
+/////////////////////////////////////////////////////////////////////////
+
+// Disable the normal rules (TargetContext = CallerContext)
+methodDoesContextMapping(?Method) :- SwitchPos(?Method, ?Param).
+
+isInvocation(?Context) :- SwitchCase(?Method, ?Value, ?Context).
+
+// When Method is called, activate the contexts for every case
+didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method) :-
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+    SwitchCase(?Method, ?AnyArgValue, ?TargetContext).
+
+
+// A particular context mayReceive a value if:
+// - the method was called
+// - the caller may have sent the value
+// - the argument is not SwitchPos OR it is acceptable for this case
+
+// the SwitchPos arg
+
+// sending a local
+mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+    maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
+    SwitchPos(?Method, ?Pos),
+    SwitchCase(?Method, ?ArgValue, ?TargetInvocation).
+
+/* sending a field/string/this */
+mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+    maySend(?Caller, ?CallSite, ?Pos, ?ArgValue),
+    SwitchPos(?Method, ?Pos),
+    SwitchCase(?Method, ?ArgValue, ?TargetInvocation).
+
+// the other args
+
+// sending a local
+mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+    maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
+    SwitchPos(?Method, ?SwitchPos), ?SwitchPos != ?Pos,
+    SwitchCase(?Method, ?AnyArgValue, ?TargetInvocation).
+
+/* sending a field/string/this */
+mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+    maySend(?Caller, ?CallSite, ?Pos, ?ArgValue),
+    SwitchPos(?Method, ?SwitchPos), ?SwitchPos != ?Pos,
+    SwitchCase(?Method, ?AnyArgValue, ?TargetInvocation).
+
+
+error("missing SwitchCase", ?Method, ?ArgValue) :- 
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+    maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
+    SwitchPos(?Method, ?Pos),
+    !SwitchCase(?Method, ?ArgValue, ?TargetInvocation).
+
+error("missing SwitchCase", ?Method, ?ArgValue) :- 
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+    maySend(?Caller, ?CallSite, ?Pos, ?ArgValue),
+    SwitchPos(?Method, ?Pos),
+    !SwitchCase(?Method, ?ArgValue, ?TargetInvocation).
+
+// If caller may send at any position, then they may send at SwitchPos
+
+maySend(?Caller, ?CallerInvocation, ?CallSite, ?SwitchPos, ?ArgValue) :-
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+    SwitchPos(?Method, ?SwitchPos),
+    maySend(?Caller, ?CallerInvocation, ?CallSite, -1, ?ArgValue).
+
+maySend(?Caller, ?CallSite, ?SwitchPos, ?ArgValue) :-
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+    SwitchPos(?Method, ?SwitchPos),
+    maySend(?Caller, ?CallSite, -1, ?ArgValue).
+
+error("Multiple SwitchPos annotations!", ?Method) :-
+    SwitchPos(?Method, ?Pos1),
+    SwitchPos(?Method, ?Pos2),
+    ?Pos1 != ?Pos2.
+
+error("SwitchCase without SwitchPos", ?Method) :-
+    SwitchCase(?Method, ?Value, ?Context),
+    !SwitchPos(?Method, ?Pos).
