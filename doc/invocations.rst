@@ -24,23 +24,14 @@ Aggregation
      newObject("factory", "otherClients", "Proxy", "newProxiesForOthers").
 
 
-.. function:: invocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation)
+.. function:: methodDoesContextMapping(?Method)
 
-   Whenever the object `Caller` executes the call at `CallSite` in the context
-   `CallerInvocation`, all the resulting invocations should be aggregated into
-   the `TargetInvocation` context. If not specified, the default is to use
-   `CallerInvocation` for `TargetInvocation`.
-   
-   For example, to group all invocations by clientA's "other" context of
-   the first call in the "ClientA.run" method into the "a" group::
-
-     invocationObject("clientA", "other", "ClientA.run-1", "a").
-
-.. function:: invocationObject(?CallSite, ?TargetInvocation)
-
-   As above, but for all callers and invocations. It is necessary to use this if you want
-   to set the context for all callers, since otherwise trying to generate all the possible
-   callers will cause a stratification error.
+   Normally, when a caller calls a method in a particular context, the target method
+   becomes active in the same context and receives all the values as arguments.
+   This disables both behaviours, allowing it to be replaced by custom rules. If you
+   enable this for a method, you will need to set :func:`didCall`/6 based on `didCall`/5
+   somehow and arrange for :func:`mayReceive` to get set based on :func:`maySend` (for
+   both cases; with and without the context).
 
 .. function:: methodMatches(?CallSite, ?Target, ?Method)
 
@@ -55,11 +46,6 @@ Generated predicates
 
    The `realNewObject` relation is copied from `newObject`, but has a suitable
    default whenever `newObject` wasn't defined.
-
-.. function:: realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation)
-
-   The `realInvocationObject` relation is copied from `invocationObject`, but
-   has a suitable default whenever `invocationObject` wasn't defined.
 
 .. function:: realInitialInvocation(?Object, ?Method, ?Invocation)
 

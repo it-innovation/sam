@@ -66,9 +66,9 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method) :-
 	methodMatches(?CallSite, ?Target, ?Method),
 	accessAllowed(?Caller, ?Target, ?Method).
 
-didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method) :-
+didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?CallerInvocation, ?Method) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
-	realInvocationObject(?Caller, ?CallerInvocation, ?CallSite, ?TargetInvocation).
+	!methodDoesContextMapping(?Method).
 
 /* Parent calls the child's constructor */
 didCall(?Caller, ?Invocation, ?CallSite, ?NewChild, ?Invocation, ?Method) :-
@@ -131,12 +131,14 @@ live(?NewChild) :-
 /* sending a local */
 mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
-	maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue).
+	maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
+        !methodDoesContextMapping(?Method).
 
 /* sending a field/string/this */
 mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
-	maySend(?Caller, ?CallSite, ?Pos, ?ArgValue).
+	maySend(?Caller, ?CallSite, ?Pos, ?ArgValue),
+        !methodDoesContextMapping(?Method).
 
 /* Default aggregation for child objects */
 
