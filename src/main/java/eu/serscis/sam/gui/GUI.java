@@ -255,6 +255,11 @@ public class GUI {
 
 		final File examplesDir = new File(System.getenv("SAM_EXAMPLES"));
 
+		if (!examplesDir.isDirectory()) {
+			System.out.println("WARNING: Examples directory not found: " + examplesDir);
+			return examplesMenu;
+		}
+
 		String[] files = examplesDir.list();
 		Arrays.sort(files);
 		for (final String name : files) {
