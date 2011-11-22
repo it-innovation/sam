@@ -91,9 +91,9 @@ public class Eval {
 
 		ClassLoader loader = Eval.class.getClassLoader();
 
-		parseResource(results.model, "base.dl");
-		parseResource(results.model, "checks.dl");
-		parseResource(results.model, "graph.dl");
+		parseResource(results.model, "base.sam");
+		parseResource(results.model, "checks.sam");
+		parseResource(results.model, "graph.sam");
 
 		SAMParser parser = new SAMParser(results.model, scenario);
 		List<IQuery> queries = parser.getQueries();
@@ -108,7 +108,7 @@ public class Eval {
 			return;
 		}
 
-		parseResource(results.model, "system.dl");
+		parseResource(results.model, "system.sam");
 
 		results.phase = Results.Phase.Setup;
 
@@ -118,7 +118,7 @@ public class Eval {
 
 		results.phase = Results.Phase.Test;
 
-		parseResource(results.model, "finalChecks.dl");
+		parseResource(results.model, "finalChecks.sam");
 		parseResource(results.model, "gui.sam");
 
 		IRelation phase = results.model.getRelation(Constants.phaseP);

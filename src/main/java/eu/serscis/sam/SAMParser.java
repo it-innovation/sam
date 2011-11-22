@@ -257,7 +257,7 @@ public class SAMParser {
 			model.rules.add(r);
 			//System.out.println(r);
 
-			// failedAssertion(?N) :- assertionArrow(?N, ?Source, ?Target, ?Positive) in checks.dl
+			// failedAssertion(?N) :- assertionArrow(?N, ?Source, ?Target, ?Positive) in checks.sam
 		} else {
 			// failedAssertion(?N) :- !body
 			ILiteral head = BASIC.createLiteral(true,

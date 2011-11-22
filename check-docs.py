@@ -18,7 +18,7 @@ def parse_dl(path):
 	for line in open(path):
 		if line.startswith('declare '):
 			declared.add(line.split(' ', 1)[1].strip()[:-1])
-parse_dl(os.path.join(dldir, 'base.dl'))
+parse_dl(os.path.join(dldir, 'base.sam'))
 
 undocumented = declared - documented
 if undocumented:
