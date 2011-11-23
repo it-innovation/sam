@@ -157,7 +157,9 @@ public class Graph {
 		Process proc = Runtime.getRuntime().exec(new String[] {dotBinary, "-o" + pngFile.getAbsolutePath(), "-Tpng", dotFile.getAbsolutePath()});
 		int result = proc.waitFor();
 		if (result != 0) {
-			throw new RuntimeException("dot failed to run: exit status = " + result);
+			throw new RuntimeException("dot failed to run: exit status = " + result + "; see " + dotFile);
 		}
+
+		dotFile.delete();
 	}
 }
