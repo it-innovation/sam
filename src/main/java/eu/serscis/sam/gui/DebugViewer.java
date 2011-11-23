@@ -293,13 +293,18 @@ public class DebugViewer implements Updatable {
 			return "<" + actor + ">." + name + " = <" + value + ">";
 		} else if (p.equals(Constants.localP)) {
 			String actor = getInvocation(tuple, 0);
+			String invocation = tuple.get(1).getValue().toString();
 			String name = tuple.get(2).getValue().toString();
 			if (name.equals("this")) {
 				return null;
 			}
 			String[] nameParts = name.split("\\.");
 			String value = tuple.get(3).getValue().toString();
-			return "<" + actor + ">." + nameParts[1] + "()'s " + nameParts[2] + " = <" + value + ">";
+			String msg = "<" + actor + ">." + nameParts[1] + "()'s " + nameParts[2] + " = <" + value + ">";
+			if (!invocation.equals("")) {
+				msg += " [" + invocation + "]";
+			}
+			return msg;
 		} else if (p.equals(Constants.mayCallObjectP)) {
 			String actor = getInvocation(tuple, 0);
 			String invocation = tuple.get(1).getValue().toString();
