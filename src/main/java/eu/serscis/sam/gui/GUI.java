@@ -28,6 +28,7 @@
 
 package eu.serscis.sam.gui;
 
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.deri.iris.api.terms.ITerm;
 import java.io.FileWriter;
 import java.io.Writer;
@@ -198,8 +199,12 @@ public class GUI {
 			}
 		});
 
-		mainImage = new Label(shell, SWT.CENTER);
-		mainImage.setBackground(white);
+		final ScrolledComposite mainScrollArea = new ScrolledComposite(shell,
+							SWT.H_SCROLL | SWT.V_SCROLL);
+
+		mainImage = new Label(mainScrollArea, SWT.CENTER);
+		mainScrollArea.setContent(mainImage);
+		mainScrollArea.setBackground(white);
 
 		messageList = new List(shell, 0);
 		messageList.addSelectionListener(new SelectionAdapter() {
@@ -227,7 +232,7 @@ public class GUI {
 		imageLayoutData.verticalAlignment = GridData.FILL;
 		imageLayoutData.grabExcessHorizontalSpace = true;
 		imageLayoutData.grabExcessVerticalSpace = true;
-		mainImage.setLayoutData(imageLayoutData);
+		mainScrollArea.setLayoutData(imageLayoutData);
 
 		GridData assertionsLayoutData = new GridData();
 		assertionsLayoutData.horizontalAlignment = GridData.FILL;
