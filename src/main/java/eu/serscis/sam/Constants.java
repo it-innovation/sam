@@ -88,6 +88,7 @@ public class Constants {
 
 	static String getString(TStringLiteral literal) {
 		String str = literal.getText();
-		return str.substring(1, str.length() - 1);	// TODO: ignores escapes
+		String innerStr = str.substring(1, str.length() - 1);
+		return innerStr.replaceAll("\\\\", "");
 	}
 }
