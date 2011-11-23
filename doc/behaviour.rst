@@ -146,6 +146,11 @@ Call-sites
    new child object. Usually, this is the name of the variable it will be assigned
    to.
 
+.. function:: catchesAllExceptions(?CallSite)
+
+   This call-site handles all exceptions (i.e. it is inside a try block that
+   catches "Throwable"). Without this, it is assumed that all exceptions may
+   propagate.
 
 The Unknown type
 ----------------

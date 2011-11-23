@@ -50,7 +50,7 @@ class SAMMethod {
 	private AMethod method;
 	private ITerm methodNameFull;
 	private Set<String> callSites = new HashSet<String>();
-
+	private List<String> callSitesInCurrentTryBlock = null;	// null => not in a try block
 
 	public SAMMethod(SAMClass parent, AMethod m, ITerm methodNameFull) throws Exception {
 		this.parent = parent;
@@ -333,6 +333,10 @@ class SAMMethod {
 					// hasCallSite(methodFull, callSite).
 					IRelation rel = parent.model.getRelation(hasCallSiteP);
 					rel.add(BASIC.createTuple(methodNameFull, TERM.createString(callSite)));
+
+					if (callSitesInCurrentTryBlock != null) {
+						callSitesInCurrentTryBlock.add(callSite);
+					}
 				}
 
 			} else if (ps instanceof ADeclStatement) {
@@ -348,11 +352,23 @@ class SAMMethod {
 			} else if (ps instanceof AThrowStatement) {
 				returnOrThrow(mayThrowP, methodNameFull, ((AThrowStatement) ps).getName());
 			} else if (ps instanceof ATryStatement) {
+				boolean catchesThrowable = false;
+
 				ATryStatement ts = (ATryStatement) ps;
+
+				if (callSitesInCurrentTryBlock != null) {
+					throw new ParserException(ts.getTry(), "Nested try statements not supported");
+				}
+				callSitesInCurrentTryBlock = new LinkedList<String>();
+
 				processCode(ts.getStatement());
 				for (PCatchBlock c : ts.getCatchBlock()) {
 					ACatchBlock cb = (ACatchBlock) c;
 					declareLocal(cb.getType(), cb.getName());
+
+					if (((AType) cb.getType()).getName().getText().equals("Throwable")) {
+						catchesThrowable = true;
+					}
 
 					// local(?Object, ?Innovation, name, ?Exception) :-
 					//	didGetException(?Object, ?Invocation, ?CallSite, ?Exception),
@@ -380,6 +396,15 @@ class SAMMethod {
 
 					processCode(cb.getStatement());
 				}
+
+				if (catchesThrowable) {
+					IRelation rel = parent.model.getRelation(catchesAllExceptionsP);
+					for (String callSite : callSitesInCurrentTryBlock) {
+						rel.add(BASIC.createTuple(TERM.createString(callSite)));
+					}
+				}
+
+				callSitesInCurrentTryBlock = null;
 			} else if (ps instanceof AAssignDlStatement) {
 				AAssignDlStatement s = (AAssignDlStatement) ps;
 

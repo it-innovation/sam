@@ -40,6 +40,7 @@ declare local(?Object, ?Invocation, ?VarName, ?Value).
 declare methodDoesContextMapping(?Method).
 declare hasMethod(?Type, ?Method).
 declare hasCallSite(?Method, ?CallSite).
+declare catchesAllExceptions(?CallSite).
 declare initialObject(?Object, ?Type).
 declare initialInvocation(?Object, ?Invocation).
 declare initialInvocation(?Object, ?MethodName, ?Invocation).
@@ -182,6 +183,7 @@ class BaseUnknown {
 			throw ref;
 		} catch (Throwable ex) {
 			ref = ex;
+                        throw ref;
 		}
 	}
 }

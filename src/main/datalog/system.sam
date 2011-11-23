@@ -93,7 +93,8 @@ didGetException(?Caller, ?CallerInvocation, ?CallSite, ?Exception) :-
 mayThrow(?Caller, ?CallerInvocation, ?CallerMethod, ?Exception) :-
 	hasCallSite(?CallerMethod, ?CallerCallSite),
 	didCall(?Caller, ?CallerInvocation, ?CallerCallSite, ?Target, ?TargetInvocation, ?TargetMethod),
-	didGetException(?Target, ?TargetInvocation, ?TargetCallSite, ?Exception).
+	didGetException(?Target, ?TargetInvocation, ?TargetCallSite, ?Exception),
+	!catchesAllExceptions(?TargetCallSite).
 
 /* (normal call; sender and receiver use fixed args) */
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
