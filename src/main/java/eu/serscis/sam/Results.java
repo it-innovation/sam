@@ -28,6 +28,9 @@
 
 package eu.serscis.sam;
 
+import java.io.FileWriter;
+import java.io.Writer;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.io.File;
 import java.util.ArrayList;
@@ -67,5 +70,33 @@ public class Results {
 			throw new RuntimeException("Already have an exception", ex);
 		}
 		this.exception = ex;
+	}
+
+	public void save(File file) throws Exception {
+		Writer writer = new FileWriter(file);
+		try {
+			IPredicate[] relations = model.declared.keySet().toArray(new IPredicate[] {});
+			Arrays.sort(relations);
+			for (IPredicate pred : relations) {
+				writer.write(pred.toString() + "\n");
+				ITuple tuple = model.declared.get(pred);
+				int nCols = tuple.size();
+				IQuery query = BASIC.createQuery(BASIC.createLiteral(true, pred, tuple));
+				IRelation rel = finalKnowledgeBase.execute(query);
+
+				String[] rows = new String[rel.size()];
+				for (int i = 0; i < rows.length; i++) {
+					rows[i] = rel.get(i).toString() + "\n";
+				}
+				Arrays.sort(rows);
+
+				for (String row : rows) {
+					writer.write(row);
+				}
+				writer.write("\n");
+			}
+		} finally {
+			writer.close();
+		}
 	}
 }

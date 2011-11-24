@@ -42,10 +42,10 @@ examples:
 
 images: ${SAM_EXAMPLES}
 	mkdir -p ${BUILDDIR}/sam-output
-	(cd ${BUILDDIR}/sam-output && ${SAM} --batch ${SAM_EXAMPLES})
+	(cd ${BUILDDIR}/sam-output && ${SAM} --batch --results-dir ${BUILDDIR}/results ${SAM_EXAMPLES})
 
 parser:
 	java -jar ${SABLECC}/lib/sablecc.jar -d ${BUILDDIR} ${SRCDIR}/src/main/sablecc/sam.grammar
 
 tests:
-	${SAM} --batch ${SRCDIR}/src/test/*.sam
+	${SAM} --batch --results-dir ${BUILDDIR}/results ${SRCDIR}/src/test/*.sam

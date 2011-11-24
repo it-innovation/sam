@@ -33,15 +33,31 @@ import java.io.File;
 
 public class Main {
 	public static void main(String[] args) throws Exception {
-		if (args.length < 1) {
-			new GUI(null);
-			return;
+		boolean batch = false;
+		File resultsDir = null;
+
+		int i = 0;
+		while (i < args.length && args[i].startsWith("--")) {
+			String opt = args[i].substring(2);
+			if (opt.equals("batch")) {
+				batch = true;
+			} else if (opt.equals("results-dir")) {
+				resultsDir = new File(args[i + 1]);
+				i++;
+			} else {
+				usageError("Unknown option '" + args[i] + "'");
+			}
+			i++;
 		}
 
-		if (args[0].equals("--batch")) {
+		if (batch) {
 			Eval eval = new Eval();
 
-			for (int i = 1; i < args.length; i++) {
+			if (resultsDir != null && !resultsDir.isDirectory()) {
+				resultsDir.mkdir();
+			}
+
+			while (i < args.length) {
 				String arg = args[i];
 				File scenario = new File(arg);
 				Results results = eval.evaluate(scenario);
@@ -55,6 +71,11 @@ public class Main {
 						stem = stem.substring(0, stem.length() - 4);
 					}
 					Graph.graph(results.finalKnowledgeBase, new File(stem + ".png"));
+
+					if (resultsDir != null) {
+						File resultsFile = new File(resultsDir, stem + ".results");
+						results.save(resultsFile);
+					}
 				}
 				if (results.phase != Results.Phase.Success) {
 					if (results.expectingFailure) {
@@ -71,12 +92,29 @@ public class Main {
 					}
 					System.out.println(scenario + ": OK");
 				}
+
+				i++;
 			}
 		} else {
-			if (args.length != 1) {
-				throw new RuntimeException("only --batch mode is currently supported");
+			if (resultsDir != null) {
+				usageError("--results-dir only available with --batch");
 			}
-			new GUI(new File(args[0]));
+
+			if (args.length == 0) {
+				new GUI(null);
+			} else if (args.length == i + 1) {
+				new GUI(new File(args[i]));
+			} else {
+				usageError("multiple files only supported in --batch mode");
+			}
 		}
+	}
+
+	private static void usageError(String message) {
+		System.out.println(message);
+		System.out.println("");
+		System.out.println("Usage: sam model.sam");
+		System.out.println("       sam --batch [--results-dir DIR] model.sam ...");
+		System.exit(1);
 	}
 }
