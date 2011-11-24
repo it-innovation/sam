@@ -86,7 +86,9 @@ public class ResultsTable implements Updatable {
 		myTable.addSelectionListener(new SelectionAdapter() {
 			public void widgetDefaultSelected(SelectionEvent e) {
 				try {
-					showDebugger(rows[myTable.getSelectionIndex()]);
+					if (rows != null) {
+						showDebugger(rows[myTable.getSelectionIndex()]);
+					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
@@ -131,9 +133,21 @@ public class ResultsTable implements Updatable {
 		if (myTable.isDisposed()) {
 			return;
 		}
-		myBindings = new LinkedList<IVariable>();
-		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(myQuery, myBindings);
-		fillTable(rel);
+		Results results = myResults.getResults();
+		if (results.finalKnowledgeBase != null) {
+			myBindings = new LinkedList<IVariable>();
+			IRelation rel = results.finalKnowledgeBase.execute(myQuery, myBindings);
+			fillTable(rel);
+		} else {
+			myTable.removeAll();
+			rows = null;
+			TableItem item = new TableItem(myTable, 0);
+			item.setText("problem: " + results.exception);
+
+			for (TableColumn column : myTable.getColumns()) {
+				column.pack();
+			}
+		}
 
 		myResults.whenUpdated(this);
 	}

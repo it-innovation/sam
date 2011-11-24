@@ -28,6 +28,7 @@
 
 package eu.serscis.sam.gui;
 
+import org.deri.iris.api.IKnowledgeBase;
 import org.deri.iris.api.basics.IAtom;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -171,9 +172,13 @@ public class DebugViewer implements Updatable {
 	}
 
 	private boolean checkAccessControl(Model model) throws Exception {
+		IKnowledgeBase finalKnowledgeBase = myResults.getResults().finalKnowledgeBase;
+		if (finalKnowledgeBase == null) {
+			return false;
+		}
 		ILiteral lit = BASIC.createLiteral(true, Constants.accessControlOnP, BASIC.createTuple());
 		IQuery query = BASIC.createQuery(lit);
-		IRelation rel = myResults.getResults().finalKnowledgeBase.execute(query);
+		IRelation rel = finalKnowledgeBase.execute(query);
 		return rel.size() > 0;
 	}
 
