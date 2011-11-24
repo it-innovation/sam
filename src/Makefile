@@ -12,7 +12,7 @@ JAVA_SOURCES = $(wildcard ${SRCDIR}/src/main/java/eu/serscis/sam/*.java) \
 SAM_EXAMPLES = $(wildcard ${SRCDIR}/doc/examples/*.sam)
 
 code: parser
-	cp ${SRCDIR}/src/main/datalog/*.sam ${DISTDIR}/
+	cp ${SRCDIR}/src/main/sam/*.sam ${DISTDIR}/
 	cp ${SRCDIR}/src/main/bin/sam ${DISTDIR}/
 	mkdir -p ${DISTDIR}/eu/serscis/sam/lexer/
 	mkdir -p ${DISTDIR}/eu/serscis/sam/parser/

@@ -6,7 +6,7 @@ declared = set()
 
 mydir = os.path.dirname(sys.argv[0])
 docdir = os.path.join(mydir, "doc")
-dldir = os.path.join(mydir, "src", "main", "datalog")
+dldir = os.path.join(mydir, "src", "main", "sam")
 
 for f in os.listdir(docdir):
 	if not f.endswith('.rst'): continue
