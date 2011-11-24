@@ -44,33 +44,17 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method)
 
 // the SwitchPos arg
 
-// sending a local
 mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
-    SwitchPos(?Method, ?Pos),
-    SwitchCase(?Method, ?ArgValue, ?TargetInvocation).
-
-/* sending a field/string/this */
-mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
-    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
-    maySend(?Caller, ?CallSite, ?Pos, ?ArgValue),
     SwitchPos(?Method, ?Pos),
     SwitchCase(?Method, ?ArgValue, ?TargetInvocation).
 
 // the other args
 
-// sending a local
 mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
-    SwitchPos(?Method, ?SwitchPos), ?SwitchPos != ?Pos,
-    SwitchCase(?Method, ?AnyArgValue, ?TargetInvocation).
-
-/* sending a field/string/this */
-mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
-    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
-    maySend(?Caller, ?CallSite, ?Pos, ?ArgValue),
     SwitchPos(?Method, ?SwitchPos), ?SwitchPos != ?Pos,
     SwitchCase(?Method, ?AnyArgValue, ?TargetInvocation).
 
@@ -78,12 +62,6 @@ mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
 error("missing SwitchCase", ?Method, ?ArgValue) :- 
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
-    SwitchPos(?Method, ?Pos),
-    !SwitchCase(?Method, ?ArgValue, ?TargetInvocation).
-
-error("missing SwitchCase", ?Method, ?ArgValue) :- 
-    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
-    maySend(?Caller, ?CallSite, ?Pos, ?ArgValue),
     SwitchPos(?Method, ?Pos),
     !SwitchCase(?Method, ?ArgValue, ?TargetInvocation).
 
@@ -93,11 +71,6 @@ maySend(?Caller, ?CallerInvocation, ?CallSite, ?SwitchPos, ?ArgValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     SwitchPos(?Method, ?SwitchPos),
     maySend(?Caller, ?CallerInvocation, ?CallSite, -1, ?ArgValue).
-
-maySend(?Caller, ?CallSite, ?SwitchPos, ?ArgValue) :-
-    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
-    SwitchPos(?Method, ?SwitchPos),
-    maySend(?Caller, ?CallSite, -1, ?ArgValue).
 
 error("Multiple SwitchPos annotations!", ?Method) :-
     SwitchPos(?Method, ?Pos1),

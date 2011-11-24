@@ -129,16 +129,15 @@ live(?NewChild) :-
 	didCreate(?Object, ?Invocation, ?CallSite, ?NewChild).
 
 
-/* sending a local */
+// Include maySend/4 in maySend/5 to reduce the number of rules we
+// need to write.
+maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue) :-
+    maySend(?Caller, ?CallSite, ?Pos, ?ArgValue),
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
+
 mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
-        !methodDoesContextMapping(?Method).
-
-/* sending a field/string/this */
-mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
-	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
-	maySend(?Caller, ?CallSite, ?Pos, ?ArgValue),
         !methodDoesContextMapping(?Method).
 
 /* Default aggregation for child objects */
