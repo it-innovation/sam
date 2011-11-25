@@ -16,6 +16,14 @@ class User {
     @GroupByArgAt(0)
     @GroupByArgCase("x", "ForX")
     @GroupByArgCase("y", "ForY")
+    @GroupByArgCase("z", "ForZ")
+
+    @GroupByArgCase("user", "ForZ")
+
+    @GroupByArgCase("x1", "ForBoth")
+    @GroupByArgCase("both", "ForBoth")
+
+    @GroupByArgCase("null", "Null")
     public void test(Object a) {
         Box box = new Box();
         box.put(a);
@@ -25,16 +33,62 @@ class User {
     }
 }
 
+class User2 {
+    private Object copy1;
+    private Object copy2;
+
+    @GroupByArgAt(1)
+    @GroupByArgCase("null", "ForX")
+    @GroupByArgCase("x", "ForX")
+    @GroupByArgCase("y", "ForY")
+    public void test2(Object ok, Object a) {
+        Box box = new Box();
+        box.put(a);
+
+        Object b = box.get(a);
+        b.run(a);
+
+        copy1 = a;
+    }
+
+    @GroupByArgAt(0)
+    @GroupByArgCase("null", "Null")
+    public void copy(Object x, boolean ok) {
+        copy2 = copy1 :- ok = true;
+    }
+}
+
 config {
     test {
+        // known -> known (testDriver -> user)
         Object x = new Unknown();
         Object y = new Unknown();
         User user = new User();
         user.test(x);
         user.test(y);
+
+        // Unknown -> known
+        Object z = new Unknown();
+        z.run(user);
+
+        Object user2 = new User2();
+        user2.test2(true, x);
+        user2.test2(false, y);
+
+        user2.copy(null, true);
     }
 }
 
 assert hasRef("boxForX", "x").
 assert hasRef("boxForY", "y").
 assert !hasRef("x", "y").
+assert !hasRef("z", "y").
+
+// we didn't group on this arg
+assert local("user2", "ForX", "User2.test2.ok", true).
+assert local("user2", "ForX", "User2.test2.ok", false).
+assert local("user2", "ForY", "User2.test2.ok", true).
+assert local("user2", "ForY", "User2.test2.ok", false).
+
+// Check that User2.copy was called, even though no value was ever passed for the first argument.
+assert field("user2", "copy2", "x").

@@ -26,16 +26,28 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
+// Note: for maySend, Pos can be -1 if the *sender* doesn't provide position
+// information (e.g. Unknown sender).
+//
+// We don't care about Unknown receivers, since their Unknown.* method isn't GroupByArgAt.
+
+// We need to handle the null case explicitly. Normally, SAM treats the lack of a value
+// as including null, but we need to make it explicit here. Otherwise, SAM would assume that
+// a method wasn't active in any context if no value was passed.
+
+///////////////// By arg
+
 // Disable the normal rules (TargetContext = CallerContext)
-methodDoesContextMapping(?Method) :- GroupByArgAt(?Method, ?Param).
+methodDoesContextMapping(?Method) :- GroupByArgAt(?Method, ?Pos).
 
 isInvocation(?Context) :- GroupByArgCase(?Method, ?Value, ?Context).
 
-// When Method is called, activate the contexts for every case
+// When Method is called, activate the contexts for every case which might
+// receive a value.
 didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
-    GroupByArgCase(?Method, ?AnyArgValue, ?TargetContext).
-
+    maySend(?Caller, ?CallerInvocation, ?CallSite, ?AnyPos, ?ArgValue),
+    GroupByArgCase(?Method, ?ArgValue, ?TargetContext).
 
 // A particular context didReceive a value if:
 // - the method was called
@@ -44,7 +56,10 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method)
 
 // the GroupByArgAt arg
 
+// note: Pos cannot be -1 here since GroupByArgAt won't use that, but a later
+// rule copies maySend(-1) to maySend(Pos).
 didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
+    ?ArgValue != "null",            // filter out the special "null" value we add in below
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
     GroupByArgAt(?Method, ?Pos),
@@ -52,12 +67,24 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
 
 // the other args
 
+// senders that send at a particular position
+// (don't check hasParam; Unknown receivers will set it to -1)
 didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
+    ?ArgValue != "null",
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
-    GroupByArgAt(?Method, ?GroupByArgAt), ?GroupByArgAt != ?Pos,
+    GroupByArgAt(?Method, ?GroupByArgAt), ?GroupByArgAt != ?Pos, ?Pos != -1,
     GroupByArgCase(?Method, ?AnyArgValue, ?TargetInvocation).
 
+// senders that send at any position
+// may receive at Pos if Pos is not GroupByArgAt
+didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
+    ?ArgValue != "null",
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+    maySend(?Caller, ?CallerInvocation, ?CallSite, -1, ?ArgValue),
+    hasParam(?Method, ?AnyParam, ?Pos),
+    GroupByArgAt(?Method, ?GroupByArgAt), ?GroupByArgAt != ?Pos,
+    GroupByArgCase(?Method, ?AnyArgValue, ?TargetInvocation).
 
 error("missing GroupByArgCase", ?Method, ?ArgValue) :- 
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
@@ -72,6 +99,11 @@ maySend(?Caller, ?CallerInvocation, ?CallSite, ?GroupByArgAt, ?ArgValue) :-
     GroupByArgAt(?Method, ?GroupByArgAt),
     maySend(?Caller, ?CallerInvocation, ?CallSite, -1, ?ArgValue).
 
+// Caller can always send null
+maySend(?Caller, ?CallerInvocation, ?CallSite, ?GroupByArgAt, "null") :-
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+    GroupByArgAt(?Method, ?GroupByArgAt).
+
 error("Multiple GroupByArgAt annotations!", ?Method) :-
     GroupByArgAt(?Method, ?Pos1),
     GroupByArgAt(?Method, ?Pos2),
@@ -80,3 +112,7 @@ error("Multiple GroupByArgAt annotations!", ?Method) :-
 error("GroupByArgCase without GroupByArgAt", ?Method) :-
     GroupByArgCase(?Method, ?Value, ?Context),
     !GroupByArgAt(?Method, ?Pos).
+
+error("GroupByArgAt method cannot accept arguments at any position", ?Method) :-
+    GroupByArgAt(?Method, ?Pos),
+    hasParam(?Method, ?Param, -1).

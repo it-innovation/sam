@@ -1,0 +1,7 @@
+class Bad {
+    @GroupByArgAt(0)
+    public void bad(Object arg*) {
+    }
+}
+
+expectFailure.
