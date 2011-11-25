@@ -78,11 +78,14 @@ public class Results {
 			IPredicate[] relations = model.declared.keySet().toArray(new IPredicate[] {});
 			Arrays.sort(relations);
 			for (IPredicate pred : relations) {
-				writer.write(pred.toString() + "\n");
 				ITuple tuple = model.declared.get(pred);
 				int nCols = tuple.size();
 				IQuery query = BASIC.createQuery(BASIC.createLiteral(true, pred, tuple));
 				IRelation rel = finalKnowledgeBase.execute(query);
+
+				if (rel.size() == 0) {
+					continue;
+				}
 
 				String[] rows = new String[rel.size()];
 				for (int i = 0; i < rows.length; i++) {
@@ -90,6 +93,7 @@ public class Results {
 				}
 				Arrays.sort(rows);
 
+				writer.write(pred.toString() + "\n");
 				for (String row : rows) {
 					writer.write(row);
 				}
