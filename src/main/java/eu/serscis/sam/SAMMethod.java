@@ -531,19 +531,7 @@ class SAMMethod {
 	private void addArg(String callSite, int pos, PExpr expr) throws ParserException {
 		IRule rule;
 
-		if (expr instanceof AStringExpr) {
-			ILiteral head = BASIC.createLiteral(true, maySendFromAnyContextP, BASIC.createTuple(
-					TERM.createVariable("Caller"),
-					TERM.createString(callSite),
-					CONCRETE.createInt(pos),
-					TERM.createString(getString(((AStringExpr) expr).getStringLiteral()))));
-
-			ILiteral isA = BASIC.createLiteral(true, isAP, BASIC.createTuple(
-						TERM.createVariable("Caller"),
-						TERM.createString(this.parent.name)));
-			rule = BASIC.createRule(makeList(head), makeList(isA));
-			parent.model.rules.add(rule);
-		} else {
+		if (expr instanceof ACopyExpr) {
 			TName varName = ((ACopyExpr) expr).getName();
 			boolean isLocal = locals.contains(varName.getText());
 
@@ -572,6 +560,27 @@ class SAMMethod {
 			} else {
 				rule = BASIC.createRule(makeList(head), makeList(getValue(varName)));
 			}
+		} else {
+			ITerm constant;
+			if (expr instanceof AStringExpr) {
+				constant = TERM.createString(getString(((AStringExpr) expr).getStringLiteral()));
+			} else if (expr instanceof ANullExpr) {
+				return;			// we always assume null can be sent anyway
+			} else {
+				boolean val = Boolean.valueOf(((ABoolExpr) expr).getBool().getText());
+				constant = CONCRETE.createBoolean(val);
+			}
+
+			ILiteral head = BASIC.createLiteral(true, maySendFromAnyContextP, BASIC.createTuple(
+					TERM.createVariable("Caller"),
+					TERM.createString(callSite),
+					CONCRETE.createInt(pos),
+					constant));
+
+			ILiteral isA = BASIC.createLiteral(true, isAP, BASIC.createTuple(
+						TERM.createVariable("Caller"),
+						TERM.createString(this.parent.name)));
+			rule = BASIC.createRule(makeList(head), makeList(isA));
 		}
 
 		parent.model.rules.add(rule);
