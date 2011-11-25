@@ -6,54 +6,109 @@ This invocation represents the new stack frame that is created, and holds
 the local variables of the call.
 
 Because an unlimited number of invocations can be made, it is always
-necessary to aggregate sets of invocations into a single one.
+necessary to aggregate sets of invocations in the real system into a fixed number
+of invocations in the model.
 
 The :func:`showInvocation` predicate allows configuration of whether to
 show invocations as separate objects or (the default) to aggregate each
 with its parent object.
 
+Each `setup` and `test` block in the :ref:`Configuration` block defines the 
+initial modelling context for all calls made within that block. By default,
+when a call-site makes a call from some context, the called method's activation
+frame is grouped using the same context name.
+
+For example, given this configuration, the calls to the constructor for `User`
+and to `alice`'s `User.run` method will be grouped under the "A" context::
+
+  config {
+    test "A" {
+      User alice = new User();
+      alice.run();
+    }
+  }
+
+Sometimes this is not sufficient. For example::
+
+  class User {
+      public void run(Object a) {
+          a.invoke(a);
+      }
+  }
+
+  config {
+    test "A" {
+      Object x = new Unknown();
+      Object y = new Unknown();
+
+      User alice = new User();
+
+      alice.run(x);
+      alice.run(y);
+    }
+  }
+
+  assert !hasRef("x", "y").
+  assert !hasRef("y", "x")
+
+.. sam-output:: invocations-over-aggregation
+
+Here, SAM groups both calls to `alice.run` together. It therefore only knows that:
+
+* `alice.run`'s local variable `a` may be `x` or `y`.
+* `alice.run` may invoke `x` and `y`.
+* `alice.run` may pass `x` or `y` as the argument.
+
+In the model, therefore, SAM thinks that `x.run(y)` may be called, and so cannot prove the required
+safety properties for the real system.
+
+In such cases, is it necessary to specify a different grouping strategy for invocations, as explained
+below. This works as follows:
+
+* We aggregate all invocations of `alice.run` where `a` is `x` under one context ("X").
+* We aggregate all invocations of `alice.run` where `a` is `y` under another context ("Y").
+
+Invocations in group "X" can therefore only ever call `x.run(x)`, while those in group "Y"
+can only call `y.run(y)`, and we can now prove that `x` never gets access to `y`.
+
+Safety of grouping
+------------------
+
+Changing the grouping strategy is always safe (it will not allow us to prove safety properties
+that are not true of the real system). After all, in the real system all calls are separate, so any
+grouping strategy is a valid over-approximation.
+
+However, be careful about using names derived from contexts when specifying goals. An object created in 
+context "X" will be called `<name>X`. If you write a goal such as::
+
+  assert !hasRef("alice", "fooX").
+
+then this assertion can be made to succeed by simply changing the aggreagtion strategy so that the objects
+created are aggregated as "fooY" instead. You need to make sure that `fooX` really does aggregate
+the objects you care about. A better solution may be to write the rule in a way
+that doesn't depend on contexts. For example::
+
+  haveBadAccess("alice", ?X) :- hasRef("bob", ?X).
+
+(it is an error for `alice` to get a reference to any object to which `bob` has a reference).
+
+
 Grouping by argument value
 --------------------------
 
-When an object makes a call in some context, the default is that the invoked method runs in the
-same context. Sometimes it's useful to group calls into different contexts based on the value
-passed. This can be done by adding `SwitchPos` and `SwitchCase` annotations. For example::
+This can be done by adding `SwitchPos` and `SwitchCase` annotations. For example::
 
-	class Tester {
-	    @SwitchPos(0)
-	    @SwitchCase("x", "ForX")
-	    @SwitchCase("y", "ForY")
-	    public void test(Object a) {
-		Box box = new Box();
-		box.put(a);
+  class User {
+      @SwitchPos(0)
+      @SwitchCase("x", "X")
+      @SwitchCase("y", "Y")
+      public void run(Object a) {
+          a.invoke(a);
+      }
+  }
 
-		Object b = box.get(a);
-		b.run(a);
-	    }
-	}
-
-If the `test` method is called from the same context with different values
-(e.g. `x` and `y`) then SAM will aggregate them into a single invocation, which
-creates a single `Box` object, which holds all the values. SAM will report that
-every value may get access to every other value.
-
-Adding switch annotations allows us to separate the cases where `Tester` is called with the
-objects "x" and "y" into separate contexts. SAM will model this as two invocations, creating
-two boxes (`boxForX` containing `x` and `boxForY` containing `y`)::
-
-	class Tester {
-	    @SwitchPos(0)
-	    @SwitchCase("x", "ForX")
-	    @SwitchCase("y", "ForY")
-	    public void test(Object a) {
-		Box box = new Box();
-		box.put(a);
-
-		Object b = box.get(a);
-		b.run(a);
-	    }
-	}
-
+If the method takes other arguments (not at position=0), then they will be available in
+both contexts. SAM will report an error if `a` could have a value that you didn't handle.
 
 .. function:: SwitchPos(?Method, ?Pos)
 

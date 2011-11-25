@@ -53,7 +53,7 @@ declare isType(?Type).
 declare phase(?Phase).
 
 declare expectFailure.
-declare hasRef(?Object, ?Value).
+declare hasRef(?Object, ?Target).
 declare haveBadAccess(?SourceObject, ?TargetObject).
 declare missingGoodAccess(?SourceObject, ?TargetObject).
 

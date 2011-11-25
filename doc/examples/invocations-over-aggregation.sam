@@ -1,0 +1,25 @@
+// SAM can't prove that "x" doesn't get access to "y" because
+// we aggregated all calls to alice.run into the "A" group.
+
+class User {
+    public void run(Object a) {
+        a.invoke(a);
+    }
+}
+
+config {
+  test "A" {
+    Object x = new Unknown();
+    Object y = new Unknown();
+
+    User alice = new User();
+
+    alice.run(x);
+    alice.run(y);
+  }
+}
+
+assert !hasRef("x", "y").
+assert !hasRef("y", "x").
+
+expectFailure.
