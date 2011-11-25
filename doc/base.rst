@@ -68,7 +68,7 @@ system. They are named "did" to indicate that they are the result of applying th
 everything that is possible "did" happen, even though in the real system this only represents things that
 might happen.
 
-.. function:: hasRef(?Object, ?Value)
+.. function:: hasRef(?Object, ?Target)
 
    `Object` has a local variable or field with the given value.
 

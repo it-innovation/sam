@@ -96,12 +96,12 @@ that doesn't depend on contexts. For example::
 Grouping by argument value
 --------------------------
 
-This can be done by adding `SwitchPos` and `SwitchCase` annotations. For example::
+This can be done by adding `GroupByArgAt` and `GroupByArgCase` annotations. For example::
 
   class User {
-      @SwitchPos(0)
-      @SwitchCase("x", "X")
-      @SwitchCase("y", "Y")
+      @GroupByArgAt(0)
+      @GroupByArgCase("x", "X")
+      @GroupByArgCase("y", "Y")
       public void run(Object a) {
           a.invoke(a);
       }
@@ -110,12 +110,12 @@ This can be done by adding `SwitchPos` and `SwitchCase` annotations. For example
 If the method takes other arguments (not at position=0), then they will be available in
 both contexts. SAM will report an error if `a` could have a value that you didn't handle.
 
-.. function:: SwitchPos(?Method, ?Pos)
+.. function:: GroupByArgAt(?Method, ?Pos)
 
    Invocations of this function should be aggregated in groups based on the values
    passed in argument number ?Pos (starting from zero).
 
-.. function:: SwitchCase(?Method, ?Value, ?Context)
+.. function:: GroupByArgCase(?Method, ?Value, ?Context)
 
    Defines which values map to which contexts.
 

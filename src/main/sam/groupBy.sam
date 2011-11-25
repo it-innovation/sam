@@ -27,56 +27,56 @@
 /////////////////////////////////////////////////////////////////////////
 
 // Disable the normal rules (TargetContext = CallerContext)
-methodDoesContextMapping(?Method) :- SwitchPos(?Method, ?Param).
+methodDoesContextMapping(?Method) :- GroupByArgAt(?Method, ?Param).
 
-isInvocation(?Context) :- SwitchCase(?Method, ?Value, ?Context).
+isInvocation(?Context) :- GroupByArgCase(?Method, ?Value, ?Context).
 
 // When Method is called, activate the contexts for every case
 didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
-    SwitchCase(?Method, ?AnyArgValue, ?TargetContext).
+    GroupByArgCase(?Method, ?AnyArgValue, ?TargetContext).
 
 
 // A particular context mayReceive a value if:
 // - the method was called
 // - the caller may have sent the value
-// - the argument is not SwitchPos OR it is acceptable for this case
+// - the argument is not GroupByArgAt OR it is acceptable for this case
 
-// the SwitchPos arg
+// the GroupByArgAt arg
 
 mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
-    SwitchPos(?Method, ?Pos),
-    SwitchCase(?Method, ?ArgValue, ?TargetInvocation).
+    GroupByArgAt(?Method, ?Pos),
+    GroupByArgCase(?Method, ?ArgValue, ?TargetInvocation).
 
 // the other args
 
 mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
-    SwitchPos(?Method, ?SwitchPos), ?SwitchPos != ?Pos,
-    SwitchCase(?Method, ?AnyArgValue, ?TargetInvocation).
+    GroupByArgAt(?Method, ?GroupByArgAt), ?GroupByArgAt != ?Pos,
+    GroupByArgCase(?Method, ?AnyArgValue, ?TargetInvocation).
 
 
-error("missing SwitchCase", ?Method, ?ArgValue) :- 
+error("missing GroupByArgCase", ?Method, ?ArgValue) :- 
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
-    SwitchPos(?Method, ?Pos),
-    !SwitchCase(?Method, ?ArgValue, ?TargetInvocation).
+    GroupByArgAt(?Method, ?Pos),
+    !GroupByArgCase(?Method, ?ArgValue, ?TargetInvocation).
 
-// If caller may send at any position, then they may send at SwitchPos
+// If caller may send at any position, then they may send at GroupByArgAt
 
-maySend(?Caller, ?CallerInvocation, ?CallSite, ?SwitchPos, ?ArgValue) :-
+maySend(?Caller, ?CallerInvocation, ?CallSite, ?GroupByArgAt, ?ArgValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
-    SwitchPos(?Method, ?SwitchPos),
+    GroupByArgAt(?Method, ?GroupByArgAt),
     maySend(?Caller, ?CallerInvocation, ?CallSite, -1, ?ArgValue).
 
-error("Multiple SwitchPos annotations!", ?Method) :-
-    SwitchPos(?Method, ?Pos1),
-    SwitchPos(?Method, ?Pos2),
+error("Multiple GroupByArgAt annotations!", ?Method) :-
+    GroupByArgAt(?Method, ?Pos1),
+    GroupByArgAt(?Method, ?Pos2),
     ?Pos1 != ?Pos2.
 
-error("SwitchCase without SwitchPos", ?Method) :-
-    SwitchCase(?Method, ?Value, ?Context),
-    !SwitchPos(?Method, ?Pos).
+error("GroupByArgCase without GroupByArgAt", ?Method) :-
+    GroupByArgCase(?Method, ?Value, ?Context),
+    !GroupByArgAt(?Method, ?Pos).

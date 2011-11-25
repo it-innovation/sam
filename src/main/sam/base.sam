@@ -107,11 +107,8 @@ declare didCreate(?Factory, ?Object).
 
 declare hasIdentity(?Object, ?Identity).
 
-/* Sometimes it is necessary to split up different calls into different contexts based
- * on the value passed. Annotate methods with SwitchPos and SwitchCase to handle this.
- */
-declare SwitchPos(?Method, ?Pos).
-declare SwitchCase(?Method, ?Value, ?Context).
+declare GroupByArgAt(?Method, ?Pos).
+declare GroupByArgCase(?Method, ?Value, ?Context).
 
 
 // RBAC (declared here so you don't get errors when turning off RBAC)

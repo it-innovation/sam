@@ -13,9 +13,9 @@ class Box {
 }
 
 class User {
-    @SwitchPos(0)
-    @SwitchCase("x", "ForX")
-    @SwitchCase("y", "ForY")
+    @GroupByArgAt(0)
+    @GroupByArgCase("x", "ForX")
+    @GroupByArgCase("y", "ForY")
     public void test(Object a) {
         Box box = new Box();
         box.put(a);
