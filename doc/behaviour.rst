@@ -131,11 +131,12 @@ Call-sites
 .. function:: maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue)
 
    CallSite may send the value `ArgValue` as parameter number `Pos` (or as any
-   parameter if `Pos` is `-1`).
+   parameter if `Pos` is `-1`). Includes all values from :func:`maySendFromAnyContext`
+   for invocations that were active.
 
-.. function:: maySend(?Caller, ?CallSite, ?Pos, ?ArgValue)
+.. function:: maySendFromAnyContext(?Caller, ?CallSite, ?Pos, ?ArgValue)
 
-   As for `maySend/5`, but the value may be sent in any context (e.g. it is a field
+   As for :func:`maySend`, but the value may be sent in any context (e.g. it is a field
    or a literal).
 
 .. function:: mayCreate(?CallSite, ?ChildType, ?NameHint)

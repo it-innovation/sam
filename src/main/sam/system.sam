@@ -129,10 +129,10 @@ live(?NewChild) :-
 	didCreate(?Object, ?Invocation, ?CallSite, ?NewChild).
 
 
-// Include maySend/4 in maySend/5 to reduce the number of rules we
+// Include maySendFromAnyContext/4 in maySend/5 to reduce the number of rules we
 // need to write.
 maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue) :-
-    maySend(?Caller, ?CallSite, ?Pos, ?ArgValue),
+    maySendFromAnyContext(?Caller, ?CallSite, ?Pos, ?ArgValue),
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
 
 mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-

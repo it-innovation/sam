@@ -81,8 +81,7 @@ Low-level control
    becomes active in the same context and receives all the values as arguments.
    This disables both behaviours, allowing it to be replaced by custom rules. If you
    enable this for a method, you will need to set :func:`didCall`/6 based on `didCall`/5
-   somehow and arrange for :func:`mayReceive` to get set based on :func:`maySend`/5 (which
-   includes all of `maySend`/4).
+   somehow and arrange for :func:`mayReceive` to get set based on :func:`maySend`/5.
 
 .. function:: methodMatches(?CallSite, ?Target, ?Method)
 

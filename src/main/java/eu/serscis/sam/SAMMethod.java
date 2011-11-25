@@ -518,7 +518,7 @@ class SAMMethod {
 		IRule rule;
 
 		if (expr instanceof AStringExpr) {
-			ILiteral head = BASIC.createLiteral(true, maySend4P, BASIC.createTuple(
+			ILiteral head = BASIC.createLiteral(true, maySendFromAnyContextP, BASIC.createTuple(
 					TERM.createVariable("Caller"),
 					TERM.createString(callSite),
 					CONCRETE.createInt(pos),
@@ -543,7 +543,7 @@ class SAMMethod {
 						CONCRETE.createInt(pos),
 						TERM.createVariable("Value")));
 			} else {
-				head = BASIC.createLiteral(true, maySend4P, BASIC.createTuple(
+				head = BASIC.createLiteral(true, maySendFromAnyContextP, BASIC.createTuple(
 						TERM.createVariable("Caller"),
 						TERM.createString(callSite),
 						CONCRETE.createInt(pos),

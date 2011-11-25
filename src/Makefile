@@ -49,3 +49,4 @@ parser:
 
 tests:
 	${SAM} --batch --results-dir ${BUILDDIR}/results ${SRCDIR}/src/test/*.sam
+	-which git > /dev/null && [ -d "${SRCDIR}/src/results.gold" ] && GIT_DIR=/ git diff --color=always -- ${SRCDIR}/src/results.gold ${BUILDDIR}/results
