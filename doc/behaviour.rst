@@ -211,7 +211,7 @@ Note on "private"
 -----------------
 There is a subtle difference between SAM and Java in the meaning of "private":
 
-* In SAM, a private member can only be accessed by the object iself.
+* In SAM, a private member can only be accessed by the object itself.
 * In Java, a private member can be accessed by any other instance of the same class.
 
 For example, in Java you can do this::

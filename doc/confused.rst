@@ -42,7 +42,7 @@ the allowed interactions can be defined using :func:`accessAllowed`::
   accessAllowed("compiler", "output", "File.write").
   accessAllowed("compiler", "input", "File.read").
 
-As usual, we first run the scanerio with defined behaviour for `alice` to get
+As usual, we first run the scenario with defined behaviour for `alice` to get
 the baseline (:example:`includes/confusedMustCall`), remove the
 :func:`checkCalls` for objects we don't care about, and then try again after
 giving `alice` the `Unknown` behaviour.
@@ -70,7 +70,7 @@ We have actually changed the scenario slightly from the Authodox original (`<htt
 
 The original problem statement (`<http://cap-lore.com/CapTheory/ConfusedDeputy.html>`_) does not mention "appending", and talks of "writing" in both cases; and while the paper does not mention the exact operating system used, under POSIX systems appending and writing would both be done using the "write" system call.
 
-This change was neccesary because otherwise Authodox would not be able to detect the problem, since the compiler writes to the billing file in the baseline case and in the attack case. However, the change makes
+This change was necessary because otherwise Authodox would not be able to detect the problem, since the compiler writes to the billing file in the baseline case and in the attack case. However, the change makes
 the example unconvincing, since it is highly unlikely that someone doing the modelling would make
 the change, unless they already knew about the problem.
 

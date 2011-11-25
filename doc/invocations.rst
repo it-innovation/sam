@@ -83,7 +83,7 @@ context "X" will be called `<name>X`. If you write a goal such as::
 
   assert !hasRef("alice", "fooX").
 
-then this assertion can be made to succeed by simply changing the aggreagtion strategy so that the objects
+then this assertion can be made to succeed by simply changing the aggregation strategy so that the objects
 created are aggregated as "fooY" instead. You need to make sure that `fooX` really does aggregate
 the objects you care about. A better solution may be to write the rule in a way
 that doesn't depend on contexts. For example::
@@ -100,6 +100,7 @@ This can be done by adding `GroupByArgAt` and `GroupByArgCase` annotations. For 
 
   class User {
       @GroupByArgAt(0)
+      @GroupByArgCase("null", "Null")
       @GroupByArgCase("x", "X")
       @GroupByArgCase("y", "Y")
       public void run(Object a) {
@@ -108,7 +109,10 @@ This can be done by adding `GroupByArgAt` and `GroupByArgCase` annotations. For 
   }
 
 If the method takes other arguments (not at position=0), then they will be available in
-both contexts. SAM will report an error if `a` could have a value that you didn't handle.
+all contexts. SAM will report an error if `a` could have a value that you didn't handle.
+
+Note that you need to handle the case where `a = null` too (a caller without any reference to pass
+could still call the method with a null argument).
 
 .. function:: GroupByArgAt(?Method, ?Pos)
 
