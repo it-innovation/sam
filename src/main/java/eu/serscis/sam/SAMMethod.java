@@ -306,24 +306,14 @@ class SAMMethod {
 						throw new RuntimeException("Pointless var expression");
 					}
 
-					ILiteral isA = BASIC.createLiteral(true, BASIC.createAtom(isAP,
-								BASIC.createTuple(
-									TERM.createVariable("Caller"),
-									TERM.createString(parent.name))));
+					ILiteral liveMethod = BASIC.createLiteral(true, BASIC.createAtom(liveMethodP, BASIC.createTuple(
+								TERM.createVariable("Caller"),
+								TERM.createVariable("CallerInvocation"),
+								methodNameFull)));
 
 					TName sourceVar = copyExpr.getName();
 
-					String targetVar = assign.getName().getText();
-					boolean assigningToLocal = assign.getType() != null || locals.contains(targetVar);
-
-					if (assigningToLocal && !locals.contains(sourceVar)) {
-						// (need to limit CallerInvocation in this case)
-						ILiteral isInvocation = BASIC.createLiteral(true, BASIC.createAtom(isInvocationP,
-										BASIC.createTuple(TERM.createVariable("CallerInvocation"))));
-						assignVar(assign, makeList(isA, isInvocation, getValue(sourceVar)));
-					} else {
-						assignVar(assign, makeList(isA, getValue(sourceVar)));
-					}
+					assignVar(assign, makeList(liveMethod, getValue(sourceVar)));
 				} else {
 					throw new RuntimeException("Unknown expr type: " + expr);
 				}
