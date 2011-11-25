@@ -112,6 +112,11 @@ Methods
 
    This method invocation may throw `Exception` to its callers.
 
+.. function:: hasParam(?Method, ?ParamVar, ?Pos)
+
+   This method has a parameter with the given name and position (starting from 0).
+   If the method accepts parameters sent at any position, `Pos = -1`.
+
 .. _CallSite:
 
 Call-sites

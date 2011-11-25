@@ -73,6 +73,7 @@ declare graphClusterLabel(?ClusterID, ?Label).
 declare didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
 declare didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
 declare didCall(?Caller, ?Target, ?Method).
+declare hasParam(?Method, ?ParamVar, ?Pos).
 declare mayAccept(?Method, ?ParamVar, ?Pos).
 declare mayAccept(?Method, ?ParamVar, ?Pos, ?Value).
 
