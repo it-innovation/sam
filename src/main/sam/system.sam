@@ -98,22 +98,8 @@ mayThrow(?Caller, ?CallerInvocation, ?CallerMethod, ?Exception) :-
 
 /* (normal call; sender and receiver use fixed args) */
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue),
-	isA(?Target, ?TargetType),
+	didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue),
 	mayAccept(?Method, ?ParamVar, ?Pos, ?ArgValue).
-
-/* (no position information from sender; e.g. Unknown sender,
- *  OR no position information for either; e.g. Unknown to Unknown) */
-didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	mayReceive(?Target, ?TargetInvocation, ?Method, -1, ?ArgValue),
-	isA(?Target, ?TargetType),
-	mayAccept(?Method, ?ParamVar, ?Pos, ?ArgValue).
-
-/* (no position information for receiver; e.g. Unknown receiver) */
-didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
-	mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue),
-	isA(?Target, ?TargetType),
-	mayAccept(?Method, ?ParamVar, -1, ?ArgValue).
 
 /* Target"s parameter variable may contain ArgValue if someone called it with that value. */
 local(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
@@ -135,9 +121,29 @@ maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue) :-
     maySendFromAnyContext(?Caller, ?CallSite, ?Pos, ?ArgValue),
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
 
-mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
+// normal -> normal (Pos >= 0), and
+// Unknown -> Unknown (Pos = -1)
+didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
+        hasParam(?Method, ?Param, ?Pos),
+        !methodDoesContextMapping(?Method).
+
+// can receive at -1 anything sent at any position
+// normal -> Unknown
+// Unknown -> Unknown
+didReceive(?Target, ?TargetInvocation, ?Method, -1, ?ArgValue) :-
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
+        hasParam(?Method, ?Param, -1),
+        !methodDoesContextMapping(?Method).
+
+// can receive at any position we have if it may be sent to any position
+// Unknown -> normal
+didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	maySend(?Caller, ?CallerInvocation, ?CallSite, -1, ?ArgValue),
+        hasParam(?Method, ?Param, ?Pos),
         !methodDoesContextMapping(?Method).
 
 /* Default aggregation for child objects */

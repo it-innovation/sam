@@ -94,7 +94,7 @@ declare mayThrow(?Object, ?Invocation, ?Method, ?Exception).
 declare didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue).
 declare maySendFromAnyContext(?Caller, ?CallSite, ?Pos, ?ArgValue).
 declare maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue).
-declare mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue).
+declare didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue).
 declare mayCreate(?CallSite, ?ChildType, ?NameHint).
 declare newObject(?Object, ?Invocation, ?ChildType, ?NewObject).
 declare isPublic(?Object).

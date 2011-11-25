@@ -37,14 +37,14 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method)
     GroupByArgCase(?Method, ?AnyArgValue, ?TargetContext).
 
 
-// A particular context mayReceive a value if:
+// A particular context didReceive a value if:
 // - the method was called
 // - the caller may have sent the value
 // - the argument is not GroupByArgAt OR it is acceptable for this case
 
 // the GroupByArgAt arg
 
-mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
+didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
     GroupByArgAt(?Method, ?Pos),
@@ -52,7 +52,7 @@ mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
 
 // the other args
 
-mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
+didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
     GroupByArgAt(?Method, ?GroupByArgAt), ?GroupByArgAt != ?Pos,

@@ -90,7 +90,7 @@ We can now update the definition of the `Unsealer`::
     public Object unseal(Box box) {
       box.offerContent();
       Object value = myTempContents :-
-          mayReceive(this, $Context, "Unsealer.acceptContent", ?Pos, myTempContents);
+          didReceive(this, $Context, "Unsealer.acceptContent", 0, myTempContents);
       return value;
     }
 

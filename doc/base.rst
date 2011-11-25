@@ -110,7 +110,7 @@ might happen.
 
    Some invocation of `SourceObject` may have access to `TargetObject` (through a field or local variable).
 
-.. function:: mayReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue)
+.. function:: didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue)
 
    Target.method may get called with `ArgValue` as parameter number `Pos` (or as any
-   parameter if `Pos` is `-1`).
+   parameter if `Pos` is `-1`). ?Pos will be a position in `Method`'s :func:`hasParam`.
