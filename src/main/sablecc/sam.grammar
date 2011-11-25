@@ -114,8 +114,7 @@ Productions
   field = private_tok type name semi;
   config_field = type name semi;
   type = name;
-  annotation = {noargs} at_tok name
-             | {args} at_tok name l_par literal_args? r_par;
+  annotation = at_tok atom;
   method = annotation* public_tok type? [name]:pattern l_par params? star? r_par l_brace code r_brace;
   code = statement*;
   assign = type? name eq;
@@ -131,15 +130,9 @@ Productions
        | {string} string_literal
        | {bool} bool
        | {copy} name;
-  literal_args = literal_arg literal_args_tail*;
-  literal_args_tail = comma literal_arg;
   args = expr args_tail*;
   args_tail = comma expr;
   param = type name;
   params = param params_tail*;
   params_tail = comma param;
   namedblock = name [context]:string_literal? l_brace code r_brace;
-
-  literal_arg = {string} string_literal
-	      | {int} number
-	      | {bool} bool;

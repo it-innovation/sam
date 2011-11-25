@@ -160,7 +160,7 @@ public class Model {
 		}
 	}
 
-	private ITuple parseTerms(ATerms parsed, TermProcessor termFn) throws ParserException {
+	public ITuple parseTerms(ATerms parsed, TermProcessor termFn) throws ParserException {
 		List<ITerm> terms = new LinkedList<ITerm>();
 
 		terms.add(parseTerm(parsed.getTerm(), termFn));

@@ -69,7 +69,7 @@ class SAMMethod {
 
 	public void addDatalog() throws Exception {
 		for (PAnnotation a : method.getAnnotation()) {
-			processAnnotation(a);
+			processAnnotation((AAnnotation) a);
 		}
 
 		ACode code = (ACode) method.getCode();
@@ -98,20 +98,30 @@ class SAMMethod {
 		processCode(code.getStatement());
 	}
 
-	private void processAnnotation(PAnnotation a) throws Exception {
+	private void processAnnotation(AAnnotation annotation) throws Exception {
 		TName name;
-		ALiteralArgs args = null;
+		ITerm[] values;
 
-		if (a instanceof ANoargsAnnotation) {
-			ANoargsAnnotation annotation = (ANoargsAnnotation) a;
-			name = annotation.getName();
+		PAtom a = annotation.getAtom();
+
+		if (a instanceof ANullaryAtom) {
+			ANullaryAtom nullary = (ANullaryAtom) a;
+			name = nullary.getName();
+			values = new ITerm[1];
 		} else {
-			AArgsAnnotation annotation = (AArgsAnnotation) a;
-			name = annotation.getName();
-			args = (ALiteralArgs) annotation.getLiteralArgs();
+			ANormalAtom normal = (ANormalAtom) a;
+			name = normal.getName();
+			ITuple terms = parent.model.parseTerms((ATerms) normal.getTerms(), null);
+
+			values = new ITerm[terms.size() + 1];
+
+			for (int i = 1; i < values.length; i++) {
+				values[i] = terms.get(i - 1);
+			}
 		}
 
-		ITerm[] values = getAnnotationArgs(methodNameFull, args);
+		values[0] = methodNameFull;
+
 		IPredicate pred = BASIC.createPredicate(name.getText(), values.length);
 		parent.model.requireDeclared(name, pred);
 		IRelation rel = parent.model.getRelation(pred);
@@ -589,39 +599,6 @@ class SAMMethod {
 			PExpr arg = ((AArgsTail) tail).getExpr();
 			addArg(callSite, pos, arg);
 		}
-	}
-
-	private static ITerm createLiteralTerm(PLiteralArg arg) throws ParserException {
-		if (arg instanceof AStringLiteralArg) {
-			return TERM.createString(getString(((AStringLiteralArg) arg).getStringLiteral()));
-		} else if (arg instanceof AIntLiteralArg) {
-			int val = Integer.valueOf(((AIntLiteralArg) arg).getNumber().getText());
-			return CONCRETE.createInt(val);
-		} else {
-			throw new RuntimeException("Unknown literal expression: " + arg);
-		}
-	}
-
-	private ITerm[] getAnnotationArgs(ITerm methodName, ALiteralArgs args) throws ParserException {
-		if (args == null) {
-			return new ITerm[] {methodName};
-		}
-
-		int n = args.getLiteralArgsTail().size() + 2;
-		ITerm[] values = new ITerm[n];
-
-		values[0] = methodName;
-
-		int pos = 1;
-
-		values[pos] = createLiteralTerm(args.getLiteralArg());
-
-		for (PLiteralArgsTail tail : args.getLiteralArgsTail()) {
-			pos += 1;
-			values[pos] = createLiteralTerm(((ALiteralArgsTail) tail).getLiteralArg());
-		}
-
-		return values;
 	}
 
 	private ILiteral getValue(TName var) throws ParserException {
