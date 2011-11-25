@@ -28,6 +28,11 @@
 
 package eu.serscis.sam;
 
+import java.io.Writer;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.io.FileWriter;
@@ -66,14 +71,83 @@ public class Graph {
 		IQuery ignoredForRankingQuery = BASIC.createQuery(BASIC.createLiteral(true, Constants.ignoreEdgeForRankingP, xAndY));
 		IRelation ignoredForRankingResults = knowledgeBase.execute(ignoredForRankingQuery);
 
-		graph(graphNodeResults, graphEdgeResults, graphEdgeLabelResults, ignoredForRankingResults, outputPngFile);
+		graph(graphNodeResults, graphEdgeResults, graphEdgeLabelResults, ignoredForRankingResults, knowledgeBase, outputPngFile);
 	}
 
 	static private String format(ITerm term) {
 		return "\"" + term.getValue().toString() + "\"";
 	}
 
-	static private void graph(IRelation nodes, IRelation edges, IRelation labelledEdges, IRelation ignoredForRanking, File pngFile) throws Exception {
+	static private Map<String,String> buildAttributeMap(IRelation rel) throws Exception {
+		Map<String,String> map = new HashMap<String,String>();
+		for (int i = 0; i < rel.size(); i++) {
+			ITuple tuple = rel.get(i);
+			String clusterID = tuple.get(0).getValue().toString();
+			String value = format(tuple.get(1));
+
+			if (map.containsKey(clusterID)) {
+				throw new RuntimeException("Conflicting attributes for cluster '" + clusterID + "': " + value);
+			}
+
+			map.put(clusterID, value);
+		}
+		return map;
+	}
+
+	static private void writeClusters(Writer writer, IKnowledgeBase knowledgeBase) throws Exception {
+		ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
+
+		IQuery clusterQ = BASIC.createQuery(BASIC.createLiteral(true, Constants.graphClusterP, xAndY));
+		IRelation clusters = knowledgeBase.execute(clusterQ);
+
+		IQuery clusterColourQ = BASIC.createQuery(BASIC.createLiteral(true, Constants.graphClusterColourP, xAndY));
+		IRelation clusterColours = knowledgeBase.execute(clusterColourQ);
+
+		IQuery clusterLabelQ = BASIC.createQuery(BASIC.createLiteral(true, Constants.graphClusterLabelP, xAndY));
+		IRelation clusterLabels = knowledgeBase.execute(clusterLabelQ);
+
+		Map<String,List<ITerm>> clusterMap = new HashMap<String,List<ITerm>>();
+
+		// build clusterId -> nodeId map
+
+		for (int i = 0; i < clusters.size(); i++) {
+			ITuple tuple = clusters.get(i);
+			String clusterID = tuple.get(0).getValue().toString();
+
+			List list = clusterMap.get(clusterID);
+			if (list == null) {
+				list = new LinkedList<String>();
+				clusterMap.put(clusterID, list);
+			}
+			list.add(tuple.get(1));
+		}
+
+		Map<String,String> colourMap = buildAttributeMap(clusterColours);
+		Map<String,String> labelMap = buildAttributeMap(clusterLabels);
+
+		// write
+
+		for (Map.Entry<String,List<ITerm>> entry : clusterMap.entrySet()) {
+			String clusterID = entry.getKey();
+			String colour = colourMap.get(clusterID);
+			String label = labelMap.get(clusterID);
+			if (colour == null) {
+				colour = "\"#aaaaaa\"";
+			}
+			writer.write("subgraph \"cluster-" + clusterID + "\" {\n");
+			writer.write("color=" + colour + ";\n");
+			writer.write("fontcolor=" + colour + ";\n");
+			if (label != null) {
+				writer.write("label=" + label + ";\n");
+			}
+			for (ITerm nodeId : entry.getValue()) {
+				writer.write(format(nodeId) + ";\n");
+			}
+			writer.write("}\n");
+		}
+	}
+
+	static private void graph(IRelation nodes, IRelation edges, IRelation labelledEdges, IRelation ignoredForRanking, IKnowledgeBase knowledgeBase, File pngFile) throws Exception {
 		File dotFile = File.createTempFile("SAM-tmp", ".dot");
 
 		FileWriter writer = new FileWriter(dotFile);
@@ -81,6 +155,8 @@ public class Graph {
 		//writer.write("  concentrate=true;\n");
 		//writer.write("  rankdir=LR;\n");
 		writer.write("  node[shape=plaintext];\n");
+
+		writeClusters(writer, knowledgeBase);
 
 		for (int t = 0; t < nodes.size(); t++) {
 			ITuple tuple = nodes.get(t);

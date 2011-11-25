@@ -245,3 +245,8 @@ visibleGraphEdge(?SourceGraphNode, ?TargetGraphNode, ?Attrs) :-
 	graphEdge(?SourceGraphNode, ?TargetGraphNode, ?Attrs),
 	!isHidden(?SourceGraphNode),
 	!isHidden(?TargetGraphNode).
+
+error("Node in multiple clusters", ?GraphNode, ?Cluster1, ?Cluster2) :-
+    graphCluster(?Cluster1, ?GraphNode),
+    graphCluster(?Cluster2, ?GraphNode),
+    ?Cluster1 != ?Cluster2.

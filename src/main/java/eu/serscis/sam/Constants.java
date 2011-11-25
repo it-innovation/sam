@@ -82,6 +82,9 @@ public class Constants {
 	static public IPredicate grantsRoleP = BASIC.createPredicate("grantsRole", 3);
 	static public IPredicate hasIdentityP = BASIC.createPredicate("hasIdentity", 2);
 	static public IPredicate guiObjectTabP = BASIC.createPredicate("guiObjectTab", 4);
+	static public IPredicate graphClusterP = BASIC.createPredicate("graphCluster", 2);
+	static public IPredicate graphClusterColourP = BASIC.createPredicate("graphClusterColour", 2);
+	static public IPredicate graphClusterLabelP = BASIC.createPredicate("graphClusterLabel", 2);
 
 	static <X> List<X> makeList(X... items) {
 		return Arrays.asList(items);

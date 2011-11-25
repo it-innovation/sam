@@ -54,6 +54,27 @@ Graphing
    edges in the ranking calculation allows the graph to be structured according to the
    intended model.
 
+Clusters
+--------
+
+You can group nodes into clusters using :func:`graphCluster`. For, example, to create clusters of objects with the
+same identity (labelled with that identity)::
+
+  graphCluster(?Identity, ?Object) :- hasIdentity(?Object, ?Identity).
+  graphClusterLabel(?Identity, ?Identity) :- hasIdentity(?Object, ?Identity).
+
+.. function:: graphCluster(?ClusterID, ?GraphNode)
+
+   Put `GraphNode` in cluster `ClusterID`.
+
+.. function:: graphClusterColour(?ClusterID, ?Colour)
+
+   Set the border and label colour for `ClusterID`.
+
+.. function:: graphClusterLabel(?ClusterID, ?Label)
+
+   Set label text for `ClusterID`.
+
 Notation
 --------
 

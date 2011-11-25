@@ -66,6 +66,9 @@ declare isHidden(?Source).
 declare showOnlyProblemNodes.
 declare hideUncalledReferences.
 declare ignoreEdgeForRanking(?GraphSourceNode, ?GraphTargetNode).
+declare graphCluster(?ClusterID, ?GraphNode).
+declare graphClusterColour(?ClusterID, ?Colour).
+declare graphClusterLabel(?ClusterID, ?Label).
 
 declare didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
 declare didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
