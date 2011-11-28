@@ -95,3 +95,6 @@ haveBadAccess(?Caller, ?Target) :-
     !mayCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     !mayCall(?Caller, ?CallerInvocation, ?Target, ?Method),
     !mayCall(?Caller, ?Target, ?Method).
+
+// Unknown objects may call themselves
+mayCall(?Object, ?Object, "BaseUnknown.*") :- isA(?Object, "Unknown").
