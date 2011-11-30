@@ -28,6 +28,7 @@
 
 package eu.serscis.sam;
 
+import eu.serscis.sam.node.ARefTerm;
 import eu.serscis.sam.node.AJavavarTerm;
 import eu.serscis.sam.node.ANeqBinop;
 import eu.serscis.sam.node.AEqBinop;
@@ -75,6 +76,14 @@ public class Model {
 	final Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
 	public final Map<IPredicate,ITuple> declared = new HashMap<IPredicate,ITuple>();
 	private final static BuiltinRegister builtinRegister = new BuiltinRegister();
+
+	static {
+		ITerm t1 = TERM.createVariable("a");
+		ITerm t2 = TERM.createVariable("b");
+		ITerm t3 = TERM.createVariable("c");
+
+		builtinRegister.registerBuiltin(new MakeRefBuiltin(t1, t2, t3));
+	}
 
 	public Model(Configuration configuration) {
 		this.configuration = configuration;
@@ -143,6 +152,9 @@ public class Model {
 		if (parsed instanceof AStringTerm) {
 			String str = Constants.getString(((AStringTerm) parsed).getStringLiteral());
 			return TERM.createString(str);
+		} else if (parsed instanceof ARefTerm) {
+			String str = Constants.getRef(((ARefTerm) parsed).getRefLiteral());
+			return new RefTerm(str);
 		} else if (parsed instanceof AVarTerm) {
 			String name = ((AVarTerm) parsed).getName().getText();
 			return TERM.createVariable(name);

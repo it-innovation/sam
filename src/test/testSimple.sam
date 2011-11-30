@@ -22,4 +22,4 @@ config {
     }
 }
 
-assert hasRef("slot2", "value").
+assert hasRef(<slot2>, <value>).

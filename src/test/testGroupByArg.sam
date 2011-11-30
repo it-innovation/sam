@@ -14,16 +14,16 @@ class Box {
 
 class User {
     @GroupByArgAt(0)
-    @GroupByArgCase("x", "ForX")
-    @GroupByArgCase("y", "ForY")
-    @GroupByArgCase("z", "ForZ")
+    @GroupByArgCase(<x>, "ForX")
+    @GroupByArgCase(<y>, "ForY")
+    @GroupByArgCase(<z>, "ForZ")
 
-    @GroupByArgCase("user", "ForZ")
+    @GroupByArgCase(<user>, "ForZ")
 
-    @GroupByArgCase("x1", "ForBoth")
-    @GroupByArgCase("both", "ForBoth")
+    @GroupByArgCase(<x1>, "ForBoth")
+    @GroupByArgCase(<both>, "ForBoth")
 
-    @GroupByArgCase("null", "Null")
+    @GroupByArgCase(<null>, "Null")
     public void test(Object a) {
         Box box = new Box();
         box.put(a);
@@ -38,9 +38,9 @@ class User2 {
     private Object copy2;
 
     @GroupByArgAt(1)
-    @GroupByArgCase("null", "ForX")
-    @GroupByArgCase("x", "ForX")
-    @GroupByArgCase("y", "ForY")
+    @GroupByArgCase(<null>, "ForX")
+    @GroupByArgCase(<x>, "ForX")
+    @GroupByArgCase(<y>, "ForY")
     public void test2(Object ok, Object a) {
         Box box = new Box();
         box.put(a);
@@ -52,7 +52,7 @@ class User2 {
     }
 
     @GroupByArgAt(0)
-    @GroupByArgCase("null", "Null")
+    @GroupByArgCase(<null>, "Null")
     public void copy(Object x, boolean ok) {
         copy2 = copy1 :- ok = true;
     }
@@ -79,16 +79,16 @@ config {
     }
 }
 
-assert hasRef("boxForX", "x").
-assert hasRef("boxForY", "y").
-assert !hasRef("x", "y").
-assert !hasRef("z", "y").
+assert hasRef(<boxForX>, <x>).
+assert hasRef(<boxForY>, <y>).
+assert !hasRef(<x>, <y>).
+assert !hasRef(<z>, <y>).
 
 // we didn't group on this arg
-assert local("user2", "ForX", "User2.test2.ok", true).
-assert local("user2", "ForX", "User2.test2.ok", false).
-assert local("user2", "ForY", "User2.test2.ok", true).
-assert local("user2", "ForY", "User2.test2.ok", false).
+assert local(<user2>, "ForX", "User2.test2.ok", true).
+assert local(<user2>, "ForX", "User2.test2.ok", false).
+assert local(<user2>, "ForY", "User2.test2.ok", true).
+assert local(<user2>, "ForY", "User2.test2.ok", false).
 
 // Check that User2.copy was called, even though no value was ever passed for the first argument.
-assert field("user2", "copy2", "x").
+assert field(<user2>, "copy2", <x>).

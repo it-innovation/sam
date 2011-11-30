@@ -59,7 +59,7 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method)
 // note: Pos cannot be -1 here since GroupByArgAt won't use that, but a later
 // rule copies maySend(-1) to maySend(Pos).
 didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
-    ?ArgValue != "null",            // filter out the special "null" value we add in below
+    ?ArgValue != <null>,            // filter out the special <null> value we add in below
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
     GroupByArgAt(?Method, ?Pos),
@@ -70,7 +70,7 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
 // senders that send at a particular position
 // (don't check hasParam; Unknown receivers will set it to -1)
 didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
-    ?ArgValue != "null",
+    ?ArgValue != <null>,
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
     GroupByArgAt(?Method, ?GroupByArgAt), ?GroupByArgAt != ?Pos, ?Pos != -1,
@@ -79,7 +79,7 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
 // senders that send at any position
 // may receive at Pos if Pos is not GroupByArgAt
 didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
-    ?ArgValue != "null",
+    ?ArgValue != <null>,
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, -1, ?ArgValue),
     hasParam(?Method, ?AnyParam, ?Pos),
@@ -100,7 +100,7 @@ maySend(?Caller, ?CallerInvocation, ?CallSite, ?GroupByArgAt, ?ArgValue) :-
     maySend(?Caller, ?CallerInvocation, ?CallSite, -1, ?ArgValue).
 
 // Caller can always send null
-maySend(?Caller, ?CallerInvocation, ?CallSite, ?GroupByArgAt, "null") :-
+maySend(?Caller, ?CallerInvocation, ?CallSite, ?GroupByArgAt, <null>) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     GroupByArgAt(?Method, ?GroupByArgAt).
 

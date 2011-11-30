@@ -28,6 +28,7 @@
 
 package eu.serscis.sam.gui;
 
+import eu.serscis.sam.RefTerm;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -147,7 +148,7 @@ public class ObjectViewer implements Updatable {
 
 				IVariable var = TERM.createVariable(varName);
 				Map<IVariable,ITerm> map = new HashMap<IVariable,ITerm>();
-				map.put(var, TERM.createString(myName));
+				map.put(var, new RefTerm(myName));
 
 				if (!args.getVariables().contains(var)) {
 					throw new RuntimeException("Declaration " + pred + args + " has no variable '" + var + "' requested for GUI tab '" + tabName + "'");

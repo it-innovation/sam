@@ -63,11 +63,11 @@ config {
 }
 
 
-//showAllInvocations("unsealer").
+//showAllInvocations(<unsealer>).
 
 /* Goals */
 
-requireAccess("withUnsealer1", "precious1").
-requireAccess("withUnsealer2", "precious2").
-denyAccess("withUnsealer1", "precious2").
-denyAccess("withUnsealer2", "precious1").
+requireAccess(<withUnsealer1>, <precious1>).
+requireAccess(<withUnsealer2>, <precious2>).
+denyAccess(<withUnsealer1>, <precious2>).
+denyAccess(<withUnsealer2>, <precious1>).

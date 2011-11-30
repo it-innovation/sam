@@ -52,7 +52,7 @@ isBoring(?X, ?Y) :-
     hideUncalledReferences,
     hasRef(?X, ?Y), !didCall(?X, ?Y, ?M), !didCreate(?X, ?Y).
 
-isHidden("_testDriver").
+isHidden(<_testDriver>).
 
 /* Don't graph values (but if something is both a real object and a value, do graph it). */
 hasNonValueType(?Object) :- isA(?Object, ?Type), ?Type != "Value".

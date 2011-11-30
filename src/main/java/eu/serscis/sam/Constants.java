@@ -28,6 +28,7 @@
 
 package eu.serscis.sam;
 
+import eu.serscis.sam.node.TRefLiteral;
 import eu.serscis.sam.node.TStringLiteral;
 import java.util.List;
 import java.util.Arrays;
@@ -92,6 +93,12 @@ public class Constants {
 	}
 
 	static String getString(TStringLiteral literal) {
+		String str = literal.getText();
+		String innerStr = str.substring(1, str.length() - 1);
+		return innerStr.replaceAll("\\\\", "");
+	}
+
+	static String getRef(TRefLiteral literal) {
 		String str = literal.getText();
 		String innerStr = str.substring(1, str.length() - 1);
 		return innerStr.replaceAll("\\\\", "");

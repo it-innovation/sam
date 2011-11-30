@@ -37,7 +37,7 @@ To check that all objects have an identity, use::
     error("No identity", ?X) :-
     	isA(?X, ?Type),
     	?Type != "Value",
-    	?X != "_testDriver",
+    	?X != <_testDriver>,
     	!hasIdentity(?X, ?Identity).
 
 
@@ -60,8 +60,8 @@ For example::
         public void write() {}
     }
 
-    grantsRole("log.txt", "reader", "alice").
-    grantsRole("log.txt", "writer", "bob").
+    grantsRole(<log.txt>, "reader", "alice").
+    grantsRole(<log.txt>, "writer", "bob").
 
 
 .. function:: grantsRole(?Target, ?Role, ?CallerIdentity)

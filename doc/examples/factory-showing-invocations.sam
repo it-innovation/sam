@@ -28,17 +28,17 @@ config {
 
 /* Aggregation */
 
-newObject("factory", "A", "Task", "newTasksForA").
-newObject("factory", "Other", "Task", "newTasksOthers").
+newObject(<factory>, "A", "Task", <newTasksForA>).
+newObject(<factory>, "Other", "Task", <newTasksOthers>).
 
 
 
 /* Graphing */
 
-showAllInvocations("factory").
+showAllInvocations(<factory>).
 
 
 /* Goals */
 
-denyAccess("otherClients", "newTasksForA").
-requireAccess("clientA", "newTasksForA").
+denyAccess(<otherClients>, <newTasksForA>).
+requireAccess(<clientA>, <newTasksForA>).

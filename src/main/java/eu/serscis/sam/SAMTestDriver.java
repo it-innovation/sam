@@ -28,6 +28,7 @@
 
 package eu.serscis.sam;
 
+import eu.serscis.sam.RefTerm;
 import eu.serscis.sam.node.*;
 import java.util.LinkedList;
 import java.util.List;
@@ -93,7 +94,7 @@ class SAMTestDriver extends SAMClass {
 
 		/* initialInvocation("_testDriver", context, method) :- phase(name) */
 		ITuple headTuple = BASIC.createTuple(
-					TERM.createString("_testDriver"),
+					new RefTerm("_testDriver"),
 					TERM.createString(methodName),
 					TERM.createString(context));
 

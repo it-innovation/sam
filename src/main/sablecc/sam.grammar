@@ -18,6 +18,7 @@ Helpers
   // (based on sablecc example Java grammar)
   escape_sequence = '\b' | '\t' | '\n' | '\f' | '\r' | '\"' | '\' ''' | '\\';
   string_character = [input_character - ['"' + '\']] | escape_sequence;
+  ref_character = [input_character - ['>' + '\']];
 
 Tokens
   number = '-'? ['0' .. '9']+;
@@ -45,6 +46,7 @@ Tokens
   if_dl = ':-';
   bang = '!';
   string_literal = '"' string_character* '"';
+  ref_literal = '<' ref_character+ '>';
   query_start = '?-';
   question = '?';
   dollar = '$';
@@ -97,6 +99,7 @@ Productions
   term = {var} question name
        | {javavar} name
        | {string} string_literal
+       | {ref} ref_literal
        | {int} number
        | {bool} bool
        | {special} dollar name

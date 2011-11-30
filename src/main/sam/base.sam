@@ -215,7 +215,7 @@ field(?Object, "ref", ?Target) :- isA(?Object, "Unknown"), isPublic(?Target).
 didCall(?Caller, ?Target, ?Method) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
 
-initialObject("_testDriver", "_TestDriver").
+initialObject(<_testDriver>, "_TestDriver").
 
 /* No behaviour and no references. This is useful if you want to pass literal values
  * as method arguments. Objects that are pure values are not graphed.

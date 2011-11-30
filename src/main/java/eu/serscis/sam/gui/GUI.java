@@ -477,8 +477,8 @@ public class GUI {
 				}
 			}
 			writer.write("\n");
-			writer.write("mayCall(\"_testDriver\", ?Target, ?Method) :- isObject(?Target), hasMethod(?Type, ?Method).\n");
-			writer.write("mayCall(\"_testDriver\", ?Target, ?Method) :- isObject(?Target), hasConstructor(?Type, ?Method).\n");
+			writer.write("mayCall(<_testDriver>, ?Target, ?Method) :- isObject(?Target), hasMethod(?Type, ?Method).\n");
+			writer.write("mayCall(<_testDriver>, ?Target, ?Method) :- isObject(?Target), hasConstructor(?Type, ?Method).\n");
 			writer.write("\n");
 			for (String object : objects) {
 				if (!object.equals("_testDriver")) {

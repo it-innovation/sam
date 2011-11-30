@@ -53,10 +53,10 @@ config {
     }
 }
 
-assert didCall(?X, "file", "File.read").
-assert !didCall(?X, "file", "File.write").
+assert didCall(?X, <file>, "File.read").
+assert !didCall(?X, <file>, "File.write").
 
-assert !getsAccess("delegate", "file").
-assert !getsAccess("delegate", "readOnly").
+assert !getsAccess(<delegate>, <file>).
+assert !getsAccess(<delegate>, <readOnly>).
 
 expectFailure.

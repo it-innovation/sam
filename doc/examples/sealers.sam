@@ -42,8 +42,8 @@ config {
 
 /* Goals */
 
-denyAccess("withUnsealer", "withoutUnsealer").
-denyAccess("withoutUnsealer", "withUnsealer").
-denyAccess("withoutUnsealer", "unsealer").
-denyAccess("withoutUnsealer", "precious").
-requireAccess("withUnsealer", "precious").
+denyAccess(<withUnsealer>, <withoutUnsealer>).
+denyAccess(<withoutUnsealer>, <withUnsealer>).
+denyAccess(<withoutUnsealer>, <unsealer>).
+denyAccess(<withoutUnsealer>, <precious>).
+requireAccess(<withUnsealer>, <precious>).

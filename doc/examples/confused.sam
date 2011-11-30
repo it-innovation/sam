@@ -2,12 +2,12 @@ import "includes/confusedMustCall.sam".
 
 // The access control policy:
 accessControlOn.
-accessAllowed("alice", "compiler").
-accessAllowed("alice", "input").
-accessAllowed("alice", "output").
-accessAllowed("compiler", "billing", "File.write").
-accessAllowed("compiler", "output", "File.write").
-accessAllowed("compiler", "input", "File.read").
+accessAllowed(<alice>, <compiler>).
+accessAllowed(<alice>, <input>).
+accessAllowed(<alice>, <output>).
+accessAllowed(<compiler>, <billing>, "File.write").
+accessAllowed(<compiler>, <output>, "File.write").
+accessAllowed(<compiler>, <input>, "File.read").
 
 // All objects have well-known or guessable addresses.
 isPublic(?X) :- isObject(?X).

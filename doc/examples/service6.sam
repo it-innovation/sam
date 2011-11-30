@@ -98,13 +98,13 @@ config {
 }
 
 
-hasIdentity("user", "user.crt").
-hasIdentity("otherUsers", "otherUsers.crt").
-hasIdentity("dataProvider", "dataProvider.crt").
-hasIdentity("serviceProvider", "serviceProvider.crt").
+hasIdentity(<user>, "user.crt").
+hasIdentity(<otherUsers>, "otherUsers.crt").
+hasIdentity(<dataProvider>, "dataProvider.crt").
+hasIdentity(<serviceProvider>, "serviceProvider.crt").
 
-grantsRole("dataProvider", "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
-grantsRole("serviceProvider", "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
+grantsRole(<dataProvider>, "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
+grantsRole(<serviceProvider>, "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
 grantsRole(?File, "owner", ?Identity) :- field(?File, "myOwner", ?Identity).
 grantsRole(?File, "reader", ?Identity) :- field(?File, "myReader", ?Identity).
 

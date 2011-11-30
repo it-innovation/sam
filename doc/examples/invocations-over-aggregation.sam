@@ -19,7 +19,7 @@ config {
   }
 }
 
-assert !hasRef("x", "y").
-assert !hasRef("y", "x").
+assert !hasRef(<x>, <y>).
+assert !hasRef(<y>, <x>).
 
 expectFailure.

@@ -342,7 +342,7 @@ say which role is required to call each method::
     }
   }
 
-  grantsRole("dataProvider", "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
+  grantsRole(<dataProvider>, "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
 
 The :func:`grantsRole` rule says that "dataProvider" grants the "world" role to any identity the exists (anyone can create a new file).
 

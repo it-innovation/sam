@@ -39,7 +39,7 @@ accessAllowed(?Caller, ?Target, ?Method) :-
 	isA(?Target, ?TargetType),
 	hasMethod(?TargetType, ?Method).
 
-accessAllowed("_testDriver", ?Target) :-
+accessAllowed(<_testDriver>, ?Target) :-
 	isObject(?Target).
 
 /* Which methods may CallSite invoke on Target */
@@ -158,17 +158,18 @@ realNewObject(?Object, ?Invocation, ?NameHint, ?NewChild) :-
 	typeHasCallSite(?Type, ?CallSite),
 	mayCreate(?CallSite, ?ChildType, ?NameHint),
 	newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
-realNewObject("_testDriver", ?Invocation, ?NameHint, ?NameHint) :-
+realNewObject(<_testDriver>, ?Invocation, ?NameHint, ?NewChild) :-
 	mayCreate(?CallSite, ?ChildType, ?NameHint),
-	isInvocation(?Invocation).
+	isInvocation(?Invocation),
+        MAKE_OBJECT(?NameHint, "", ?NewChild).
 realNewObject(?Object, ?Invocation, ?NameHint, ?NewChild) :-
-	?Object != "_testDriver",
+	?Object != <_testDriver>,
 	isA(?Object, ?Type),
 	typeHasCallSite(?Type, ?CallSite),
 	mayCreate(?CallSite, ?ChildType, ?NameHint),
 	isInvocation(?Invocation),
 	!newObject(?Object, ?Invocation, ?ChildType, ?AnyChild),
-	STRING_CONCAT(?NameHint, ?Invocation, ?NewChild).
+	MAKE_OBJECT(?NameHint, ?Invocation, ?NewChild).
 
 // Created objects live in the same JVM as their factory, and so have their
 // messages signed with the same X.509 certificate
