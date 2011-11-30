@@ -62,7 +62,11 @@ public class Main {
 				File scenario = new File(arg);
 				Results results = eval.evaluate(scenario);
 				if (results.exception != null) {
-					System.out.println(results.exception);
+					if (results.exception instanceof RuntimeException) {
+						results.exception.printStackTrace();
+					} else {
+						System.out.println(results.exception);
+					}
 					System.exit(1);
 				}
 				if (results.finalKnowledgeBase != null) {
