@@ -65,6 +65,7 @@ public class Main {
 					if (results.exception instanceof RuntimeException) {
 						results.exception.printStackTrace();
 					} else {
+						//results.exception.printStackTrace();
 						System.out.println(results.exception);
 					}
 					System.exit(1);

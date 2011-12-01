@@ -28,6 +28,10 @@
 
 package eu.serscis.sam;
 
+import org.deri.iris.api.terms.concrete.IBooleanTerm;
+import org.deri.iris.api.terms.concrete.IIntegerTerm;
+import org.deri.iris.api.terms.IStringTerm;
+import org.deri.iris.api.terms.IVariable;
 import eu.serscis.sam.node.ARefTerm;
 import eu.serscis.sam.node.AJavavarTerm;
 import eu.serscis.sam.node.ANeqBinop;
@@ -73,7 +77,7 @@ import static org.deri.iris.factory.Factory.*;
 public class Model {
 	final Configuration configuration;
 	private final List<IRule> rules = new LinkedList<IRule>();
-	final Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
+	private final Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
 	public final Map<IPredicate,TermDefinition[]> declared = new HashMap<IPredicate,TermDefinition[]>();
 	private final static BuiltinRegister builtinRegister = new BuiltinRegister();
 	private int assertions = 0;
@@ -256,11 +260,81 @@ public class Model {
 		return literals;
 	}
 
-	public void addRule(IRule rule) {
-		rules.add(rule);
+	private void updateTypes(ILiteral lit, Map<IVariable,Type> types, boolean head) throws ParserException {
+		IAtom atom = lit.getAtom();
+		updateTypes(atom.getPredicate(), atom.getTuple(), types, head);
+	}
+
+	private void updateTypes(IPredicate predicate, ITuple tuple, Map<IVariable,Type> types, boolean head) throws ParserException {
+		TermDefinition[] terms = getDefinition(predicate);
+
+		if (terms == null) {
+			return;
+		}
+
+		//System.out.println(predicate);
+
+		int i = 0;
+		for (ITerm term : tuple) {
+			try {
+				Type termType;
+				if (term instanceof IVariable) {
+					if (types == null) {
+						throw new ParserException(null, "Variable in fact: " + term);
+					}
+					termType = types.get(term);
+					if (termType == null) {
+						termType = terms[i].type;
+					} else {
+						termType = terms[i].checkType(termType, head);
+					}
+					types.put((IVariable) term, termType);
+				} else {
+					if (term instanceof IStringTerm) {
+						termType = Type.STRING;
+					} else if (term instanceof RefTerm) {
+						termType = Type.REF;
+					} else if (term instanceof IIntegerTerm) {
+						termType = Type.INT;
+					} else if (term instanceof IBooleanTerm) {
+						termType = Type.BOOL;
+					} else {
+						throw new RuntimeException("Unknown term type: " + term);
+					}
+					terms[i].checkType(termType, head);
+				}
+			} catch (ParserException ex) {
+				throw new ParserException(null, ex.getMessage() + " in " + predicate + "'s " + term);
+			}
+
+			i++;
+		}
+	}
+
+	public void addRule(IRule rule) throws ParserException {
+		try {
+			List<ILiteral> head = rule.getHead();
+			List<ILiteral> body = rule.getBody();
+
+			Map<IVariable,Type> types = new HashMap<IVariable,Type>();
+
+			for (ILiteral lit : body) {
+				updateTypes(lit, types, false);
+			}
+
+			for (ILiteral lit : head) {
+				updateTypes(lit, types, true);
+			}
+
+			rules.add(rule);
+		} catch (ParserException ex) {
+			throw new ParserException(null, ex.getMessage() + " in " + rule);
+		}
 	}
 
 	public void addFact(IPredicate pred, ITuple tuple) throws ParserException {
+		updateTypes(pred, tuple, null, true);
+
 		IRelation rel = getRelation(pred);
 		rel.add(tuple);
 	}

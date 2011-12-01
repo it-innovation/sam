@@ -210,7 +210,12 @@ public class SAMParser {
 		IRule r = BASIC.createRule(makeList(head), body);
 		//System.out.println(" --> " + r);
 
-		model.addRule(r);
+		try {
+			model.addRule(r);
+		} catch (ParserException ex) {
+			TName name = ((ANormalAtom) rule.getHead()).getName();
+			throw new ParserException(name, ex.getMessage());
+		}
 	}
 
 	private void addQuery(AQuery query) throws ParserException {
@@ -316,8 +321,7 @@ public class SAMParser {
 			msg += lit;
 		}
 
-		IRelation messages = model.getRelation(assertionMessageP);
-		messages.add(BASIC.createTuple(assertionN, TERM.createString(msg)));
+		model.addFact(assertionMessageP, BASIC.createTuple(assertionN, TERM.createString(msg)));
 	}
 
 	private void addDeclare(ADeclare declare) throws ParserException {
