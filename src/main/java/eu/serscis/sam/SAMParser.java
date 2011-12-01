@@ -195,12 +195,12 @@ public class SAMParser {
 
 
 	private void addFact(AFact fact) throws ParserException {
-		IAtom atom = model.parseAtom(fact.getAtom());
-
-		//System.out.println(" --> " + atom);
-
-		IRelation rel = model.getRelation(atom.getPredicate());
-		rel.add(atom.getTuple());
+		try {
+			IAtom atom = model.parseAtom(fact.getAtom());
+			model.addFact(atom.getPredicate(), atom.getTuple());
+		} catch (ParserException ex) {
+			throw new ParserException(((ANormalAtom) fact.getAtom()).getName(), ex.getMessage());
+		}
 	}
 
 	private void addRule(ARule rule) throws ParserException {
@@ -211,7 +211,7 @@ public class SAMParser {
 		IRule r = BASIC.createRule(makeList(head), body);
 		//System.out.println(" --> " + r);
 
-		model.rules.add(r);
+		model.addRule(r);
 	}
 
 	private void addQuery(AQuery query) throws ParserException {
@@ -289,7 +289,7 @@ public class SAMParser {
 								CONCRETE.createBoolean(bodyLit.isPositive()))));
 
 			IRule r = BASIC.createRule(makeList(arrow), makeList(opposite));
-			model.rules.add(r);
+			model.addRule(r);
 			//System.out.println(r);
 
 			// failedAssertion(?N) :- assertionArrow(?N, ?Source, ?Target, ?Positive) in checks.sam
@@ -300,7 +300,7 @@ public class SAMParser {
 							BASIC.createTuple(assertionN)));
 
 			IRule r = BASIC.createRule(makeList(head), makeList(opposite));
-			model.rules.add(r);
+			model.addRule(r);
 		}
 
 		// assertionMsg(n, msg).

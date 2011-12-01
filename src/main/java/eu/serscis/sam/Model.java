@@ -72,7 +72,7 @@ import static org.deri.iris.factory.Factory.*;
 
 public class Model {
 	final Configuration configuration;
-	final List<IRule> rules = new LinkedList<IRule>();
+	private final List<IRule> rules = new LinkedList<IRule>();
 	final Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
 	public final Map<IPredicate,ITuple> declared = new HashMap<IPredicate,ITuple>();
 	private final static BuiltinRegister builtinRegister = new BuiltinRegister();
@@ -261,4 +261,26 @@ public class Model {
 		return literals;
 	}
 
+	public void addRule(IRule rule) {
+		rules.add(rule);
+	}
+
+	public void addFact(IPredicate pred, ITuple tuple) throws ParserException {
+		IRelation rel = getRelation(pred);
+		rel.add(tuple);
+	}
+
+	public List<IRule> getRules() {
+		return rules;
+	}
+
+	public Map<IPredicate,IRelation> copyFacts() {
+		Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
+		for (Map.Entry<IPredicate,IRelation> entry: this.facts.entrySet()) {
+			IRelation copy = configuration.relationFactory.createRelation();
+			copy.addAll(entry.getValue());
+			facts.put(entry.getKey(), copy);
+		}
+		return facts;
+	}
 }

@@ -58,7 +58,7 @@ class SAMDeclaredClass extends SAMClass {
 			ILiteral body = BASIC.createLiteral(true, isAP, objAndName);
 			IRule rule = BASIC.createRule(makeList(head), makeList(body));
 			//System.out.println(rule);
-			model.rules.add(rule);
+			model.addRule(rule);
 		}
 
 		AClassBody body = (AClassBody) behaviour.getClassBody();

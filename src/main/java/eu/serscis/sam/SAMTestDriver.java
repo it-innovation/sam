@@ -105,7 +105,7 @@ class SAMTestDriver extends SAMClass {
 
 		IRule rule = BASIC.createRule(makeList(head), makeList(phaseL));
 		//System.out.println(rule);
-		model.rules.add(rule);
+		model.addRule(rule);
 	}
 
 	public void add(ANamedblock block) {

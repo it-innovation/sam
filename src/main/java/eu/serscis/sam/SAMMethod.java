@@ -268,7 +268,7 @@ class SAMMethod {
 
 					IRule rule = BASIC.createRule(makeList(head), makeList(isA, liveMethod, getValue(callExpr.getName())));
 					//System.out.println(rule);
-					parent.model.rules.add(rule);
+					parent.model.addRule(rule);
 
 					addArgs(callSite, (AArgs) callExpr.getArgs(), callExpr.getStar());
 
@@ -392,7 +392,7 @@ class SAMMethod {
 									TERM.createVariable("CallSite"))));
 					IRule rule = BASIC.createRule(makeList(head), makeList(didGetException, hasCallSite));
 					//System.out.println(rule);
-					parent.model.rules.add(rule);
+					parent.model.addRule(rule);
 
 					processCode(cb.getStatement());
 				}
@@ -443,7 +443,7 @@ class SAMMethod {
 
 		IRule rule = BASIC.createRule(makeList(head), makeList(isA, live, getValue(name)));
 		//System.out.println(rule);
-		parent.model.rules.add(rule);
+		parent.model.addRule(rule);
 	}
 
 	private void declareLocal(AAssign assign) throws ParserException {
@@ -492,7 +492,7 @@ class SAMMethod {
 
 		IRule rule = BASIC.createRule(makeList(head), body);
 		//System.out.println(rule);
-		parent.model.rules.add(rule);
+		parent.model.addRule(rule);
 	}
 
 	// pos can be -1 if we accept arguments at any position
@@ -573,7 +573,7 @@ class SAMMethod {
 			rule = BASIC.createRule(makeList(head), makeList(isA));
 		}
 
-		parent.model.rules.add(rule);
+		parent.model.addRule(rule);
 		//System.out.println(rule);
 	}
 

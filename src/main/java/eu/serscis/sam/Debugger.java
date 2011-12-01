@@ -81,7 +81,7 @@ public class Debugger {
 	public Debugger(Model model) throws Exception {
 		Configuration configuration = Eval.createDefaultConfiguration();
 
-		this.rules = model.rules;
+		this.rules = model.getRules();
 
 		/* Make a copy of the initial facts (creating a knowledgeBase modifies them, affecting
 		 * other calls to the debugger).
