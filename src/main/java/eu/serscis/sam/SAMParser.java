@@ -28,6 +28,8 @@
 
 package eu.serscis.sam;
 
+import java.io.InputStreamReader;
+import java.io.InputStream;
 import eu.serscis.sam.lexer.LexerException;
 import org.deri.iris.api.terms.IConcreteTerm;
 import eu.serscis.sam.parser.ParserException;
@@ -70,7 +72,41 @@ public class SAMParser {
 		try {
 			parse(reader);
 		} catch (LexerException ex) {
-			String msg = ex.getMessage();
+			reader.reset();
+			reportError(ex, path.toString(), reader);
+		} catch (ParserException ex) {
+			reader.reset();
+			reportError(ex, path.toString(), reader);
+		} finally {
+			reader.close();
+		}
+	}
+
+	public SAMParser(Model model, String resource) throws Exception {
+		this.model = model;
+
+		InputStream is = getClass().getClassLoader().getResourceAsStream(resource);
+		try {
+			Reader reader = new InputStreamReader(is);
+			parse(reader);
+		} catch (LexerException ex) {
+			is.close();
+			is = getClass().getClassLoader().getResourceAsStream(resource);
+			Reader reader = new InputStreamReader(is);
+			reportError(ex, resource, reader);
+		} catch (ParserException ex) {
+			is.close();
+			is = getClass().getClassLoader().getResourceAsStream(resource);
+			Reader reader = new InputStreamReader(is);
+			reportError(ex, resource, reader);
+		} finally {
+			is.close();
+		}
+	}
+
+	private void reportError(Exception ex, String source, Reader reader) throws Exception {
+		if (ex instanceof LexerException) {
+			String msg = ((LexerException) ex).getMessage();
 			System.out.println("\nLexing error: " + ex.getMessage());
 			int lbracket = msg.indexOf('[');
 			int rbracket = msg.indexOf(']', lbracket);
@@ -78,35 +114,30 @@ public class SAMParser {
 			int line = Integer.valueOf(loc[0]);
 			int col = Integer.valueOf(loc[1]);
 
-			System.out.println(getLine(path, line));
+			System.out.println(getLine(reader, line));
 			String spaces = "";
 			for (int i = col; i > 1; i--) {
 				spaces += " ";
 			}
 			System.out.println(spaces + "^");
-			System.out.println(path + ":" + line);
+			System.out.println("" + source + ":" + line);
 
 			throw ex;
-		} catch (ParserException ex) {
-			Token t = ex.getToken();
+		} else if (ex instanceof ParserException) {
+			Token t = ((ParserException) ex).getToken();
 			System.out.println("\nParsing error: " + ex.getMessage());
-			System.out.println(getLine(path, t.getLine()));
+			System.out.println(getLine(reader, t.getLine()));
 			String spaces = "";
 			for (int i = t.getPos(); i > 1; i--) {
 				spaces += " ";
 			}
 			System.out.println(spaces + "^");
-			System.out.println(path + ":" + t.getLine());
+			System.out.println("" + source + ":" + t.getLine());
 
 			throw ex;
-		} finally {
-			reader.close();
+		} else {
+			throw ex;
 		}
-	}
-
-	public SAMParser(Model model, Reader source) throws Exception {
-		this.model = model;
-		parse(source);
 	}
 
 	private void parse(Reader source) throws Exception {
@@ -302,16 +333,16 @@ public class SAMParser {
 	}
 
 	/* Get the nth line of a file. */
-	private String getLine(File source, int line) throws Exception {
-		 BufferedReader in = new BufferedReader(new FileReader(source));
-		 for (int i = 1; i < line; i++) {
-			  in.readLine();
-		 }
-		 String lineText = in.readLine();
-		 if (lineText == null) {
-			 return "(end-of-file)";
-		 }
-		 return lineText;
+	private String getLine(Reader source, int line) throws Exception {
+		BufferedReader in = new BufferedReader(source);
+		for (int i = 1; i < line; i++) {
+			in.readLine();
+		}
+		String lineText = in.readLine();
+		if (lineText == null) {
+			return "(end-of-file)";
+		}
+		return lineText;
 	}
 
 	private SAMClass processConfig(AConfig config) throws ParserException {

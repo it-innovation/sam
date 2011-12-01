@@ -201,12 +201,7 @@ public class Eval {
 	}
 
 	private void parseResource(Model model, String resource) throws Exception {
-		InputStream is = getClass().getClassLoader().getResourceAsStream(resource);
-		try {
-			SAMParser parser = new SAMParser(model, new InputStreamReader(is));
-		} finally {
-			is.close();
-		}
+		new SAMParser(model, resource);
 	}
 
 	static private void doQueries(IKnowledgeBase knowledgeBase, List<IQuery> queries) throws Exception {
