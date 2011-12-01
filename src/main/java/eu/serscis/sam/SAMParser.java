@@ -72,10 +72,12 @@ public class SAMParser {
 		try {
 			parse(reader);
 		} catch (LexerException ex) {
-			reader.reset();
+			reader.close();
+			reader = new FileReader(path);
 			reportError(ex, path.toString(), reader);
 		} catch (ParserException ex) {
-			reader.reset();
+			reader.close();
+			reader = new FileReader(path);
 			reportError(ex, path.toString(), reader);
 		} finally {
 			reader.close();
@@ -126,13 +128,15 @@ public class SAMParser {
 		} else if (ex instanceof ParserException) {
 			Token t = ((ParserException) ex).getToken();
 			System.out.println("\nParsing error: " + ex.getMessage());
-			System.out.println(getLine(reader, t.getLine()));
-			String spaces = "";
-			for (int i = t.getPos(); i > 1; i--) {
-				spaces += " ";
+			if (t != null) {
+				System.out.println(getLine(reader, t.getLine()));
+				String spaces = "";
+				for (int i = t.getPos(); i > 1; i--) {
+					spaces += " ";
+				}
+				System.out.println(spaces + "^");
+				System.out.println("" + source + ":" + t.getLine());
 			}
-			System.out.println(spaces + "^");
-			System.out.println("" + source + ":" + t.getLine());
 
 			throw ex;
 		} else {
