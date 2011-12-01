@@ -252,12 +252,12 @@ public class SAMParser {
 
 		IPredicate pred = bodyLit.getAtom().getPredicate();
 		boolean positive = bodyLit.isPositive();
-		ITuple terms = model.getDefinition(pred);
+		TermDefinition[] terms = model.getDefinition(pred);
 		//System.out.println(":" + ass + " => " + terms);
 
 		int i = 0;
-		for (ITerm term : terms) {
-			String var = ((IVariable) term).getValue();
+		for (TermDefinition term : terms) {
+			String var = term.name;
 			ITuple bodyTuple = bodyLit.getAtom().getTuple();
 
 			if ("Caller".equals(var) || "Target".equals(var) || "Object".equals(var) ||
@@ -321,7 +321,29 @@ public class SAMParser {
 	}
 
 	private void addDeclare(ADeclare declare) throws ParserException {
-		model.parseAtom(declare.getAtom(), true, null);
+		ATermDecls decls = (ATermDecls) declare.getTermDecls();
+
+		TName name = declare.getName();
+
+		if (decls == null) {
+			IPredicate predicate = BASIC.createPredicate(name.getText(), 0);
+			model.declare(name, predicate, new TermDefinition[] {});
+		} else {
+			ATermDecl first = (ATermDecl) decls.getTermDecl();
+			List<PTermDeclsTail> rest = decls.getTermDeclsTail();
+
+			TermDefinition[] terms = new TermDefinition[1 + rest.size()];
+
+			terms[0] = new TermDefinition(first);
+			int i = 1;
+			for (PTermDeclsTail tail : rest) {
+				terms[i] = new TermDefinition(((ATermDeclsTail) tail).getTermDecl());
+				i++;
+			}
+
+			IPredicate predicate = BASIC.createPredicate(name.getText(), terms.length);
+			model.declare(name, predicate, terms);
+		}
 	}
 
 	private void addImport(AImport aImport) throws Exception {

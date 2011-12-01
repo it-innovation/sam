@@ -28,6 +28,7 @@
 
 package eu.serscis.sam.gui;
 
+import eu.serscis.sam.TermDefinition;
 import org.deri.iris.api.basics.IQuery;
 import org.deri.iris.api.basics.ILiteral;
 import org.deri.iris.storage.IRelation;
@@ -58,7 +59,7 @@ public class RelationViewer {
 	private final IPredicate myPred;
 
 	public RelationViewer(Shell parent, final LiveResults results, final IPredicate pred) throws Exception {
-		ITuple args = results.getResults().model.declared.get(pred);
+		ITuple args = TermDefinition.makeTuple(results.getResults().model.getDefinition(pred));
 
 		myShell = new Shell(parent, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.MAX | SWT.RESIZE | SWT.TITLE);
 		myShell.setText(pred.toString() + args);

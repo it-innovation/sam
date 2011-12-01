@@ -82,7 +82,11 @@ Productions
 
   import = import_tok string_literal dot;
 
-  declare = declare_tok atom dot;
+  declare = declare_tok name l_par term_decls? r_par dot;
+  term_decls = term_decl term_decls_tail*;
+  term_decls_tail = comma term_decl;
+  term_decl = question name;
+
   fact = atom dot;
   rule = [head]:atom if_dl [body]:literals dot;
   literals = literal literal_tail*;

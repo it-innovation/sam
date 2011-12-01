@@ -28,6 +28,7 @@
 
 package eu.serscis.sam.gui;
 
+import eu.serscis.sam.TermDefinition;
 import eu.serscis.sam.RefTerm;
 import java.util.LinkedList;
 import java.util.List;
@@ -141,7 +142,7 @@ public class ObjectViewer implements Updatable {
 					throw new RuntimeException("Bad tab configuration '" + tabName + "': predicate should be 'name/arity', not " + predName);
 				}
 				IPredicate pred = BASIC.createPredicate(predParts[0], Integer.valueOf(predParts[1]));
-				ITuple args = myResults.getResults().model.getDefinition(pred);
+				ITuple args = TermDefinition.makeTuple(myResults.getResults().model.getDefinition(pred));
 				if (args == null) {
 					throw new RuntimeException("No such predicate " + pred + ", in configuration for GUI tab '" +tabName + "'");
 				}

@@ -74,7 +74,7 @@ public class Model {
 	final Configuration configuration;
 	private final List<IRule> rules = new LinkedList<IRule>();
 	final Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
-	public final Map<IPredicate,ITuple> declared = new HashMap<IPredicate,ITuple>();
+	public final Map<IPredicate,TermDefinition[]> declared = new HashMap<IPredicate,TermDefinition[]>();
 	private final static BuiltinRegister builtinRegister = new BuiltinRegister();
 	private int assertions = 0;
 
@@ -131,11 +131,11 @@ public class Model {
 		}
 	}
 
-	public ITuple getDefinition(IPredicate pred) {
+	public TermDefinition[] getDefinition(IPredicate pred) {
 		return declared.get(pred);
 	}
 
-	public void declare(Token tok, IPredicate pred, ITuple terms) throws ParserException {
+	public void declare(Token tok, IPredicate pred, TermDefinition[] terms) throws ParserException {
 		if (declared.containsKey(pred)) {
 			throw new ParserException(tok, "Predicate already declared: " + pred);
 		}
@@ -187,10 +187,10 @@ public class Model {
 	}
 
 	public IAtom parseAtom(PAtom parsed) throws ParserException {
-		return parseAtom(parsed, false, null);
+		return parseAtom(parsed, null);
 	}
 
-	public IAtom parseAtom(PAtom parsed, boolean declaration, TermProcessor termFn) throws ParserException {
+	public IAtom parseAtom(PAtom parsed, TermProcessor termFn) throws ParserException {
 		if (parsed instanceof ANormalAtom) {
 			ANormalAtom atom = (ANormalAtom) parsed;
 			ITuple terms = parseTerms((ATerms) atom.getTerms(), termFn);
@@ -201,11 +201,7 @@ public class Model {
 			if (builtinClass == null) {
 				IPredicate predicate = BASIC.createPredicate(name, terms.size());
 
-				if (declaration) {
-					declare(atom.getName(), predicate, terms);
-				} else {
-					requireDeclared(atom.getName(), predicate);
-				}
+				requireDeclared(atom.getName(), predicate);
 
 				return BASIC.createAtom(predicate, terms);
 			} else {
@@ -222,11 +218,7 @@ public class Model {
 			String name = atom.getName().getText();
 			IPredicate predicate = BASIC.createPredicate(name, 0);
 
-			if (declaration) {
-				declare(atom.getName(), predicate, BASIC.createTuple());
-			} else {
-				requireDeclared(atom.getName(), predicate);
-			}
+			requireDeclared(atom.getName(), predicate);
 
 			return BASIC.createAtom(predicate, BASIC.createTuple());
 		} else {
@@ -245,9 +237,9 @@ public class Model {
 
 	private ILiteral parseLiteral(PLiteral parsed, TermProcessor termFn) throws ParserException {
 		if (parsed instanceof APositiveLiteral) {
-			return BASIC.createLiteral(true, parseAtom(((APositiveLiteral) parsed).getAtom(), false, termFn));
+			return BASIC.createLiteral(true, parseAtom(((APositiveLiteral) parsed).getAtom(), termFn));
 		} else {
-			return BASIC.createLiteral(false, parseAtom(((ANegativeLiteral) parsed).getAtom(), false, termFn));
+			return BASIC.createLiteral(false, parseAtom(((ANegativeLiteral) parsed).getAtom(), termFn));
 		}
 	}
 

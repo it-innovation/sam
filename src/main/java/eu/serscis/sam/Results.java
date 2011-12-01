@@ -78,9 +78,8 @@ public class Results {
 			IPredicate[] relations = model.declared.keySet().toArray(new IPredicate[] {});
 			Arrays.sort(relations);
 			for (IPredicate pred : relations) {
-				ITuple tuple = model.declared.get(pred);
-				int nCols = tuple.size();
-				IQuery query = BASIC.createQuery(BASIC.createLiteral(true, pred, tuple));
+				TermDefinition[] termDefinitions = model.declared.get(pred);
+				IQuery query = BASIC.createQuery(BASIC.createLiteral(true, pred, TermDefinition.makeTuple(termDefinitions)));
 				IRelation rel = finalKnowledgeBase.execute(query);
 
 				if (rel.size() == 0) {

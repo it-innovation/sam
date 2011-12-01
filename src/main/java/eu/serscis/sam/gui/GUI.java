@@ -28,6 +28,7 @@
 
 package eu.serscis.sam.gui;
 
+import eu.serscis.sam.TermDefinition;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.deri.iris.api.terms.ITerm;
 import java.io.FileWriter;
@@ -371,8 +372,8 @@ public class GUI {
 			Arrays.sort(relations);
 			for (final IPredicate pred : relations) {
 				MenuItem item = new MenuItem(relationsMenu, SWT.PUSH);
-				final ITuple args = results.model.declared.get(pred);
-				item.setText(pred.toString() + args);
+				final TermDefinition[] args = results.model.declared.get(pred);
+				item.setText(pred.toString() + TermDefinition.makeTuple(args));
 				item.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent e) {
 						try {

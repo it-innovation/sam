@@ -218,7 +218,7 @@ graphInvocationEdge(?GraphSourceNode, ?GraphTargetNode) :-
 
 /* If showOnlyProblemNodes is on, only show "important" objects */
 
-declare hasProblem.
+declare hasProblem().
 hasProblem :- errorEdge(?X, ?Y).
 hasProblem :- problemEdge(?X, ?Y).
 

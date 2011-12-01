@@ -54,7 +54,7 @@ declare hasField(?Type, ?FieldName).
 declare isType(?Type).
 declare phase(?Phase).
 
-declare expectFailure.
+declare expectFailure().
 declare hasRef(?Object, ?Target).
 declare haveBadAccess(?SourceObject, ?TargetObject).
 declare missingGoodAccess(?SourceObject, ?TargetObject).
@@ -65,8 +65,8 @@ declare debugEdge(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocat
 declare showAllInvocations(?Object).
 declare showInvocation(?Object, ?Invocation).
 declare isHidden(?Source).
-declare showOnlyProblemNodes.
-declare hideUncalledReferences.
+declare showOnlyProblemNodes().
+declare hideUncalledReferences().
 declare ignoreEdgeForRanking(?GraphSourceNode, ?GraphTargetNode).
 declare graphCluster(?ClusterID, ?GraphNode).
 declare graphClusterColour(?ClusterID, ?Colour).
@@ -79,7 +79,7 @@ declare hasParam(?Method, ?ParamVar, ?Pos).
 declare mayAccept(?Method, ?ParamVar, ?Pos).
 declare mayAccept(?Method, ?ParamVar, ?Pos, ?Value).
 
-declare accessControlOn.
+declare accessControlOn().
 declare accessAllowed(?Caller, ?Target).
 declare accessAllowed(?Caller, ?Target, ?Method).
 declare methodMatches(?CallSite, ?Target, ?Method).
@@ -100,7 +100,7 @@ declare didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue).
 declare mayCreate(?CallSite, ?ChildType, ?NameHint).
 declare newObject(?Object, ?Invocation, ?ChildType, ?NewObject).
 declare isPublic(?Object).
-declare debug.
+declare debug().
 declare assertionMessage(?Number, ?Msg).
 declare failedAssertion(?Number).
 declare assertionArrow(?Number, ?Source, ?Target, ?Positive).
