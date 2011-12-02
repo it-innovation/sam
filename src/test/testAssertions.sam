@@ -11,23 +11,23 @@ assert !didCall(<e>, <f>, ?M).
 assert !didCall(?X, <g>, ?M).
 
 
-error("1") :- failedAssertion(1).     // pass
-error("2") :- !failedAssertion(2).   // arrow b -> c
-error("3") :- !failedAssertion(3).    // can't show arrow due to ?X
+error("1") :- phase("test"), failedAssertion(1).     // pass
+error("2") :- phase("test"), !failedAssertion(2).   // arrow b -> c
+error("3") :- phase("test"), !failedAssertion(3).    // can't show arrow due to ?X
 
-error("4") :- !failedAssertion(4).   // arrow d -> e
-error("5") :- failedAssertion(5).     // pass
-error("6") :- !failedAssertion(6).   // arrow a -> g
+error("4") :- phase("test"), !failedAssertion(4).   // arrow d -> e
+error("5") :- phase("test"), failedAssertion(5).     // pass
+error("6") :- phase("test"), !failedAssertion(6).   // arrow a -> g
 
 // ?- failedAssertion(?N).
 // ?- assertionArrow(?N, ?A, ?B, ?P).
 
 declare expectedArrow(?N, ?A, ?B, ?P).
-expectedArrow(6, "a", "g", false).
-expectedArrow(4, "d", "e", false).
-expectedArrow(2, "b", "c", true).
+expectedArrow(6, <a>, <g>, false).
+expectedArrow(4, <d>, <e>, false).
+expectedArrow(2, <b>, <c>, true).
 
-error("Missing arrow") :- expectedArrow(?N, ?A, ?B, ?P), !assertionArrow(?N, ?A, ?B, ?P).
-error("Extra arrow") :- !expectedArrow(?N, ?A, ?B, ?P), assertionArrow(?N, ?A, ?B, ?P).
+error("Missing arrow") :- phase("test"), expectedArrow(?N, ?A, ?B, ?P), !assertionArrow(?N, ?A, ?B, ?P).
+error("Extra arrow") :- phase("test"), !expectedArrow(?N, ?A, ?B, ?P), assertionArrow(?N, ?A, ?B, ?P).
 
 expectFailure.
