@@ -59,9 +59,11 @@ public class Eval {
 		final IRuleSafetyProcessor oldProcessor = config.ruleSafetyProcessor;
 		config.ruleSafetyProcessor = new IRuleSafetyProcessor() {
 			public IRule process(IRule rule) throws RuleUnsafeException {
-				String p = rule.getHead().get(0).getAtom().getPredicate().getPredicateSymbol();
-				if (p.equals("realNewObject") || p.equals("graphInvocation")) {
-					return rule;
+				for (ILiteral lit : rule.getBody()) {
+					String p = lit.getAtom().getPredicate().getPredicateSymbol();
+					if (p.equals("TO_STRING") || p.equals("STRING_CONCAT") || p.equals("MAKE_OBJECT")) {
+						return rule;
+					}
 				}
 
 				return oldProcessor.process(rule);
