@@ -137,6 +137,7 @@ Productions
        | {call} name dot [method]:pattern l_par args? star? r_par
        | {string} string_literal
        | {bool} bool
+       | {int} number
        | {null} null
        | {copy} name;
   args = expr args_tail*;

@@ -64,16 +64,20 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method)
 didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
+    hasParam(?Method, ?ParamType, ?AnyParam, ?Pos),
+    MAY_ASSIGN(?ParamType, ?ArgValue),
     GroupByArgAt(?Method, ?Pos),
     GroupByArgCase(?Method, ?ArgValue, ?TargetInvocation).
 
 // the other args
 
 // senders that send at a particular position
-// (don't check hasParam; Unknown receivers will set it to -1)
+// (don't check hasParam Pos; Unknown receivers will set it to -1)
 didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
+    hasParam(?Method, ?ParamType, ?AnyParam, ?UnusedPos),
+    MAY_ASSIGN(?ParamType, ?ArgValue),
     GroupByArgAt(?Method, ?GroupByArgAt), ?GroupByArgAt != ?Pos, ?Pos != -1,
     GroupByArgCase(?Method, ?AnyArgValue, ?TargetInvocation).
 
@@ -83,12 +87,15 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, -1, ?ArgValue),
     hasParam(?Method, ?ParamType, ?AnyParam, ?Pos),
+    MAY_ASSIGN(?ParamType, ?ArgValue),
     GroupByArgAt(?Method, ?GroupByArgAt), ?GroupByArgAt != ?Pos,
     GroupByArgCase(?Method, ?AnyArgValue, ?TargetInvocation).
 
 error("missing GroupByArgCase", ?Method, ?ArgValue) :- 
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
+    hasParam(?Method, ?ParamType, ?AnyParam, ?Pos),
+    MAY_ASSIGN(?ParamType, ?ArgValue),
     GroupByArgAt(?Method, ?Pos),
     !GroupByArgCase(?Method, ?ArgValue, ?TargetInvocation).
 

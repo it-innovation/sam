@@ -559,6 +559,9 @@ class SAMMethod {
 			ITerm constant;
 			if (expr instanceof AStringExpr) {
 				constant = TERM.createString(getString(((AStringExpr) expr).getStringLiteral()));
+			} else if (expr instanceof AIntExpr) {
+				String value = ((AIntExpr) expr).getNumber().getText();
+				constant = CONCRETE.createInteger(Integer.valueOf(value));
 			} else if (expr instanceof ANullExpr) {
 				return;			// we always assume null can be sent anyway
 			} else {

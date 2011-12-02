@@ -123,6 +123,7 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
         hasParam(?Method, ?ParamType, ?Param, ?Pos),
+        MAY_ASSIGN(?ParamType, ?ArgValue),
         !methodDoesContextMapping(?Method).
 
 // can receive at -1 anything sent at any position
@@ -132,6 +133,7 @@ didReceive(?Target, ?TargetInvocation, ?Method, -1, ?ArgValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
         hasParam(?Method, ?ParamType, ?Param, -1),
+        MAY_ASSIGN(?ParamType, ?ArgValue),
         !methodDoesContextMapping(?Method).
 
 // can receive at any position we have if it may be sent to any position
@@ -140,6 +142,7 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	maySend(?Caller, ?CallerInvocation, ?CallSite, -1, ?ArgValue),
         hasParam(?Method, ?ParamType, ?Param, ?Pos),
+        MAY_ASSIGN(?ParamType, ?ArgValue),
         !methodDoesContextMapping(?Method).
 
 /* Default aggregation for child objects */

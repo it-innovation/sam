@@ -1,0 +1,66 @@
+/////////////////////////////////////////////////////////////////////////
+//
+// © University of Southampton IT Innovation Centre, 2011
+//
+// Copyright in this library belongs to the University of Southampton
+// University Road, Highfield, Southampton, UK, SO17 1BJ
+//
+// This software may not be used, sold, licensed, transferred, copied
+// or reproduced in whole or in part in any manner or form or in or
+// on any media by any person other than in accordance with the terms
+// of the Licence Agreement supplied with the software, or otherwise
+// without the prior written consent of the copyright owners.
+//
+// This software is distributed WITHOUT ANY WARRANTY, without even the
+// implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+// PURPOSE, except where stated in the Licence Agreement supplied with
+// the software.
+//
+//	Created By :			Thomas Leonard
+//	Created Date :			2011-12-02
+//	Created for Project :		SERSCIS
+//
+/////////////////////////////////////////////////////////////////////////
+//
+//  License : GNU Lesser General Public License, version 2.1
+//
+/////////////////////////////////////////////////////////////////////////
+
+class Target {
+    public void testBool(boolean x) { }
+    public void testObject(Object x) { }
+    public void testString(String x) { }
+    public void testInt(int x) { }
+    public void testValue(Value x) { }
+    public void testCustom(Custom x) { }
+}
+
+config {
+    test {
+        Target t = new Target();
+        Unknown unknown = new Unknown(t, true, "hi", 3);
+    }
+}
+
+assert local(<t>, "", "Target.testBool.x", true).
+assert !local(<t>, "", "Target.testBool.x", <t>).
+
+assert local(<t>, "", "Target.testObject.x", <t>).
+assert local(<t>, "", "Target.testObject.x", true).
+
+assert local(<t>, "", "Target.testString.x", "hi").
+assert !local(<t>, "", "Target.testString.x", <t>).
+
+assert local(<t>, "", "Target.testInt.x", 3).
+assert !local(<t>, "", "Target.testInt.x", "hi").
+
+assert local(<t>, "", "Target.testValue.x", 3).
+assert local(<t>, "", "Target.testValue.x", "hi").
+assert !local(<t>, "", "Target.testInt.x", <t>).
+
+assert local(<t>, "", "Target.testCustom.x", <t>).
+assert !local(<t>, "", "Target.testCustom.x", 3).
+
+isConstant(true).
+isConstant("hi").
+isConstant(3).
