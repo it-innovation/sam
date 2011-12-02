@@ -1,14 +1,14 @@
-didCall("a", "b", "Foo.bar").
-didCall("d", "e", "Foo.bar").
-didCall("a", "g", "Foo.bar").
+didCall(<a>, <b>, "Foo.bar").
+didCall(<d>, <e>, "Foo.bar").
+didCall(<a>, <g>, "Foo.bar").
 
-assert didCall("a", "b", ?M).
-assert didCall("b", "c", ?M).
-assert didCall(?X, "c", ?M).
+assert didCall(<a>, <b>, ?M).
+assert didCall(<b>, <c>, ?M).
+assert didCall(?X, <c>, ?M).
 
-assert !didCall("d", "e", ?M).
-assert !didCall("e", "f", ?M).
-assert !didCall(?X, "g", ?M).
+assert !didCall(<d>, <e>, ?M).
+assert !didCall(<e>, <f>, ?M).
+assert !didCall(?X, <g>, ?M).
 
 
 error("1") :- failedAssertion(1).     // pass

@@ -20,8 +20,8 @@ class Runner {
     }
 }
 
-initialObject("runner", "Runner").
-initialInvocation("runner", "test").
+initialObject(<runner>, "Runner").
+initialInvocation(<runner>, "test").
 
 debug :- isA(?X, "Unknown"),
     getsAccess(?X, ?Y),
