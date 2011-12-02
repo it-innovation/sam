@@ -7,8 +7,8 @@ mustCall(<user>, "", "Client.test:file=myDataProvider.newFile", <dataProvider>, 
 mustCall(<user>, "", "Client.test:result.get", <image>, "File.get").
 mustCall(<user>, "", "Client.test:result=myServiceProvider.process", <serviceProvider>, "ServiceProvider.process").
 
-mayCall(<_testDriver>, ?Target, ?Method) :- isObject(?Target), hasMethod(?Type, ?Method).
-mayCall(<_testDriver>, ?Target, ?Method) :- isObject(?Target), hasConstructor(?Type, ?Method).
+mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasMethod(?Type, ?Method).
+mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasConstructor(?Type, ?Method).
 
 //checkCalls(<dataProvider>).
 checkCalls(<file>).

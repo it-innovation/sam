@@ -83,6 +83,8 @@ public class Model {
 		ITerm t3 = TERM.createVariable("c");
 
 		builtinRegister.registerBuiltin(new MakeRefBuiltin(t1, t2, t3));
+
+		builtinRegister.registerBuiltin(new IsRefBuiltin(t1));
 	}
 
 	public Model(Configuration configuration) {

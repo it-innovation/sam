@@ -5,8 +5,8 @@ mustCall(<compiler>, "", "Compiler.exec:input.read", <input>, "File.read").
 mustCall(<compiler>, "", "Compiler.exec:myLog.write", <billing>, "File.write").
 mustCall(<compiler>, "", "Compiler.exec:output.write", <output>, "File.write").
 
-mayCall(<_testDriver>, ?Target, ?Method) :- isObject(?Target), hasMethod(?Type, ?Method).
-mayCall(<_testDriver>, ?Target, ?Method) :- isObject(?Target), hasConstructor(?Type, ?Method).
+mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasMethod(?Type, ?Method).
+mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasConstructor(?Type, ?Method).
 
 checkCalls(<billing>).
 checkCalls(<compiler>).

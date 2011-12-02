@@ -29,7 +29,7 @@ In a non-capability system, references aren't secret. We want to see whether we 
 the access control rules to protect the billing file. We therefore mark all objects as
 :func:`isPublic`. Unknown objects get access to these automatically::
 
-  isPublic(?X) :- isObject(?X).
+  isPublic(?X) :- isRef(?X).
 
 In this system, instead of using only capabilities we also use traditional access control. This must be enabled using :func:`accessControlOn`, after which
 the allowed interactions can be defined using :func:`accessAllowed`::

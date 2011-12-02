@@ -26,6 +26,14 @@ Objects
    objects that may be created. This will be false for potential child
    objects that can never be created in the current configuration.
 
+.. function:: isRef(?Object)
+
+   This object is a reference type (it is passed by reference).
+
+.. function:: isConstant(?Object)
+
+   This object is a constant type (it is passed by value).
+
 .. function:: isA(?Object, ?Type)
 
    The object has the given type. Note than an object may have multiple

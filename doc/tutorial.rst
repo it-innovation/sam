@@ -294,7 +294,7 @@ try to invoke it even when you don't have permission. Security is provided in th
 To indicate that an object is publicly available (anyone could get a reference to it), use the :func:`isPublic` tag. A border around the object indicates that it
 is public. To model a typical web-based distributed system we simply mark all objects as public ("something is public if it is an object")::
 
-  isPublic(?X) :- isObject(?X).
+  isPublic(?X) :- isRef(?X).
 
 Since we have no access control, this immediately and unsurprisingly leads to the discovery of some problems:
 

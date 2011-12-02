@@ -34,6 +34,8 @@ declare getsAccess(?SourceObject, ?TargetObject).
 declare isA(?Object, ?Type).
 declare isInvocation(?Invocation).
 declare isObject(?Object).
+declare isRef(?Object).
+declare isConstant(?Object).
 declare live(?Object).
 declare liveMethod(?Object, ?Invocation, ?Method).
 declare local(?Object, ?Invocation, ?VarName, ?Value).
@@ -211,6 +213,9 @@ accessAllowed(?Caller, ?Caller) :- isObject(?Caller).
 // Unknown objects have access to all public objects
 field(?Object, "ref", ?Target) :- isA(?Object, "Unknown"), isPublic(?Target).
 
+// TODO: Unknown objects should have access to all constants too
+//field(?Object, "ref", ?Value) :- isA(?Object, "Unknown"), isConstant(?Value).
+
 /* A simplified version of didCall/5 useful for writing goals. */
 didCall(?Caller, ?Target, ?Method) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
@@ -222,10 +227,14 @@ initialObject(<_testDriver>, "_TestDriver").
  */
 class Value {}
 
-isA(true, "Value").
-isA(false, "Value").
+isA(?X, "Value") :- isConstant(?X).
+
+isConstant(true).
+isConstant(false).
 
 /* The creator of an object is the factory that did the "new" operation. */
 didCreate(?Factory, ?Object) :-
     didCreate(?Factory, ?FactoryInvocation, ?CreationSite, ?Object).
 
+isRef(?Object) :- isObject(?Object), IS_REF(?Object).
+isConstant(?Object) :- isObject(?Object), !IS_REF(?Object).
