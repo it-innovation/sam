@@ -261,11 +261,8 @@ public class Model {
 	}
 
 	private void updateTypes(ILiteral lit, Map<IVariable,Type> types, boolean head) throws ParserException {
-		IAtom atom = lit.getAtom();
-		updateTypes(atom.getPredicate(), atom.getTuple(), types, head);
-	}
-
-	private void updateTypes(IPredicate predicate, ITuple tuple, Map<IVariable,Type> types, boolean head) throws ParserException {
+		IPredicate predicate = lit.getAtom().getPredicate();
+		ITuple tuple = lit.getAtom().getTuple();
 		TermDefinition[] terms = getDefinition(predicate);
 
 		if (terms == null) {
@@ -288,7 +285,9 @@ public class Model {
 					} else {
 						termType = terms[i].checkType(termType, head);
 					}
-					types.put((IVariable) term, termType);
+					if (lit.isPositive()) {
+						types.put((IVariable) term, termType);
+					}
 				} else {
 					if (term instanceof IStringTerm) {
 						termType = Type.STRING;
@@ -333,7 +332,8 @@ public class Model {
 	}
 
 	public void addFact(IPredicate pred, ITuple tuple) throws ParserException {
-		updateTypes(pred, tuple, null, true);
+		ILiteral lit = BASIC.createLiteral(true, pred, tuple);
+		updateTypes(lit, null, true);
 
 		IRelation rel = getRelation(pred);
 		rel.add(tuple);

@@ -64,3 +64,13 @@ assert !local(<t>, "", "Target.testCustom.x", 3).
 isConstant(true).
 isConstant("hi").
 isConstant(3).
+
+
+// Test type-checker
+declare anObject(Object x).
+declare aString(String x).
+declare anotherString(String x).
+
+anObject(?X) :- aString(?X).
+anObject(?X) :- anObject(?X), !aString(?X).
+anotherString(?X) :- anObject(?X), aString(?X).
