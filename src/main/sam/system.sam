@@ -176,10 +176,6 @@ hasIdentity(?Child, ?Identity) :-
     hasIdentity(?Factory, ?Identity),
     didCreate(?Factory, ?Child).
 
-// Give all identities the Value type. This allows them to be passed
-// as arguments if necessary.
-isA(?X, "Value") :- hasIdentity(?Object, ?X).
-
 
 /* RBAC */
 

@@ -53,14 +53,11 @@ isBoring(?X, ?Y) :-
 
 isHidden(<_testDriver>).
 
-/* Don't graph values (but if something is both a real object and a value, do graph it). */
-isHidden(?Object) :- isObject(?Object), !isRef(?Object).
-
 /* Graphing */
 
 graphNode(?Object, "shape=record") :- live(?Object), isPublic(?Object).
 graphNode(?Object, "fontcolor=red") :- live(?Object), isA(?Object, "BaseUnknown").
-graphNode(?Object, "") :- live(?Object), isObject(?Object), !isA(?Object, "BaseUnknown").
+graphNode(?Object, "") :- live(?Object), isRef(?Object), !isA(?Object, "BaseUnknown").
 
 graphEdge(?Object, ?Target, "color=red,style=dashed") :- missingGoodAccess(?Object, ?Target).
 errorEdge(?Object, ?Target) :- haveBadAccess(?Object, ?Target).
@@ -230,7 +227,7 @@ showInProblemGraph(?Target) :- errorEdge(?Source, ?Target).
 showInProblemGraph(?Source) :- problemEdge(?Source, ?Target).
 showInProblemGraph(?Target) :- problemEdge(?Source, ?Target).
 
-isHidden(?Object) :- showOnlyProblemNodes, isObject(?Object), hasProblem, !showInProblemGraph(?Object).
+isHidden(?Object) :- showOnlyProblemNodes, isRef(?Object), hasProblem, !showInProblemGraph(?Object).
 
 
 

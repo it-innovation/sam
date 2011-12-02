@@ -10,7 +10,7 @@ accessAllowed(<compiler>, <output>, "File.write").
 accessAllowed(<compiler>, <input>, "File.read").
 
 // All objects have well-known or guessable addresses.
-isPublic(?X) :- isObject(?X).
+isPublic(?X) :- isRef(?X).
 
 class Compiler {
     private Object myLog;

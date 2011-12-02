@@ -4,7 +4,7 @@ import "includes/rbacTabs.sam".
 // model a non-capability system:
 accessControlOn.
 hideUncalledReferences.
-isPublic(?X) :- isObject(?X).   // anyone can get a reference to any object
+isPublic(?X) :- isRef(?X).   // anyone can get a reference to any object
 
 class DataProvider {
   @PermittedRole("world")

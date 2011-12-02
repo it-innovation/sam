@@ -45,7 +45,7 @@ config {
 }
 
 // model a non-capability system, in which anyone can get a reference to any object:
-isPublic(?X) :- isObject(?X).
+isPublic(?X) :- isRef(?X).
 
 ignoreEdgeForRanking("otherUsers", "user").
 

@@ -37,7 +37,6 @@ declare field(Ref object, String fieldName, Object value).
 declare getsAccess(Ref sourceObject, Ref targetObject).
 declare isA(Ref object, String type).
 declare isInvocation(String invocation).
-declare isObject(Object object).
 declare isRef(Ref ref).
 declare isConstant(Object object).
 declare live(Ref object).
@@ -130,7 +129,7 @@ declare guiObjectTab(int position, String label, String predicate, String object
 
 /* predicates on objects */
 
-isObject(?X) :- isA(?X, ?Type).
+isRef(?X) :- isA(?X, ?Type).
 live(?Object) :- initialObject(?Object, ?Type).
 isA(?Object, ?Type) :- initialObject(?Object, ?Type).
 isA(?NewObject, ?Type) :- mayCreate(?CallSite, ?Type, ?NameHint), didCreate(?Caller, ?Invocation, ?CallSite, ?NewObject).
@@ -225,19 +224,10 @@ didCall(?Caller, ?Target, ?Method) :-
 
 initialObject(<_testDriver>, "_TestDriver").
 
-/* No behaviour and no references. This is useful if you want to pass literal values
- * as method arguments. Objects that are pure values are not graphed.
- */
-class Value {}
-
-isA(?X, "Value") :- isConstant(?X).
-
 isConstant(true).
 isConstant(false).
+isConstant(?Identity) :- hasIdentity(?Object, ?Identity).
 
 /* The creator of an object is the factory that did the "new" operation. */
 didCreate(?Factory, ?Object) :-
     didCreate(?Factory, ?FactoryInvocation, ?CreationSite, ?Object).
-
-isRef(?Object) :- isObject(?Object), IS_REF(?Object).
-isConstant(?Object) :- isObject(?Object), !IS_REF(?Object).

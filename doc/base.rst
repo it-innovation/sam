@@ -19,7 +19,6 @@ Types
 Objects
 -------
 
-.. function:: isObject(Object object)
 .. function:: live(Ref object)
 
    The object exists. This is true for all the initial objects and for any
