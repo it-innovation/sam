@@ -216,8 +216,8 @@ accessAllowed(?Caller, ?Caller) :- isRef(?Caller).
 // Unknown objects have access to all public objects
 field(?Object, "ref", ?Target) :- isA(?Object, "Unknown"), isPublic(?Target).
 
-// TODO: Unknown objects should have access to all constants too
-//field(?Object, "ref", ?Value) :- isA(?Object, "Unknown"), isConstant(?Value).
+// Unknown objects have access to all constants too
+field(?Object, "ref", ?Value) :- isA(?Object, "Unknown"), isConstant(?Value).
 
 /* A simplified version of didCall/5 useful for writing goals. */
 didCall(?Caller, ?Target, ?Method) :-

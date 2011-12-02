@@ -38,7 +38,7 @@ class Target {
 config {
     test {
         Target t = new Target();
-        Unknown unknown = new Unknown(t, true, "hi", 3);
+        Unknown unknown = new Unknown(t);
     }
 }
 
