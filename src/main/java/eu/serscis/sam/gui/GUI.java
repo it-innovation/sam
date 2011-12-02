@@ -457,10 +457,10 @@ public class GUI {
 			String caller = call.get(0).getValue().toString();
 			if (!caller.equals("_testDriver")) {
 				calls[i] = "mustCall(" +
-						quote(caller) + ", " +
+						call.get(0) + ", " +
 						quote(call.get(1)) + ", " +
 						quote(call.get(2)) + ", " +
-						quote(call.get(3)) + ", " +
+						call.get(3) + ", " +
 						quote(call.get(5)) + ").\n";
 			} else {
 				calls[i] = "";
@@ -483,7 +483,7 @@ public class GUI {
 			writer.write("\n");
 			for (String object : objects) {
 				if (!object.equals("_testDriver")) {
-					writer.write("checkCalls(" + quote(object) + ").\n");
+					writer.write("checkCalls(<" + object + ">).\n");
 				}
 			}
 		} finally {
