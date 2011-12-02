@@ -49,11 +49,11 @@ public class TermDefinition {
 
 		AType type = (AType) decl.getType();
 		if (type == null) {
-			this.type = Type.ANY;
+			this.type = Type.OBJECT;
 		} else {
 			String typeName = type.getName().getText();
 			if (typeName.equals("Object")) {
-				this.type = Type.ANY;
+				this.type = Type.OBJECT;
 			} else if (typeName.equals("String")) {
 				this.type = Type.STRING;
 			} else if (typeName.equals("boolean")) {
@@ -79,17 +79,17 @@ public class TermDefinition {
 	public Type checkType(Type type, boolean head) throws ParserException {
 		if (!type.equals(this.type)) {
 			if (head) {
-				if (this.type.equals(Type.ANY)) {
+				if (this.type.equals(Type.OBJECT)) {
 					return type;
 				}
 			} else {
 				/* The possible types are the intersection of the two. If the intersection is empty,
 				 * it's probably an error.
 				 */
-				if (type.equals(Type.ANY)) {
+				if (type.equals(Type.OBJECT)) {
 					return this.type;
 				}
-				if (this.type.equals(Type.ANY)) {
+				if (this.type.equals(Type.OBJECT)) {
 					return type;
 				}
 			}

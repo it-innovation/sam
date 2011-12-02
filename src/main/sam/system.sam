@@ -117,31 +117,11 @@ maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue) :-
     maySendFromAnyContext(?Caller, ?CallSite, ?Pos, ?ArgValue),
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
 
-// normal -> normal (Pos >= 0), and
-// Unknown -> Unknown (Pos = -1)
-didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
+didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ArgValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
-	maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
-        hasParam(?Method, ?ParamType, ?Param, ?Pos),
-        MAY_ASSIGN(?ParamType, ?ArgValue),
-        !methodDoesContextMapping(?Method).
-
-// can receive at -1 anything sent at any position
-// normal -> Unknown
-// Unknown -> Unknown
-didReceive(?Target, ?TargetInvocation, ?Method, -1, ?ArgValue) :-
-	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
-	maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
-        hasParam(?Method, ?ParamType, ?Param, -1),
-        MAY_ASSIGN(?ParamType, ?ArgValue),
-        !methodDoesContextMapping(?Method).
-
-// can receive at any position we have if it may be sent to any position
-// Unknown -> normal
-didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
-	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
-	maySend(?Caller, ?CallerInvocation, ?CallSite, -1, ?ArgValue),
-        hasParam(?Method, ?ParamType, ?Param, ?Pos),
+	maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?ArgValue),
+        MATCH(?SendPos, ?ParamPos, ?DontCarePos),
+        hasParam(?Method, ?ParamType, ?Param, ?ParamPos),
         MAY_ASSIGN(?ParamType, ?ArgValue),
         !methodDoesContextMapping(?Method).
 

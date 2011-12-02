@@ -28,6 +28,7 @@
 
 package eu.serscis.sam;
 
+import eu.serscis.sam.node.AAnyTerm;
 import org.deri.iris.api.terms.concrete.IBooleanTerm;
 import org.deri.iris.api.terms.concrete.IIntegerTerm;
 import org.deri.iris.api.terms.IStringTerm;
@@ -92,6 +93,8 @@ public class Model {
 		builtinRegister.registerBuiltin(new IsRefBuiltin(t1));
 
 		builtinRegister.registerBuiltin(new MayAssignBuiltin(t1, t2));
+
+		builtinRegister.registerBuiltin(new MatchBuiltin(t1, t2, t3));
 	}
 
 	public Model(Configuration configuration) {
@@ -170,6 +173,8 @@ public class Model {
 		} else if (parsed instanceof ABoolTerm) {
 			boolean val = Boolean.valueOf(((ABoolTerm) parsed).getBool().getText());
 			return CONCRETE.createBoolean(val);
+		} else if (parsed instanceof AAnyTerm) {
+			return AnyTerm.THE_ONE;
 		} else if (parsed instanceof AIntTerm) {
 			int val = Integer.valueOf(((AIntTerm) parsed).getNumber().getText());
 			return CONCRETE.createInt(val);
@@ -288,6 +293,8 @@ public class Model {
 					if (lit.isPositive()) {
 						types.put((IVariable) term, termType);
 					}
+				} else if (term instanceof AnyTerm) {
+					// Pass
 				} else {
 					if (term instanceof IStringTerm) {
 						termType = Type.STRING;

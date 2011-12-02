@@ -13,7 +13,7 @@ Helpers
   input_character = [unicode_input_character - [cr + lf]];
   not_star = [unicode_input_character - '*'];
   not_star_not_slash = [unicode_input_character - ['*' + '/']];
-  underscode = '_';
+  underscore = '_';
   
   // (based on sablecc example Java grammar)
   escape_sequence = '\b' | '\t' | '\n' | '\f' | '\r' | '\"' | '\' ''' | '\\';
@@ -64,7 +64,8 @@ Tokens
   null = 'null';
 
   // must be last
-  name = char(char|digit|underscode)*;
+  name = char(char|digit|underscore)*;
+  any = underscore;
 
 Ignored Tokens
   blank, comment, block_comment;
@@ -107,6 +108,7 @@ Productions
        | {int} number
        | {bool} bool
        | {special} dollar name
+       | {any} any
        | {composite} name l_par terms r_par;
 
   query = query_start literals dot;

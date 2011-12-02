@@ -17,7 +17,7 @@
 // the software.
 //
 //	Created By :			Thomas Leonard
-//	Created Date :			2011-12-01
+//	Created Date :			2011-12-02
 //	Created for Project :		SERSCIS
 //
 /////////////////////////////////////////////////////////////////////////
@@ -28,14 +28,37 @@
 
 package eu.serscis.sam;
 
-import eu.serscis.sam.node.ATermDecl;
-import eu.serscis.sam.node.PTermDecl;
-import java.util.List;
-import java.util.ArrayList;
-import org.deri.iris.api.basics.ITuple;
-import org.deri.iris.api.terms.ITerm;
-import static org.deri.iris.factory.Factory.*;
+import java.net.URI;
 
-public enum Type {
-	OBJECT, REF, STRING, INT, BOOL, ANY;
+import org.deri.iris.api.terms.IConcreteTerm;
+import org.deri.iris.api.terms.ITerm;
+
+public class AnyTerm implements ITerm {
+	public static final AnyTerm THE_ONE = new AnyTerm();
+	private AnyTerm() {
+	}
+
+	public String getValue() {
+		return "_";
+	}
+
+	public boolean isGround() {
+		return true;
+	}
+
+	public int compareTo(ITerm o) {
+		return o == THE_ONE ? 0 : 1;
+	}
+
+	public int hashCode() {
+		return "_".hashCode();
+	}
+
+	public boolean equals(final Object o) {
+		return o == THE_ONE;
+	}
+
+	public String toString() {
+		return "_";
+	}
 }

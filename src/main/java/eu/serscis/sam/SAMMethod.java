@@ -497,16 +497,17 @@ class SAMMethod {
 
 	// pos can be -1 if we accept arguments at any position
 	private void addParam(ITerm method, IRelation acceptRel, PParam pparam, int pos) throws ParserException {
+		ITerm posTerm = pos == -1 ? AnyTerm.THE_ONE : CONCRETE.createInt(pos);
 		AParam param = (AParam) pparam;
 		String name = param.getName().getText();
 		String type = ((AType) param.getType()).getName().getText();
-		acceptRel.add(BASIC.createTuple(method, TERM.createString(expandLocal(name)), CONCRETE.createInt(pos)));
+		acceptRel.add(BASIC.createTuple(method, TERM.createString(expandLocal(name)), posTerm));
 
 		IRelation hasParamRel = parent.model.getRelation(Constants.hasParamP);
 		hasParamRel.add(BASIC.createTuple(method,
 						  TERM.createString(type),
 						  TERM.createString(name),
-						  CONCRETE.createInt(pos)));
+						  posTerm));
 
 		if (locals.contains(name)) {
 			throw new ParserException(((AParam) param).getName(), "Duplicate definition of local " + name);
@@ -524,6 +525,7 @@ class SAMMethod {
 	 *	local.
 	 */
 	private void addArg(String callSite, int pos, PExpr expr) throws ParserException {
+		ITerm posTerm = pos == -1 ? AnyTerm.THE_ONE : CONCRETE.createInt(pos);
 		IRule rule;
 
 		if (expr instanceof ACopyExpr) {
@@ -537,13 +539,13 @@ class SAMMethod {
 						TERM.createVariable("Caller"),
 						TERM.createVariable("CallerInvocation"),
 						TERM.createString(callSite),
-						CONCRETE.createInt(pos),
+						posTerm,
 						TERM.createVariable("Value")));
 			} else {
 				head = BASIC.createLiteral(true, maySendFromAnyContextP, BASIC.createTuple(
 						TERM.createVariable("Caller"),
 						TERM.createString(callSite),
-						CONCRETE.createInt(pos),
+						posTerm,
 						TERM.createVariable("Value")));
 			}
 
@@ -572,7 +574,7 @@ class SAMMethod {
 			ILiteral head = BASIC.createLiteral(true, maySendFromAnyContextP, BASIC.createTuple(
 					TERM.createVariable("Caller"),
 					TERM.createString(callSite),
-					CONCRETE.createInt(pos),
+					posTerm,
 					constant));
 
 			ILiteral isA = BASIC.createLiteral(true, isAP, BASIC.createTuple(

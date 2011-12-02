@@ -93,7 +93,7 @@ Methods
 
    Objects of this type accept an argument value passes in the given position
    and store it in a variable named ParamVar. The first argument has position 0.
-   If `Pos` is -1, then the parameter may accept values passed in any position.
+   If `Pos` is `_`, then the parameter may accept values passed in any position.
 
 .. function:: hasCallSite(String method, String callSite)
 
@@ -110,7 +110,7 @@ Methods
 .. function:: hasParam(String method, String type, String paramVar, int pos)
 
    This method has a parameter with the given name and position (starting from 0).
-   If the method accepts parameters sent at any position, `Pos = -1`.
+   If the method accepts parameters sent at any position, `Pos = _`.
 
 .. _CallSite:
 
@@ -131,7 +131,7 @@ Call-sites
 .. function:: maySend(Ref caller, String callerInvocation, String callSite, int pos, Object argValue)
 
    CallSite may send the value `ArgValue` as parameter number `Pos` (or as any
-   parameter if `Pos` is `-1`). Includes all values from :func:`maySendFromAnyContext`
+   parameter if `Pos` is `_`). Includes all values from :func:`maySendFromAnyContext`
    for invocations that were active.
 
 .. function:: maySendFromAnyContext(Ref caller, String callSite, int pos, Object argValue)

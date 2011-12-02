@@ -120,7 +120,7 @@ might happen.
 .. function:: didReceive(Ref target, String targetInvocation, String method, int pos, Object argValue)
 
    Target.method may get called with `ArgValue` as parameter number `Pos` (or as any
-   parameter if `Pos` is `-1`). ?Pos will be a position in `Method`'s :func:`hasParam`.
+   parameter if `Pos` is `_`). ?Pos will be a position in `Method`'s :func:`hasParam`.
 
 Functions
 ---------
