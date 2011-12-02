@@ -61,7 +61,7 @@ public class Constants {
 	static public IPredicate mayStoreP = BASIC.createPredicate("mayStore", 2);
 	static public IPredicate mayCreateP = BASIC.createPredicate("mayCreate", 3);
 	static public IPredicate mayAccept3P = BASIC.createPredicate("mayAccept", 3);
-	static public IPredicate hasParamP = BASIC.createPredicate("hasParam", 3);
+	static public IPredicate hasParamP = BASIC.createPredicate("hasParam", 4);
 	static public IPredicate mayReturnP = BASIC.createPredicate("mayReturn", 4);
 	static public IPredicate mayThrowP = BASIC.createPredicate("mayThrow", 4);
 	static public IPredicate hasFieldP = BASIC.createPredicate("hasField", 2);

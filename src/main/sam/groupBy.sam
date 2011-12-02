@@ -82,7 +82,7 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
 didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, -1, ?ArgValue),
-    hasParam(?Method, ?AnyParam, ?Pos),
+    hasParam(?Method, ?ParamType, ?AnyParam, ?Pos),
     GroupByArgAt(?Method, ?GroupByArgAt), ?GroupByArgAt != ?Pos,
     GroupByArgCase(?Method, ?AnyArgValue, ?TargetInvocation).
 
@@ -115,4 +115,4 @@ error("GroupByArgCase without GroupByArgAt", ?Method) :-
 
 error("GroupByArgAt method cannot accept arguments at any position", ?Method) :-
     GroupByArgAt(?Method, ?Pos),
-    hasParam(?Method, ?Param, -1).
+    hasParam(?Method, ?ParamType, ?Param, -1).

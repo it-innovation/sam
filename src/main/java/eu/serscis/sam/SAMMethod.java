@@ -496,12 +496,17 @@ class SAMMethod {
 	}
 
 	// pos can be -1 if we accept arguments at any position
-	private void addParam(ITerm method, IRelation acceptRel, PParam param, int pos) throws ParserException {
-		String name = ((AParam) param).getName().getText();
+	private void addParam(ITerm method, IRelation acceptRel, PParam pparam, int pos) throws ParserException {
+		AParam param = (AParam) pparam;
+		String name = param.getName().getText();
+		String type = ((AType) param.getType()).getName().getText();
 		acceptRel.add(BASIC.createTuple(method, TERM.createString(expandLocal(name)), CONCRETE.createInt(pos)));
 
 		IRelation hasParamRel = parent.model.getRelation(Constants.hasParamP);
-		hasParamRel.add(BASIC.createTuple(method, TERM.createString(name), CONCRETE.createInt(pos)));
+		hasParamRel.add(BASIC.createTuple(method,
+						  TERM.createString(type),
+						  TERM.createString(name),
+						  CONCRETE.createInt(pos)));
 
 		if (locals.contains(name)) {
 			throw new ParserException(((AParam) param).getName(), "Duplicate definition of local " + name);

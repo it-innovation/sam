@@ -107,7 +107,7 @@ Methods
 
    This method invocation may throw `Exception` to its callers.
 
-.. function:: hasParam(String method, String paramVar, int pos)
+.. function:: hasParam(String method, String type, String paramVar, int pos)
 
    This method has a parameter with the given name and position (starting from 0).
    If the method accepts parameters sent at any position, `Pos = -1`.

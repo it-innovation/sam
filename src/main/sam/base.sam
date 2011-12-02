@@ -79,7 +79,7 @@ declare graphClusterLabel(String clusterID, String label).
 declare didCall(Ref caller, String callerInvocation, String callSite, Ref target, String targetInvocation, String method).
 declare didCall(Ref caller, String callerInvocation, String callSite, Ref target, String method).
 declare didCall(Ref caller, Ref target, String method).
-declare hasParam(String method, String paramVar, int pos).
+declare hasParam(String method, String type, String paramVar, int pos).
 declare mayAccept(String method, String paramVar, int pos).
 
 declare accessControlOn().
