@@ -28,8 +28,8 @@
 
 /* Sanity checking */
 
-error("Unknown source object in deny rule", ?A) :- denyAccess(?A, ?B), !isObject(?A).
-error("Unknown target object in deny rule", ?B) :- denyAccess(?A, ?B), !isObject(?B).
+error("Unknown source object in deny rule", ?A) :- denyAccess(?A, ?B), !isRef(?A).
+error("Unknown target object in deny rule", ?B) :- denyAccess(?A, ?B), !isRef(?B).
 
 
 /* Goal checking (here because we only check after applying the system rules) */
@@ -67,4 +67,4 @@ missingGoodAccess(?Source, ?Target) :-
 
 error("Not an object", ?Target) :-
     grantsRole(?Target, ?Role, ?CallerIdentity),
-    !isObject(?Target).
+    !isRef(?Target).

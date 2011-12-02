@@ -30,12 +30,17 @@ declare objectHasField(?Object, ?Field).
 declare hasMethodWithName(?Method, ?MethodName).
 
 /* If an Invocation has direct access to an object (via a local variable or a field on its object) */
-hasRef(?Object, ?Value) :- local(?Object, ?Invocation, ?AnyVar, ?Value).
-hasRef(?Object, ?Value) :- field(?Object, ?AnyVar, ?Value).
+hasRef(?Object, ?Value) :- local(?Object, ?Invocation, ?AnyVar, ?Value), isRef(?Value).
+hasRef(?Object, ?Value) :- field(?Object, ?AnyVar, ?Value), isRef(?Value).
+
+declare hasValue(?Object, ?Value).
+hasValue(?Object, ?Value) :- local(?Object, ?Invocation, ?AnyVar, ?Value), !isRef(?Value).
+hasValue(?Object, ?Value) :- field(?Object, ?AnyVar, ?Value), !isRef(?Value).
 
 /* Error checking */
 
-error("Not an object (no type!)", ?Object) :- hasRef(?AnyObject, ?Object), !isObject(?Object).
+error("Not a value (not registered as a constant)", ?Object, ?Value) :-
+    hasValue(?Object, ?Value), !isConstant(?Value).
 
 error("Live invocation for non-alive object", ?Invocation, ?Object) :-
 	liveMethod(?Object, ?Invocation, ?Method), !live(?Object).
@@ -55,7 +60,7 @@ error("Local on non-invocation", ?Invocation, ?Var, ?Value) :- local(?Object, ?I
 
 objectHasField(?Object, ?Field) :- isA(?Object, ?Type), hasField(?Type, ?Field).
 error("Undeclared field", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !objectHasField(?Object, ?Var).
-error("Field on non-object", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !isObject(?Object).
+error("Field on non-object", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !isRef(?Object).
 
 hasMethodWithName(?Type, ?MethodName) :-
 	hasMethod(?Type, ?Method),
@@ -68,7 +73,7 @@ error("Unknown method in initialInvocation", ?Object, ?MethodName) :-
 
 error("Unknown object in initialInvocation", ?Object) :-
 	initialInvocation(?Object, ?MethodName, ?Invocation),
-	!isObject(?Object).
+	!isRef(?Object).
 
 failedAssertion(?N) :- assertionArrow(?N, ?Source, ?Target, ?Positive).
 

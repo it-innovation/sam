@@ -40,8 +40,7 @@ public class Constants {
 	static public IPredicate expectFailureP = BASIC.createPredicate("expectFailure", 0);
 	static public IPredicate importP = BASIC.createPredicate("import", 2);
 	static public IPredicate definedTypeP = BASIC.createPredicate("definedType", 1);
-	static public IPredicate isObjectP = BASIC.createPredicate("isObject", 1);
-	static public IPredicate hasNonValueTypeP = BASIC.createPredicate("hasNonValueType", 1);
+	static public IPredicate isRefP = BASIC.createPredicate("isRef", 1);
 	static public IPredicate isAP = BASIC.createPredicate("isA", 2);
 	static public IPredicate liveMethodP = BASIC.createPredicate("liveMethod", 3);
 	static public IPredicate hasCallSiteP = BASIC.createPredicate("hasCallSite", 2);

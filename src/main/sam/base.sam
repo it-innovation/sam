@@ -204,11 +204,11 @@ accessAllowed(?Source, ?Target, ?Method) :-
 
 // Unknown objects have unknown access policies
 accessAllowed(?Caller, ?Target) :-
-    isObject(?Caller),
+    isRef(?Caller),
     isA(?Target, "Unknown").
 
 // Objects may always call themselves
-accessAllowed(?Caller, ?Caller) :- isObject(?Caller).
+accessAllowed(?Caller, ?Caller) :- isRef(?Caller).
 
 // Unknown objects have access to all public objects
 field(?Object, "ref", ?Target) :- isA(?Object, "Unknown"), isPublic(?Target).

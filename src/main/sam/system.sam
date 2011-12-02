@@ -27,20 +27,16 @@
 /////////////////////////////////////////////////////////////////////////
 
 
-/* Refinements */
-mayAccept(?Method, ?ParamVar, ?Pos, ?Value) :- mayAccept(?Method, ?ParamVar, ?Pos), isObject(?Value).
-
-
 /* Access control */
 
 accessAllowed(?Caller, ?Target, ?Method) :-
 	!accessControlOn,
-	isObject(?Caller),
+	isRef(?Caller),
 	isA(?Target, ?TargetType),
 	hasMethod(?TargetType, ?Method).
 
 accessAllowed(<_testDriver>, ?Target) :-
-	isObject(?Target).
+	isRef(?Target).
 
 /* Which methods may CallSite invoke on Target */
 methodMatches(?CallSite, ?Target, ?Method) :-	/* Exact match */
@@ -55,7 +51,7 @@ methodMatches(?CallSite, ?Target, ?Method) :-	/* Call may call any method */
 methodMatches(?CallSite, ?Target, ?Method) :-	/* Any call matches a "*" method */
 	methodName(?Method, "*"),
 	hasCallSite(?CallerMethod, ?CallSite),
-	isObject(?Target).
+	isRef(?Target).
 
 /* Assume caller did a call if caller might do "Object resultVar = targetObject.do(argValue)" */
 /* note: can't rely on accessAllowed's hasMethod, because user may provide their own */
@@ -99,7 +95,7 @@ mayThrow(?Caller, ?CallerInvocation, ?CallerMethod, ?Exception) :-
 /* (normal call; sender and receiver use fixed args) */
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
 	didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue),
-	mayAccept(?Method, ?ParamVar, ?Pos, ?ArgValue).
+	mayAccept(?Method, ?ParamVar, ?Pos).
 
 /* Target"s parameter variable may contain ArgValue if someone called it with that value. */
 local(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-

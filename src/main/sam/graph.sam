@@ -130,6 +130,7 @@ calledEdge(?Source, ?Target) :-
 uncalledEdge(?GraphSourceNode, ?Target) :-
 	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
 	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target),
+	isRef(?Target),
 	!calledEdge(?GraphSourceNode, ?Target),
 	!isBoring(?Source, ?Target).
 
@@ -138,6 +139,7 @@ uncalledEdge(?GraphSourceNode, ?Target) :-
  */
 uncalledEdge(?Source, ?Target) :-
 	field(?Source, ?AnyLocal, ?Target),
+	isRef(?Target),
 	!calledEdge(?Source, ?Target),
 	!isBoring(?Source, ?Target).
 

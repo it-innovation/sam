@@ -408,7 +408,7 @@ public class GUI {
 	}
 
 	private String[] getObjects(Results results) throws Exception {
-		ILiteral lit = BASIC.createLiteral(true, Constants.hasNonValueTypeP, BASIC.createTuple(TERM.createVariable("Object")));
+		ILiteral lit = BASIC.createLiteral(true, Constants.isRefP, BASIC.createTuple(TERM.createVariable("Object")));
 
 		IQuery query = BASIC.createQuery(lit);
 		IRelation rel = results.finalKnowledgeBase.execute(query);
@@ -478,8 +478,8 @@ public class GUI {
 				}
 			}
 			writer.write("\n");
-			writer.write("mayCall(<_testDriver>, ?Target, ?Method) :- isObject(?Target), hasMethod(?Type, ?Method).\n");
-			writer.write("mayCall(<_testDriver>, ?Target, ?Method) :- isObject(?Target), hasConstructor(?Type, ?Method).\n");
+			writer.write("mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasMethod(?Type, ?Method).\n");
+			writer.write("mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasConstructor(?Type, ?Method).\n");
 			writer.write("\n");
 			for (String object : objects) {
 				if (!object.equals("_testDriver")) {
