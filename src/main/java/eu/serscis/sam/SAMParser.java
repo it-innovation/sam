@@ -61,7 +61,6 @@ public class SAMParser {
 	public List<IQuery> queries = new LinkedList<IQuery>();
 	private Model model;
 	private File dir, myPath;
-	private static int assertions = 0;
 
 	public SAMParser(Model model, File path) throws Exception {
 		this.model = model;
@@ -230,7 +229,8 @@ public class SAMParser {
 		}
 		ILiteral bodyLit = body.get(0);
 
-		assertions += 1;
+		int assertions = model.nextAssertion();
+
 		ITerm assertionN = CONCRETE.createInteger(assertions);
 
 		// If body contains a single literal that refers to two objects,

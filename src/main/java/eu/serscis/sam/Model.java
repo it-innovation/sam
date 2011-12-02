@@ -76,6 +76,7 @@ public class Model {
 	final Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
 	public final Map<IPredicate,ITuple> declared = new HashMap<IPredicate,ITuple>();
 	private final static BuiltinRegister builtinRegister = new BuiltinRegister();
+	private int assertions = 0;
 
 	static {
 		ITerm t1 = TERM.createVariable("a");
@@ -282,5 +283,10 @@ public class Model {
 			facts.put(entry.getKey(), copy);
 		}
 		return facts;
+	}
+
+	public int nextAssertion() {
+		assertions += 1;
+		return assertions;
 	}
 }
