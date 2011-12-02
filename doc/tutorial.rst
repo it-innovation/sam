@@ -321,9 +321,9 @@ using :func:`hasIdentity`::
 
   accessControlOn.
   
-  hasIdentity("user", "user.crt").
-  hasIdentity("otherUsers", "otherUsers.crt").
-  hasIdentity("dataProvider", "provider.crt").
+  hasIdentity(<user>, "user.crt").
+  hasIdentity(<otherUsers>, "otherUsers.crt").
+  hasIdentity(<dataProvider>, "provider.crt").
 
 You can use any unique string for the identity. Here, we use the convention of adding .crt ("certificate") to the object name. In the real system,
 having an identity might mean knowing the private key that corresponds to the public key in your X.509 certificate, for example.
@@ -380,13 +380,13 @@ Showing roles in the GUI
 You can tell SAM to add extra tabs to the object viewer window. This code (:example:`includes/rbacTabs`) adds tabs showing which roles
 this object has on all other objects, and which roles it grants to others::
 
-  declare hasRole(?Object, ?Target, ?Role).
+  declare hasRole(Ref object, Ref target, String role).
   hasRole(?Object, ?Target, ?Role) :-
       hasIdentity(?Object, ?Identity),
       grantsRole(?Target, ?Role, ?Identity).
 
-  guiObjectTab(50, "Has roles", "hasRole/3", "Object").
-  guiObjectTab(60, "Grants roles", "grantsRole/3", "Target").
+  guiObjectTab(50, "Has roles", "hasRole/3", "object").
+  guiObjectTab(60, "Grants roles", "grantsRole/3", "target").
 
 .. figure:: _static/custom-tabs.png
 

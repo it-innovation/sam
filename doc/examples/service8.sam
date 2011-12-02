@@ -53,4 +53,4 @@ config {
     }
 }
 
-ignoreEdgeForRanking(?Object, "others") :- isRef(?Object).
+ignoreEdgeForRanking(?Node, "others") :- isRef(?Object), TO_STRING(?Object, ?Node).
