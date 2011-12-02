@@ -71,7 +71,7 @@ declare isHidden(Ref ref).
 declare showOnlyProblemNodes().
 declare hideUncalledReferences().
 declare ignoreEdgeForRanking(Object source, Object target).
-declare graphCluster(String clusterID, String graphNode).
+declare graphCluster(String clusterID, Object graphNode).
 declare graphClusterColour(String clusterID, String colour).
 declare graphClusterLabel(String clusterID, String label).
 

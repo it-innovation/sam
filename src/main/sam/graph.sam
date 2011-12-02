@@ -55,26 +55,53 @@ isHidden(<_testDriver>).
 
 /* Graphing */
 
-graphNode(?Object, "shape=record") :- live(?Object), isPublic(?Object).
-graphNode(?Object, "fontcolor=red") :- live(?Object), isA(?Object, "BaseUnknown").
-graphNode(?Object, "") :- live(?Object), isRef(?Object), !isA(?Object, "BaseUnknown").
+graphNode(?Node, "shape=record") :-
+    live(?Object), isPublic(?Object),
+    TO_STRING(?Object, ?Node).
 
-graphEdge(?Object, ?Target, "color=red,style=dashed") :- missingGoodAccess(?Object, ?Target).
-errorEdge(?Object, ?Target) :- haveBadAccess(?Object, ?Target).
+graphNode(?Node, "fontcolor=red") :-
+    live(?Object), isA(?Object, "BaseUnknown"),
+    TO_STRING(?Object, ?Node).
 
-graphEdge(?Object, ?Target, "color=red,style=dashed") :- assertionArrow(?N, ?Object, ?Target, true).
-errorEdge(?Object, ?Target) :- assertionArrow(?N, ?Object, ?Target, false).
+graphNode(?Node, "") :-
+    live(?Object), isRef(?Object), !isA(?Object, "BaseUnknown"),
+    TO_STRING(?Object, ?Node).
+
+graphEdge(?SourceNode, ?TargetNode, "color=red,style=dashed") :-
+    missingGoodAccess(?Object, ?Target),
+    TO_STRING(?Object, ?SourceNode),
+    TO_STRING(?Target, ?TargetNode).
+
+errorEdge(?SourceNode, ?TargetNode) :-
+    haveBadAccess(?Object, ?Target),
+    TO_STRING(?Object, ?SourceNode),
+    TO_STRING(?Target, ?TargetNode).
+
+graphEdge(?SourceNode, ?TargetNode, "color=red,style=dashed") :-
+    assertionArrow(?N, ?Object, ?Target, true),
+    TO_STRING(?Object, ?SourceNode),
+    TO_STRING(?Target, ?TargetNode).
+
+errorEdge(?SourceNode, ?TargetNode) :-
+    assertionArrow(?N, ?Object, ?Target, false),
+    TO_STRING(?Object, ?SourceNode),
+    TO_STRING(?Target, ?TargetNode).
 
 /* There are all the edges that logically exist, even if we might not show all of them. */
 
 /* (object to object) */
-fieldEdge(?Source, ?Target) :-
-	field(?Source, ?AnyField, ?Target).
+fieldEdge(?SourceNode, ?TargetNode) :-
+	field(?Source, ?AnyField, ?Target),
+        TO_STRING(?Source, ?SourceNode),
+        TO_STRING(?Target, ?TargetNode),
+        isRef(?Target).
 
 /* (invocation to object) */
-localEdge(?GraphSourceNode, ?Target) :-
+localEdge(?GraphSourceNode, ?TargetNode) :-
 	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
-	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target).
+	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target),
+        isRef(?Target),
+        TO_STRING(?Target, ?TargetNode).
 
 /* (invocation to invocation) */
 calledEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode) :-
@@ -109,33 +136,39 @@ problemEdge(?Source, ?Target) :- problemEdgeViaField(?Source, ?Target).
 problemEdge(?Source, ?Target) :- problemEdgeViaLocal(?Source, ?Target).
 
 /* (invocation to object, for locals) */
-calledEdge(?GraphSourceNode, ?Target) :-
+calledEdge(?GraphSourceNode, ?TargetNode) :-
 	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
 	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target),
 	didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+        TO_STRING(?Target, ?TargetNode),
 	!isBoring(?Source, ?Target).
 
 /* (object to object, for fields) */
-calledEdge(?Source, ?Target) :-
+calledEdge(?SourceNode, ?TargetNode) :-
 	field(?Source, ?AnyLocal, ?Target),
 	didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+        TO_STRING(?Source, ?SourceNode),
+        TO_STRING(?Target, ?TargetNode),
 	!isBoring(?Source, ?Target).
 
 /* (invocation to object) */
-uncalledEdge(?GraphSourceNode, ?Target) :-
+uncalledEdge(?GraphSourceNode, ?TargetNode) :-
 	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
 	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target),
-	isRef(?Target),
-	!calledEdge(?GraphSourceNode, ?Target),
+        isRef(?Target),
+        TO_STRING(?Target, ?TargetNode),
+	!calledEdge(?GraphSourceNode, ?TargetNode),
 	!isBoring(?Source, ?Target).
 
 /* (object to object)
  * Ignores public objects to avoid cluttering the graph.
  */
-uncalledEdge(?Source, ?Target) :-
+uncalledEdge(?SourceNode, ?TargetNode) :-
 	field(?Source, ?AnyLocal, ?Target),
 	isRef(?Target),
-	!calledEdge(?Source, ?Target),
+	!calledEdge(?SourceNode, ?TargetNode),
+        TO_STRING(?Source, ?SourceNode),
+        TO_STRING(?Target, ?TargetNode),
 	!isBoring(?Source, ?Target).
 
 /* Hide arrows that have higher-priority replacements. */
@@ -195,15 +228,22 @@ graphNode(?InvocationNode, "color=green,fontcolor=green") :-
 	showInvocation(?Object, ?Invocation),
 	graphInvocation(?Object, ?Invocation, ?InvocationNode).
 
-shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation) :- liveMethod(?Target, ?TargetInvocation, ?AnyMethod), showInvocation(?Source, ?SourceInvocation).
-shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation) :- liveMethod(?Source, ?SourceInvocation, ?AnyMethod), showInvocation(?Target, ?TargetInvocation).
+shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation) :-
+    liveMethod(?Target, ?TargetInvocation, ?AnyMethod),
+    showInvocation(?Source, ?SourceInvocation).
+
+shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation) :-
+    liveMethod(?Source, ?SourceInvocation, ?AnyMethod),
+    showInvocation(?Target, ?TargetInvocation).
 
 /* Which graph object is used to represent this invocation. */
 graphInvocation(?Object, ?Invocation, ?Str) :-
 	showInvocation(?Object, ?Invocation),
 	STRING_CONCAT(?Object, "#", ?Prefix),
 	STRING_CONCAT(?Prefix, ?Invocation, ?Str).
-graphInvocation(?Object, ?Invocation, ?Object) :- liveMethod(?Object, ?Invocation, ?AnyMethod), !showInvocation(?Object, ?Invocation).
+graphInvocation(?Object, ?Invocation, ?GraphNode) :-
+    TO_STRING(?Object, ?GraphNode),
+    liveMethod(?Object, ?Invocation, ?AnyMethod), !showInvocation(?Object, ?Invocation).
 
 graphInvocationEdge(?GraphSourceNode, ?GraphTargetNode) :-
 	shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation),
@@ -219,16 +259,22 @@ declare hasProblem().
 hasProblem :- errorEdge(?X, ?Y).
 hasProblem :- problemEdge(?X, ?Y).
 
-declare showInProblemGraph(Ref object).
-showInProblemGraph(?Object) :- initialObject(?Object, ?Type).
-showInProblemGraph(?Object) :- didCreate(?Object, ?Important), showInProblemGraph(?Important).
+declare showInProblemGraph(String node).
+showInProblemGraph(?Node) :- initialObject(?Object, ?Type), TO_STRING(?Object, ?Node).
+showInProblemGraph(?Node) :- didCreate(?Object, ?Important), TO_STRING(?Object, ?Node), TO_STRING(?Important, ?ImportantNode),
+				showInProblemGraph(?ImportantNode).
 showInProblemGraph(?Source) :- errorEdge(?Source, ?Target).
 showInProblemGraph(?Target) :- errorEdge(?Source, ?Target).
 showInProblemGraph(?Source) :- problemEdge(?Source, ?Target).
 showInProblemGraph(?Target) :- problemEdge(?Source, ?Target).
 
-isHidden(?Object) :- showOnlyProblemNodes, isRef(?Object), hasProblem, !showInProblemGraph(?Object).
 
+declare isHiddenNode(String node).
+isHiddenNode(?Node) :- isHidden(?Object), TO_STRING(?Object, ?Node).
+isHiddenNode(?Node) :- showOnlyProblemNodes,
+    isRef(?Object), TO_STRING(?Object, ?Node),
+    hasProblem,
+    !showInProblemGraph(?Node).
 
 
 declare visibleGraphNode(String graphNode, String attrs).
@@ -236,12 +282,12 @@ declare visibleGraphEdge(String sourceGraphNode, String targetGraphNode, String 
 
 visibleGraphNode(?GraphNode, ?Attrs) :-
 	graphNode(?GraphNode, ?Attrs),
-	!isHidden(?GraphNode).
+	!isHiddenNode(?GraphNode).
 
 visibleGraphEdge(?SourceGraphNode, ?TargetGraphNode, ?Attrs) :-
 	graphEdge(?SourceGraphNode, ?TargetGraphNode, ?Attrs),
-	!isHidden(?SourceGraphNode),
-	!isHidden(?TargetGraphNode).
+	!isHiddenNode(?SourceGraphNode),
+	!isHiddenNode(?TargetGraphNode).
 
 error("Node in multiple clusters", ?GraphNode, ?Cluster1, ?Cluster2) :-
     graphCluster(?Cluster1, ?GraphNode),

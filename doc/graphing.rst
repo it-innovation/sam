@@ -63,7 +63,7 @@ same identity (labelled with that identity)::
   graphCluster(?Identity, ?Object) :- hasIdentity(?Object, ?Identity).
   graphClusterLabel(?Identity, ?Identity) :- hasIdentity(?Object, ?Identity).
 
-.. function:: graphCluster(String clusterID, String graphNode)
+.. function:: graphCluster(String clusterID, Object graphNode)
 
    Put `GraphNode` in cluster `ClusterID`.
 
