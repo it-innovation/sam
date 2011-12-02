@@ -26,13 +26,13 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-declare hasRole(?Object, ?Target, ?Role).
+declare hasRole(Ref object, Ref target, String role).
 hasRole(?Object, ?Target, ?Role) :-
     hasIdentity(?Object, ?Identity),
     grantsRole(?Target, ?Role, ?Identity).
 
-guiObjectTab(50, "Has roles", "hasRole/3", "Object").
-guiObjectTab(60, "Grants roles", "grantsRole/3", "Target").
+guiObjectTab(50, "Has roles", "hasRole/3", "object").
+guiObjectTab(60, "Grants roles", "grantsRole/3", "target").
 
 graphClusterLabel(?Identity, ?Identity) :- hasIdentity(?Object, ?Identity).
 graphCluster(?Identity, ?Object) :- hasIdentity(?Object, ?Identity).

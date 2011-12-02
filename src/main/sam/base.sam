@@ -28,101 +28,104 @@
 
 /* declarations */
 
-declare definedType(?Type).
-declare field(?Object, ?FieldName, ?Value).
-declare getsAccess(?SourceObject, ?TargetObject).
-declare isA(?Object, ?Type).
-declare isInvocation(?Invocation).
-declare isObject(?Object).
-declare isRef(?Object).
-declare isConstant(?Object).
-declare live(?Object).
-declare liveMethod(?Object, ?Invocation, ?Method).
-declare local(?Object, ?Invocation, ?VarName, ?Value).
-declare methodDoesContextMapping(?Method).
-declare hasMethod(?Type, ?Method).
-declare hasCallSite(?Method, ?CallSite).
-declare catchesAllExceptions(?CallSite).
-declare initialObject(?Object, ?Type).
-declare initialInvocation(?Object, ?Invocation).
-declare initialInvocation(?Object, ?MethodName, ?Invocation).
-declare realInitialInvocation(?Object, ?Method, ?Invocation).
-declare realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild).
-declare denyAccess(?Object, ?Target).
-declare requireAccess(?Object, ?Target).
-declare hasField(?Type, ?FieldName).
-declare isType(?Type).
-declare phase(?Phase).
+declare IS_STRING(String string).
+declare TO_STRING(Object any, String string).
+declare IS_REF(Ref ref).
+
+declare definedType(String type).
+declare field(Ref object, String fieldName, Object value).
+declare getsAccess(Ref sourceObject, Ref targetObject).
+declare isA(Ref object, String type).
+declare isInvocation(String invocation).
+declare isObject(Object object).
+declare isRef(Ref ref).
+declare isConstant(Object object).
+declare live(Ref object).
+declare liveMethod(Ref object, String invocation, String method).
+declare local(Ref object, String invocation, String varName, Object value).
+declare methodDoesContextMapping(String method).
+declare hasMethod(String type, String method).
+declare hasCallSite(String method, String callSite).
+declare catchesAllExceptions(String callSite).
+declare initialObject(Ref object, String type).
+declare initialInvocation(Ref object, String invocation).
+declare initialInvocation(Ref object, String methodName, String invocation).
+declare realInitialInvocation(Ref object, String method, String invocation).
+declare realNewObject(Ref object, String invocation, String childType, Ref newChild).
+declare denyAccess(Ref object, Ref target).
+declare requireAccess(Ref object, Ref target).
+declare hasField(String type, String fieldName).
+declare isType(String type).
+declare phase(String phase).
 
 declare expectFailure().
-declare hasRef(?Object, ?Target).
-declare haveBadAccess(?SourceObject, ?TargetObject).
-declare missingGoodAccess(?SourceObject, ?TargetObject).
+declare hasRef(Ref object, Ref target).
+declare haveBadAccess(Ref sourceObject, Ref targetObject).
+declare missingGoodAccess(Ref sourceObject, Ref targetObject).
 
-declare graphNode(?Node, ?Attrs).
-declare graphEdge(?Source, ?Target, ?Attrs).
-declare debugEdge(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation).
-declare showAllInvocations(?Object).
-declare showInvocation(?Object, ?Invocation).
-declare isHidden(?Source).
+declare graphNode(String node, String attrs).
+declare graphEdge(String source, String target, String attrs).
+declare debugEdge(Ref source, String sourceInvocation, String callSite, Ref target, String targetInvocation).
+declare showAllInvocations(Ref object).
+declare showInvocation(Ref object, String invocation).
+declare isHidden(Ref ref).
 declare showOnlyProblemNodes().
 declare hideUncalledReferences().
-declare ignoreEdgeForRanking(?GraphSourceNode, ?GraphTargetNode).
-declare graphCluster(?ClusterID, ?GraphNode).
-declare graphClusterColour(?ClusterID, ?Colour).
-declare graphClusterLabel(?ClusterID, ?Label).
+declare ignoreEdgeForRanking(Object source, Object target).
+declare graphCluster(String clusterID, String graphNode).
+declare graphClusterColour(String clusterID, String colour).
+declare graphClusterLabel(String clusterID, String label).
 
-declare didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method).
-declare didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
-declare didCall(?Caller, ?Target, ?Method).
-declare hasParam(?Method, ?ParamVar, ?Pos).
-declare mayAccept(?Method, ?ParamVar, ?Pos).
-declare mayAccept(?Method, ?ParamVar, ?Pos, ?Value).
+declare didCall(Ref caller, String callerInvocation, String callSite, Ref target, String targetInvocation, String method).
+declare didCall(Ref caller, String callerInvocation, String callSite, Ref target, String method).
+declare didCall(Ref caller, Ref target, String method).
+declare hasParam(String method, String paramVar, int pos).
+declare mayAccept(String method, String paramVar, int pos).
 
 declare accessControlOn().
-declare accessAllowed(?Caller, ?Target).
-declare accessAllowed(?Caller, ?Target, ?Method).
-declare methodMatches(?CallSite, ?Target, ?Method).
-declare callsMethod(?CallSite, ?MethodName).
-declare methodName(?Method, ?MethodName).
-declare callsAnyMethod(?CallSite).
-declare mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target).
-declare didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild).
-declare hasConstructor(?Type, ?Method).
-declare didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue).
-declare didGetException(?Caller, ?CallerInvocation, ?CallSite, ?Exception).
-declare mayReturn(?Object, ?Invocation, ?Method, ?Value).
-declare mayThrow(?Object, ?Invocation, ?Method, ?Exception).
-declare didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue).
-declare maySendFromAnyContext(?Caller, ?CallSite, ?Pos, ?ArgValue).
-declare maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue).
-declare didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue).
-declare mayCreate(?CallSite, ?ChildType, ?NameHint).
-declare newObject(?Object, ?Invocation, ?ChildType, ?NewObject).
-declare isPublic(?Object).
+declare accessAllowed(Ref caller, Ref target).
+declare accessAllowed(Ref caller, Ref target, String method).
+declare methodMatches(String callSite, Ref target, String method).
+declare callsMethod(String callSite, String methodName).
+declare methodName(String method, String methodName).
+declare callsAnyMethod(String callSite).
+declare mayCallObject(Ref caller, String callerInvocation, String callSite, Object target).
+declare didCreate(Ref caller, String invocation, String callSite, Ref newChild).
+declare hasConstructor(String type, String method).
+declare didGet(Ref caller, String callerInvocation, String callSite, Object resultValue).
+declare didGetException(Ref caller, String callerInvocation, String callSite, Object exception).
+declare mayReturn(Ref object, String invocation, String method, Object value).
+declare mayThrow(Ref object, String invocation, String method, Object exception).
+declare didAccept(Ref target, String targetInvocation, String paramVar, Object argValue).
+declare maySendFromAnyContext(Ref caller, String callSite, int pos, Object argValue).
+declare maySend(Ref caller, String callerInvocation, String callSite, int pos, Object argValue).
+declare didReceive(Ref target, String targetInvocation, String method, int pos, Object argValue).
+declare mayCreate(String callSite, String childType, String nameHint).
+declare newObject(Ref object, String invocation, String childType, Ref newObject).
+declare isPublic(Ref object).
 declare debug().
-declare assertionMessage(?Number, ?Msg).
-declare failedAssertion(?Number).
-declare assertionArrow(?Number, ?Source, ?Target, ?Positive).
-declare mustCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
-declare mayCall(?Caller, ?Target, ?Method).
-declare mayCall(?Caller, ?CallerInvocation, ?Target, ?Method).
-declare mayCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
-declare checkCalls(?Object).
-declare didCreate(?Factory, ?Object).
+declare assertionMessage(int number, String msg).
+declare failedAssertion(int number).
+declare assertionArrow(int number, Ref source, Ref target, boolean positive).
+declare mustCall(Ref caller, String callerInvocation, String callSite, Ref target, String method).
+declare mayCall(Ref caller, Ref target, String method).
+declare mayCall(Ref caller, String callerInvocation, Ref target, String method).
+declare mayCall(Ref caller, String callerInvocation, String callSite, Ref target, String method).
+declare checkCalls(Ref object).
+declare didCreate(Ref factory, Ref object).
 
-declare hasIdentity(?Object, ?Identity).
+declare hasIdentity(Ref object, String identity).
 
-declare GroupByArgAt(?Method, ?Pos).
-declare GroupByArgCase(?Method, ?Value, ?Context).
+declare GroupByArgAt(String method, int Pos).
+declare GroupByArgCase(String method, Object value, String context).
 
 
 // RBAC (declared here so you don't get errors when turning off RBAC)
-declare PermittedRole(?Method, ?Role).
-declare grantsRole(?Target, ?Role, ?CallerIdentity).
+declare PermittedRole(String method, String role).
+declare grantsRole(Ref target, String role, String callerIdentity).
 
 // GUI
-declare guiObjectTab(?Position, ?Label, ?Predicate, ?ObjectVar).
+declare guiObjectTab(int position, String label, String predicate, String objectVar).
 
 
 /* predicates on objects */

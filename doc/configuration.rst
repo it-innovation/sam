@@ -46,11 +46,11 @@ Predicates
 
 These predicates are used to describe the initial configuration of the system being modelled:
 
-.. function:: initialObject(?Object, ?Type)
+.. function:: initialObject(Ref object, String type)
 
    There is an object named `Object` which :func:`isA` `Type`.
 
-.. function:: initialInvocation(?Object, ?MethodName, ?Invocation)
+.. function:: initialInvocation(Ref object, String methodName, String invocation)
 
    The method named `MethodName` on `Object` is initially active (does not need
    to be invoked by something else before it can take actions). The initial
@@ -58,11 +58,11 @@ These predicates are used to describe the initial configuration of the system be
    any invocations of other objects called from this one will be grouped using
    the same context name.
 
-.. function:: initialInvocation(?Object, ?Invocation)
+.. function:: initialInvocation(Ref object, String invocation)
 
    Similar to the three argument form, but marks all methods as active.
 
-.. function:: phase(?Phase)
+.. function:: phase(String phase)
 
    `phase("Setup")` will be a fact during the setup phase, and `phase("Test")` during
    the testing phase.

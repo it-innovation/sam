@@ -3,7 +3,7 @@
 GUI
 ========
 
-.. function:: guiObjectTab(?Position, ?Label, ?Predicate, ?ObjectVar)
+.. function:: guiObjectTab(int position, String label, String predicate, String objectVar)
 
     Add a tab to the object viewer window.
 

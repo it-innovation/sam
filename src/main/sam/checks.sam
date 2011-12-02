@@ -26,14 +26,14 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-declare objectHasField(?Object, ?Field).
-declare hasMethodWithName(?Method, ?MethodName).
+declare objectHasField(Ref object, String field).
+declare hasMethodWithName(String method, String methodName).
 
 /* If an Invocation has direct access to an object (via a local variable or a field on its object) */
 hasRef(?Object, ?Value) :- local(?Object, ?Invocation, ?AnyVar, ?Value), isRef(?Value).
 hasRef(?Object, ?Value) :- field(?Object, ?AnyVar, ?Value), isRef(?Value).
 
-declare hasValue(?Object, ?Value).
+declare hasValue(Ref object, Object value).
 hasValue(?Object, ?Value) :- local(?Object, ?Invocation, ?AnyVar, ?Value), !isRef(?Value).
 hasValue(?Object, ?Value) :- field(?Object, ?AnyVar, ?Value), !isRef(?Value).
 

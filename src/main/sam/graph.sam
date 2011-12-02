@@ -26,21 +26,20 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-declare calledEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
-declare calledEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode).
-declare fieldEdge(?Source, ?Target).
-declare graphInvocationEdge(?GraphSourceNode, ?GraphTargetNode).
-declare graphInvocation(?Object, ?Invocation, ?Str).
-declare localEdge(?GraphSourceNode, ?Target).
-declare problemEdgeViaField(?GraphSourceNode, ?GraphTargetNode).
-declare problemEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode).
-declare shouldGraphInvocation(?Source, ?SourceInvocation, ?Target, ?TargetInvocation).
-declare calledEdge(?Source, ?Target).
-declare uncalledEdge(?Source, ?Target).
-declare problemEdge(?Source, ?Target).
-declare errorEdge(?Source, ?Target).
-declare isBoring(?Source, ?Target).
-declare hasNonValueType(?Object).
+declare calledEdgeViaField(String graphSourceNode, String graphTargetNode).
+declare calledEdgeViaLocal(String graphSourceNode, String graphTargetNode).
+declare fieldEdge(String source, String target).
+declare graphInvocationEdge(String graphSourceNode, String graphTargetNode).
+declare graphInvocation(Ref object, String invocation, String str).
+declare localEdge(String graphSourceNode, String target).
+declare problemEdgeViaField(String graphSourceNode, String graphTargetNode).
+declare problemEdgeViaLocal(String graphSourceNode, String graphTargetNode).
+declare shouldGraphInvocation(Ref source, String sourceInvocation, Ref target, String targetInvocation).
+declare calledEdge(String source, String target).
+declare uncalledEdge(String source, String target).
+declare problemEdge(String source, String target).
+declare errorEdge(String source, String target).
+declare isBoring(Ref source, Ref target).
 
 /* Every unknown object knows the address of every public object, so don't bother showing that. */
 isBoring(?Source, ?Target) :-
@@ -55,8 +54,7 @@ isBoring(?X, ?Y) :-
 isHidden(<_testDriver>).
 
 /* Don't graph values (but if something is both a real object and a value, do graph it). */
-hasNonValueType(?Object) :- isA(?Object, ?Type), ?Type != "Value".
-isHidden(?Object) :- isObject(?Object), !hasNonValueType(?Object).
+isHidden(?Object) :- isObject(?Object), !isRef(?Object).
 
 /* Graphing */
 
@@ -224,7 +222,7 @@ declare hasProblem().
 hasProblem :- errorEdge(?X, ?Y).
 hasProblem :- problemEdge(?X, ?Y).
 
-declare showInProblemGraph(?Object).
+declare showInProblemGraph(Ref object).
 showInProblemGraph(?Object) :- initialObject(?Object, ?Type).
 showInProblemGraph(?Object) :- didCreate(?Object, ?Important), showInProblemGraph(?Important).
 showInProblemGraph(?Source) :- errorEdge(?Source, ?Target).
@@ -236,8 +234,8 @@ isHidden(?Object) :- showOnlyProblemNodes, isObject(?Object), hasProblem, !showI
 
 
 
-declare visibleGraphNode(?GraphNode, ?Attrs).
-declare visibleGraphEdge(?SourceGraphNode, ?TargetGraphNode, ?Attrs).
+declare visibleGraphNode(String graphNode, String attrs).
+declare visibleGraphEdge(String sourceGraphNode, String targetGraphNode, String attrs).
 
 visibleGraphNode(?GraphNode, ?Attrs) :-
 	graphNode(?GraphNode, ?Attrs),

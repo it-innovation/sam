@@ -4,11 +4,11 @@ Base predicates
 Types
 -----
 
-.. function:: isType(?Type)
+.. function:: isType(String type)
 
    True if `Type` is the type of some object.
 
-.. function:: definedType(?Type)
+.. function:: definedType(String type)
 
    A type whose behaviour was defined in the model file. This is used to give
    undefined types the Unknown behaviour, rather than no behaviour::
@@ -19,31 +19,31 @@ Types
 Objects
 -------
 
-.. function:: isObject(?Object)
-.. function:: live(?Object)
+.. function:: isObject(Object object)
+.. function:: live(Ref object)
 
    The object exists. This is true for all the initial objects and for any
    objects that may be created. This will be false for potential child
    objects that can never be created in the current configuration.
 
-.. function:: isRef(?Object)
+.. function:: isRef(Ref ref)
 
    This object is a reference type (it is passed by reference).
 
-.. function:: isConstant(?Object)
+.. function:: isConstant(Object object)
 
    This object is a constant type (it is passed by value).
 
-.. function:: isA(?Object, ?Type)
+.. function:: isA(Ref object, String type)
 
    The object has the given type. Note than an object may have multiple
    types, either because of inheritance or because of aggregation.
 
-.. function:: field(?Object, ?FieldName, ?Value)
+.. function:: field(Ref object, String fieldName, Object value)
 
    The object has a field called `FieldName` which may contain `Value`.
 
-.. function:: isPublic(?Object)
+.. function:: isPublic(Ref object)
 
    Marking an object as public means that references to it are not shown on the
    access graph. This is useful for objects that are widely accessible, to avoid
@@ -56,15 +56,15 @@ Objects
 Invocations
 -----------
 
-.. function:: liveMethod(?Object, ?Invocation, ?Method)
+.. function:: liveMethod(Ref object, String invocation, String method)
 
    It is possible for `Object.Method` to be invoked in the context `Invocation`.
 
-.. function:: isInvocation(?Invocation)
+.. function:: isInvocation(String invocation)
 
    There is some invocation with the context `Invocation`.
 
-.. function:: local(?Object, ?Invocation, ?VarName, ?Value)
+.. function:: local(Ref object, String invocation, String varName, Object value)
 
    In some invocation of `Object` in context `Invocation`, local variable
    `VarName` has value `Value`.
@@ -76,49 +76,65 @@ system. They are named "did" to indicate that they are the result of applying th
 everything that is possible "did" happen, even though in the real system this only represents things that
 might happen.
 
-.. function:: hasRef(?Object, ?Target)
+.. function:: hasRef(Ref object, Ref target)
 
    `Object` has a local variable or field with the given value.
 
-.. function:: didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue)
+.. function:: didAccept(Ref target, String targetInvocation, String paramVar, Object argValue)
 
    `Target` was invoked with the given value passed as an argument.
 
-.. function:: didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method)
+.. function:: didCall(Ref caller, String callerInvocation, String callSite, Ref target, String method)
 
    `Caller`'s `CallSite` called `Target`'s `Method`.
 
-.. function:: didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method)
+.. function:: didCall(Ref caller, String callerInvocation, String callSite, Ref target, String targetInvocation, String method)
 
    `Caller`'s `CallSite` called `Target`'s `Method`, switching to the `TargetInvocation` context.
 
-.. function:: didCall(?Caller, ?Target, ?Method)
+.. function:: didCall(Ref caller, Ref target, String method)
 
    Simpler version of `didCall/6` with just the caller, target and method.
 
-.. function:: didCreate(?Caller, ?Invocation, ?CallSite, ?NewChild)
+.. function:: didCreate(Ref caller, String invocation, String callSite, Ref newChild)
 
    The code at `CallSite` created `NewChild` as the result of a constructor call made
    by object `Caller` in context `CallerInvocation`.
 
-.. function:: didCreate(?Factory, ?Object)
+.. function:: didCreate(Ref factory, Ref object)
 
    Simplified view of :func:`didCreate`/4.
 
-.. function:: didGetException(?Caller, ?CallerInvocation, ?CallSite, ?Exception)
+.. function:: didGetException(Ref caller, String callerInvocation, String callSite, Object exception)
 
    `Exception` was thrown by `Caller`'s `CallSite`'s target.
 
-.. function:: didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue)
+.. function:: didGet(Ref caller, String callerInvocation, String callSite, Object resultValue)
 
    The code at `CallSite` got `ResultValue` back as the result of a call made
    by object `Caller` in context `CallerInvocation`.
 
-.. function:: getsAccess(?SourceObject, ?TargetObject)
+.. function:: getsAccess(Ref sourceObject, Ref targetObject)
 
    Some invocation of `SourceObject` may have access to `TargetObject` (through a field or local variable).
 
-.. function:: didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue)
+.. function:: didReceive(Ref target, String targetInvocation, String method, int pos, Object argValue)
 
    Target.method may get called with `ArgValue` as parameter number `Pos` (or as any
    parameter if `Pos` is `-1`). ?Pos will be a position in `Method`'s :func:`hasParam`.
+
+Functions
+---------
+These are not relations, so you can't enumerate all their values, but you can use them in rules.
+
+.. function:: IS_REF(Ref ref)
+
+   Checks that ref is a Ref.
+
+.. function:: IS_STRING(String string)
+
+   Checks that string is a String.
+
+.. function:: TO_STRING(Object any, String string)
+
+   Converts `any` to a String.

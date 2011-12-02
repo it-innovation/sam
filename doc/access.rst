@@ -6,16 +6,16 @@ Access Control
 SAM normally models pure object-capability systems, but it can also be used to
 model identity-based access control systems.
 
-.. function:: accessControlOn
+.. function:: accessControlOn()
 
    This must be asserted to say that you are using the access control features.
    Otherwise, the default is to assume that all access is allowed.
 
-.. function:: accessAllowed(?Caller, ?Target, ?Method)
+.. function:: accessAllowed(Ref caller, Ref target, String method)
 
    Indicates that the access control system should allow `Caller` to invoke `Target.Method`.
 
-.. function:: accessAllowed(?Caller, ?Target)
+.. function:: accessAllowed(Ref caller, Ref target)
 
    Indicates that the access control system should allow `Caller` to invoke any method on `Target`.
 
@@ -26,7 +26,7 @@ Identity-Based Access Control
 
 Objects may be given an identity using :func:`hasIdentity`. Child objects inherit the identity of their parents. Objects can always call other objects with the same identity.
 
-.. function:: hasIdentity(?Object, ?Identity)
+.. function:: hasIdentity(Ref object, String identity)
 
    The given object may have this identity.
 
@@ -64,10 +64,10 @@ For example::
     grantsRole(<log.txt>, "writer", "bob").
 
 
-.. function:: grantsRole(?Target, ?Role, ?CallerIdentity)
+.. function:: grantsRole(Ref target, String role, String callerIdentity)
 
    The object `Target` grants `Role` to any caller which :func:`hasIdentity` `CallerIdentity`.
 
-.. function:: PermittedRole(?Method, ?Role)
+.. function:: PermittedRole(String method, String role)
 
    This method will allow access (:func:`accessAllowed`) to callers with the given role.

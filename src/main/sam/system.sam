@@ -144,7 +144,7 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?Pos, ?ArgValue) :-
 
 /* Default aggregation for child objects */
 
-declare typeHasCallSite(?Type, ?CallSite).
+declare typeHasCallSite(String type, String callSite).
 typeHasCallSite(?Type, ?CallSite) :- hasMethod(?Type, ?Method), hasCallSite(?Method, ?CallSite).
 typeHasCallSite(?Type, ?CallSite) :- hasConstructor(?Type, ?Constructor), hasCallSite(?Constructor, ?CallSite).
 	

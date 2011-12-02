@@ -1,5 +1,5 @@
-declare Modifies(?Method, ?Field).
-declare Assigns(?Method, ?Target, ?Source).
+declare Modifies(String method, String field).
+declare Assigns(String method, String target, String source).
 
 class Foo {
     private Object myValue;
@@ -19,16 +19,16 @@ class Foo {
 
 initialObject(<foo>, "Foo").
 
-declare Reader(?Method).
-declare Writer(?Method).
+declare Reader(String method).
+declare Writer(String method).
 
-declare shouldBeReader(?Method).
+declare shouldBeReader(String method).
 shouldBeReader("Foo.read").
 
-declare shouldBeWriter(?Method).
+declare shouldBeWriter(String method).
 shouldBeWriter("Foo.write").
 
-declare shouldAssign(?Method, ?X, ?Y).
+declare shouldAssign(String method, String x, String y).
 shouldAssign("Foo.write", "myValue", "value").
 
 error("Reader", ?Method) :- Reader(?Method), !shouldBeReader(?Method).

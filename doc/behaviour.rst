@@ -65,17 +65,17 @@ have the same effect as::
 
 Classes
 -------
-.. function:: hasField(?Type, ?FieldName)
+.. function:: hasField(String type, String fieldName)
 
    There is a field on `Type` named `VarName`.
 
-.. function:: hasConstructor(?Type, ?Method)
+.. function:: hasConstructor(String type, String method)
 
    `Method` is a constructor for `Type`. Constructors work like other
    methods, but can only be called on an object if the called might have
    created it.
 
-.. function:: hasMethod(?Type, ?Method)
+.. function:: hasMethod(String type, String method)
 
    `Method` is a method on `Type`. This is a fully-qualified name,
    usually "Type.method".
@@ -84,35 +84,30 @@ Methods
 -------
 (and also constructors)
 
-.. function:: methodName(?Method, ?MethodName)
+.. function:: methodName(String method, String methodName)
 
    The name of the method. Usually, `Method` is fully-qualified (e.g. "Type.invoke") whereas `MethodName`
    is just the name ("invoke").
 
-.. function:: mayAccept(?Method, ?ParamVar, ?Pos)
+.. function:: mayAccept(String method, String paramVar, int pos)
 
    Objects of this type accept an argument value passes in the given position
    and store it in a variable named ParamVar. The first argument has position 0.
    If `Pos` is -1, then the parameter may accept values passed in any position.
 
-.. function:: mayAccept(?Method, ?ParamVar, ?Pos, ?Value)
-
-   Objects of this type accept these argument values and store them in the
-   local variable named ParamVar.
-
-.. function:: hasCallSite(?Method, ?CallSite)
+.. function:: hasCallSite(String method, String callSite)
 
    This method may perform the call described in `CallSite` (see :ref:`CallSite`).
 
-.. function:: mayReturn(?Object, ?Invocation, ?Method, ?Value)
+.. function:: mayReturn(Ref object, String invocation, String method, Object value)
 
    This method invocation may return `Value` to its callers.
 
-.. function:: mayThrow(?Object, ?Invocation, ?Method, ?Exception)
+.. function:: mayThrow(Ref object, String invocation, String method, Object exception)
 
    This method invocation may throw `Exception` to its callers.
 
-.. function:: hasParam(?Method, ?ParamVar, ?Pos)
+.. function:: hasParam(String method, String paramVar, int pos)
 
    This method has a parameter with the given name and position (starting from 0).
    If the method accepts parameters sent at any position, `Pos = -1`.
@@ -121,30 +116,30 @@ Methods
 
 Call-sites
 ----------
-.. function:: mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target)
+.. function:: mayCallObject(Ref caller, String callerInvocation, String callSite, Object target)
 
    This call invokes `Target`.
 
-.. function:: callsMethod(?CallSite, ?MethodName)
+.. function:: callsMethod(String callSite, String methodName)
 
    This call-site may call methods named `MethodName`.
 
-.. function:: callsAnyMethod(?CallSite)
+.. function:: callsAnyMethod(String callSite)
 
    This call-site may call methods with any name.
 
-.. function:: maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue)
+.. function:: maySend(Ref caller, String callerInvocation, String callSite, int pos, Object argValue)
 
    CallSite may send the value `ArgValue` as parameter number `Pos` (or as any
    parameter if `Pos` is `-1`). Includes all values from :func:`maySendFromAnyContext`
    for invocations that were active.
 
-.. function:: maySendFromAnyContext(?Caller, ?CallSite, ?Pos, ?ArgValue)
+.. function:: maySendFromAnyContext(Ref caller, String callSite, int pos, Object argValue)
 
    As for :func:`maySend`, but the value may be sent in any context (e.g. it is a field
    or a literal).
 
-.. function:: mayCreate(?CallSite, ?ChildType, ?NameHint)
+.. function:: mayCreate(String callSite, String childType, String nameHint)
 
    This "call" (to the constructor) may create new objects of type ChildType.
    There is no need for a `callsMethod` here; `mayCreate` implies that it may
@@ -152,7 +147,7 @@ Call-sites
    new child object. Usually, this is the name of the variable it will be assigned
    to.
 
-.. function:: catchesAllExceptions(?CallSite)
+.. function:: catchesAllExceptions(String callSite)
 
    This call-site handles all exceptions (i.e. it is inside a try block that
    catches "Throwable"). Without this, it is assumed that all exceptions may

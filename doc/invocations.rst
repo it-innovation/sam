@@ -114,19 +114,19 @@ all contexts. SAM will report an error if `a` could have a value that you didn't
 Note that you need to handle the case where `a = null` too (a caller without any reference to pass
 could still call the method with a null argument).
 
-.. function:: GroupByArgAt(?Method, ?Pos)
+.. function:: GroupByArgAt(String method, int Pos)
 
    Invocations of this function should be aggregated in groups based on the values
    passed in argument number ?Pos (starting from zero).
 
-.. function:: GroupByArgCase(?Method, ?Value, ?Context)
+.. function:: GroupByArgCase(String method, Object value, String context)
 
    Defines which values map to which contexts.
 
 Low-level control
 -----------------
 
-.. function:: newObject(?Object, ?Invocation, ?ChildType, ?NewObject)
+.. function:: newObject(Ref object, String invocation, String childType, Ref newObject)
 
    Aggregate all new objects of type `Type` created by `Object` the context
    `Invocation` into a single object `NewObject`. For example::
@@ -134,7 +134,7 @@ Low-level control
      newObject("factory", "clientA", "Proxy", "newProxiesForA").
      newObject("factory", "otherClients", "Proxy", "newProxiesForOthers").
 
-.. function:: methodDoesContextMapping(?Method)
+.. function:: methodDoesContextMapping(String method)
 
    Normally, when a caller calls a method in a particular context, the target method
    becomes active in the same context and receives all the values as arguments.
@@ -142,7 +142,7 @@ Low-level control
    enable this for a method, you will need to set :func:`didCall`/6 based on `didCall`/5
    somehow and arrange for :func:`didReceive` to get set based on :func:`maySend`/5.
 
-.. function:: methodMatches(?CallSite, ?Target, ?Method)
+.. function:: methodMatches(String callSite, Ref target, String method)
 
    When `CallSite` invokes `Target`, `Method` is a method that could be invoked. Normally this
    is true when the method name in `CallSite` equals the name of `Method`, but there are extra
@@ -151,12 +151,12 @@ Low-level control
 Generated predicates
 --------------------
 
-.. function:: realNewObject(?Object, ?Invocation, ?ChildType, ?NewChild)
+.. function:: realNewObject(Ref object, String invocation, String childType, Ref newChild)
 
    The `realNewObject` relation is copied from `newObject`, but has a suitable
    default whenever `newObject` wasn't defined.
 
-.. function:: realInitialInvocation(?Object, ?Method, ?Invocation)
+.. function:: realInitialInvocation(Ref object, String method, String invocation)
 
    Usually based on :func:`initialInvocation`, but if `Object` is of type `Unknown` and has
    no initialInvocation defined, then it gets an "unknown" context assigned to it. Note that

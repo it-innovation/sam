@@ -45,13 +45,13 @@ It is often useful to look at changes to a model. A good approach is as follows:
 Predicates
 ----------
 
-.. function:: denyAccess(?Object, ?Target)
+.. function:: denyAccess(Ref object, Ref target)
 
    Verify that it is impossible for `Object` to ever get access to
    `Target`. i.e. `Object` must never be able to get a local variable or
    field with a reference to `Target`.
 
-.. function:: requireAccess(?Object, ?Target)
+.. function:: requireAccess(Ref object, Ref target)
 
    Check that the model does not exclude the possibility of `Object`
    getting access to `Target`. Note that (unlike `denyAccess` above), this
@@ -71,53 +71,53 @@ Predicates
        field(?Store, "data", ?Item),
        !isA(?Item, "Value").
 
-.. function:: haveBadAccess(?SourceObject, ?TargetObject)
+.. function:: haveBadAccess(Ref sourceObject, Ref targetObject)
 
    Fail the model and indicate the problem with a red arrow on the graph.
 
-.. function:: missingGoodAccess(?SourceObject, ?TargetObject)
+.. function:: missingGoodAccess(Ref sourceObject, Ref targetObject)
 
    Fail the model and indicate the problem with a dotted red arrow on the graph.
 
-.. function:: expectFailure
+.. function:: expectFailure()
 
    Indicates that this scenario is expected to fail. Normally, SAM exits with a status
    code of 0 if the model passes, or 1 on failure. This reverses the test.
 
-.. function:: failedAssertion(?Number)
+.. function:: failedAssertion(int number)
 
    This will be true if the body of the assertion is false. SAM gives each assertion a
    unique number.
 
-.. function:: assertionMessage(?Number, ?Msg)
+.. function:: assertionMessage(int number, String msg)
 
    The message to display if an assertion fails. This gives the location and
    contents of the assertion.
 
-.. function:: assertionArrow(?Number, ?Source, ?Target, ?Positive)
+.. function:: assertionArrow(int number, Ref source, Ref target, boolean positive)
 
    If assertion ?Number fails and it relates two objects, an assertionArrow fact will be
    recorded. This is used to add red arrows to the diagram.
 
-.. function:: mustCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method)
+.. function:: mustCall(Ref caller, String callerInvocation, String callSite, Ref target, String method)
 
    The :func:`didCall` relation must contain this call. Otherwise, fail the model.
    For `Unknown` callers, the call-site does not need to match.
 
-.. function:: checkCalls(?Object)
+.. function:: checkCalls(Ref object)
 
    Ensure that every call on `Object` is in `mayCall`.
 
-.. function:: mayCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method)
+.. function:: mayCall(Ref caller, String callerInvocation, String callSite, Ref target, String method)
 
    Calls that can be made on objects marked with :func:`checkCalls` without generating an error.
    Everything in :func:`mustCall` is automatically added to `mayCall` too.
 
-.. function:: mayCall(?Caller, ?CallerInvocation, ?Target, ?Method)
+.. function:: mayCall(Ref caller, String callerInvocation, Ref target, String method)
 
    Like :func:`mayCall`/5, but allow calls from any call-site.
 
-.. function:: mayCall(?Caller, ?Target, ?Method)
+.. function:: mayCall(Ref caller, Ref target, String method)
 
    Like :func:`mayCall`/4, but allow calls in any context.
 
@@ -125,11 +125,11 @@ Predicates
 Debugging
 ---------
 
-.. function:: debug
+.. function:: debug()
 
     If true, SAM will find a small proof explaining why and display it. It will
     also add :func:`debugEdge` facts for calls involved in this proof.
 
-.. function:: debugEdge(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation)
+.. function:: debugEdge(Ref source, String sourceInvocation, String callSite, Ref target, String targetInvocation)
 
     This call from `Source` to `Target` was involved in the proof produced by :func:`debug`.

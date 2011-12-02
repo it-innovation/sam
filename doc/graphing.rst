@@ -3,36 +3,36 @@
 Graphing
 ========
 
-.. function:: graphNode(?Node, ?Attrs)
+.. function:: graphNode(String node, String attrs)
 
    Specify the GraphViz attributes for a node. For example::
 
      graphNode("store", "color=red").
 
-.. function:: graphEdge(?Source, ?Target, ?Attrs)
+.. function:: graphEdge(String source, String target, String attrs)
 
    Specify that there is an edge from `Source` to `Target` with the given
    attributes. For example::
 
      graphEdge("user", "store", "style=dashed").
 
-.. function:: showAllInvocations(?Object)
+.. function:: showAllInvocations(Ref object)
 
    Configuration setting that causes the access graph to show all
    invocations of Object explicitly on the graph. If false, these
    invocations are aggregated with their object.
 
-.. function:: showInvocation(?Object, ?Invocation)
+.. function:: showInvocation(Ref object, String invocation)
 
    Configuration setting that causes the access graph to show these
    specific invocations of Object explicitly on the graph. If false, these
    invocations are aggregated with their object.
 
-.. function:: isHidden(?Source)
+.. function:: isHidden(Ref ref)
 
    Don't show this object or references from it. Used to hide the `_testDriver` object.
 
-.. function:: showOnlyProblemNodes
+.. function:: showOnlyProblemNodes()
 
    If on, the graph is limited to showing "important" nodes. A node is important if:
 
@@ -42,12 +42,12 @@ Graphing
 
    If there is no problem, this is ignored and all nodes are shown.
 
-.. function:: hideUncalledReferences
+.. function:: hideUncalledReferences()
 
     Especially when using access control, the graph can get cluttered with references that
     are held but not used. Setting this hides them.
 
-.. function:: ignoreEdgeForRanking(?GraphSourceNode, ?GraphTargetNode)
+.. function:: ignoreEdgeForRanking(Object source, Object target)
 
    Prevents edges from source to target from affecting the ranking. Unknown objects often
    cause many extra edges to be added which distort the shape of the graph. Ignoring these
@@ -63,15 +63,15 @@ same identity (labelled with that identity)::
   graphCluster(?Identity, ?Object) :- hasIdentity(?Object, ?Identity).
   graphClusterLabel(?Identity, ?Identity) :- hasIdentity(?Object, ?Identity).
 
-.. function:: graphCluster(?ClusterID, ?GraphNode)
+.. function:: graphCluster(String clusterID, String graphNode)
 
    Put `GraphNode` in cluster `ClusterID`.
 
-.. function:: graphClusterColour(?ClusterID, ?Colour)
+.. function:: graphClusterColour(String clusterID, String colour)
 
    Set the border and label colour for `ClusterID`.
 
-.. function:: graphClusterLabel(?ClusterID, ?Label)
+.. function:: graphClusterLabel(String clusterID, String label)
 
    Set label text for `ClusterID`.
 
