@@ -42,8 +42,8 @@ A `DataProvider` object creates new objects of type "File", corresponding to the
 code::
 
   class DataProvider {
-    public File newFile() {
-      File file = new File();
+    public Object newFile() {
+      Object file = new File();
       return file;
     }
   }
@@ -65,31 +65,33 @@ do nothing, and return nothing, and that is how we model them::
 Finally, our `Client` will test the provider by creating a new `File` and using it::
 
   class Client {
-    private DataProvider myDataProvider;
+    private Object myDataProvider;
 
-    public Client(DataProvider dataProvider) {
+    public Client(Object dataProvider) {
       myDataProvider = dataProvider;
     }
 
     public void test() {
-      File file = myDataProvider.newFile();
+      Object file = myDataProvider.newFile();
       file.put();
       file.get();
     }
   }
 
 .. note::
-  In this simplified language, all methods must be public and all fields must be private. Types are mostly ignored and could be replaced by `Object`.
+  In this simplified language, all methods must be public and all fields must be private. Types should generally be declared
+  as `Object` or `Ref` for user-defined classes.
 
-See :ref:`Behaviour` for more information about defining behaviour.
+See :ref:`Behaviour` for more information about defining behaviour. See :ref:`Types` for more information about SAM's
+type system.
 
 Configuration
 -------------
 We can now define the initial configuration::
 
   config {
-      Client user;
-      DataProvider dataProvider;
+      Ref user;
+      Ref dataProvider;
   
       test {
           dataProvider = new DataProvider();
@@ -206,8 +208,7 @@ Use `File -> Export calls` to save all the calls that happened to a new file (:e
 * a set of :func:`checkCalls` facts telling SAM that for the three existing objects, it should check not only that all calls may happen, but that no other calls happen either.
 
 .. note::
-	SAM uses `Datalog <http://en.wikipedia.org/wiki/Datalog>`_ syntax to
-	state facts and rules. Literal strings must be in double-quotes.
+	SAM uses ref:`Datalog` syntax to state facts and rules. Literal strings must be in double-quotes.
 	Variable names are preceded by "?".
 
 Now import this file by adding this line to your model file::
@@ -232,9 +233,9 @@ We also need to tell SAM that objects created by these other users should not be
 creating a new `test` block labelled with a "context" ("Others")::
 
   config {
-      Client user;
-      Client otherUsers;
-      DataProvider dataProvider;
+      Ref user;
+      Ref otherUsers;
+      Ref dataProvider;
   
       test {
           dataProvider = new DataProvider();
@@ -337,7 +338,7 @@ say which role is required to call each method::
   class DataProvider {
     @PermittedRole("world")
     public File newFile() {
-      File file = new File();
+      Object file = new File();
       return file;
     }
   }
@@ -352,9 +353,9 @@ We could update `File` in a similar way, granting `user` and `otherUsers` a "use
 with this identity::
 
   class File {
-    private Identity myOwner;
+    private String myOwner;
 
-    public File(Identity owner) {
+    public File(String owner) {
       myOwner = owner;
     }
 
@@ -402,8 +403,8 @@ Now we want to add a visualisation service to the system. A user gives the servi
 graph of the data in the file::
 
   class ServiceProvider {
-      public File process(File file) {
-          File image = new File();
+      public Ref process(Ref file) {
+          Ref image = new File();
           file.get();
           image.put();
           return image;
@@ -411,26 +412,26 @@ graph of the data in the file::
   }
   
   class Client {
-    private DataProvider myDataProvider;
-    private ServiceProvider myServiceProvider;
+    private Ref myDataProvider;
+    private Ref myServiceProvider;
   
-    public Client(DataProvider dataProvider, ServiceProvider serviceProvider) {
+    public Client(Ref dataProvider, Ref serviceProvider) {
       myDataProvider = dataProvider;
       myServiceProvider = serviceProvider;
     }
   
     public void test() {
-      File file = myDataProvider.newFile();
+      Ref file = myDataProvider.newFile();
       file.put();
-      File result = myServiceProvider.process(file);
+      Ref result = myServiceProvider.process(file);
       result.get();
     }
   }
   
   config {
-      Client user;
-      DataProvider dataProvider;
-      ServiceProvider serviceProvider;
+      Ref user;
+      Ref dataProvider;
+      Ref serviceProvider;
   
       test {
           dataProvider = new DataProvider();
@@ -467,10 +468,10 @@ The user needs some way to grant `serviceProvider` read access to the data (`fil
 to the resulting image. We can add an extra method to `File` for this::
 
   class File {
-    private Identity myOwner;
-    private Identity myReader;
+    private String myOwner;
+    private String myReader;
 
-    public File(Identity owner) {
+    public File(String owner) {
       myOwner = owner;
     }
 
@@ -482,7 +483,7 @@ to the resulting image. We can add an extra method to `File` for this::
     public void put() {}
 
     @PermittedRole("owner")
-    public void grantReadAccess(Identity id) {
+    public void grantReadAccess(String id) {
       myReader = id;
     }
   }
@@ -523,7 +524,7 @@ calling `File.get` (:example:`service6`)::
     ...
     @PermittedRole("owner")
     @PermittedRole("reader")
-    public boolean checkCanRead(Identity id) {
+    public boolean checkCanRead(String id) {
       boolean verified = true :- grantsRole(this, ?Role, id), PermittedRole("File.get", ?Role);
       return verified;
     }
@@ -538,13 +539,13 @@ We can then update the service provider to check that its caller has read access
 
   class ServiceProvider {
       @PermittedRole("world")
-      public File process(File uncheckedFile) {
-          File image = new File("serviceProvider.crt");
+      public Ref process(Ref uncheckedFile) {
+          Ref image = new File("serviceProvider.crt");
 
-          Identity caller = ?Identity :- hasIdentity($Caller, ?Identity);
+          String caller = ?Identity :- hasIdentity($Caller, ?Identity);
           boolean checkResult = uncheckedFile.checkCanRead(caller);
 
-          File file = uncheckedFile :- mayReturn(uncheckedFile, $Context, "File.checkCanRead", true);
+          Ref file = uncheckedFile :- mayReturn(uncheckedFile, $Context, "File.checkCanRead", true);
           file.get();
           image.grantReadAccess(caller);
           image.put();
@@ -584,21 +585,21 @@ We could create a new `otherProviders` object with `Unknown` behaviour and have 
 Here, we have renamed `otherUsers` to `others` and changed the API of `Client` to allow testing with different providers (:example:`service7`) ::
 
   class Client {
-    public void test(DataProvider dataProvider, ServiceProvider serviceProvider) {
-      File file = dataProvider.newFile("user.crt");
+    public void test(Ref dataProvider, Ref serviceProvider) {
+      Ref file = dataProvider.newFile("user.crt");
       file.put();
-      Identity serviceIdentity = ?Cert :- hasIdentity(serviceProvider, ?Cert);
+      String serviceIdentity = ?Cert :- hasIdentity(serviceProvider, ?Cert);
       file.grantReadAccess(serviceIdentity);
-      File result = serviceProvider.process(file);
+      Ref result = serviceProvider.process(file);
       result.get();
     }
   }
 
   config {
-      Client user;
+      Ref user;
       Unknown others;
-      DataProvider dataProvider;
-      ServiceProvider serviceProvider;
+      Ref dataProvider;
+      Ref serviceProvider;
 
       test {
           dataProvider = new DataProvider();

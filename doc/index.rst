@@ -24,6 +24,7 @@ Reference
 .. toctree::
    :maxdepth: 2
 
+   datalog
    configuration
    base
    behaviour

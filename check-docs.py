@@ -21,6 +21,7 @@ def parse_dl(path):
 parse_dl(os.path.join(dldir, 'base.sam'))
 
 declared.add("ASSIGN(String Type, Object value, Type result)")
+declared.add("MATCH(Object a, Object b, Object result)")
 
 undocumented = declared - documented
 if undocumented:

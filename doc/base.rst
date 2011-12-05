@@ -149,3 +149,12 @@ These are not relations, so you can't enumerate all their values, but you can us
 	ASSIGN("String", 4) -> nothing
 	ASSIGN("String", any(Value)) -> any(String)
 	ASSIGN("String", any(int)) -> nothing
+
+.. function:: MATCH(Object a, Object b, Object result)
+
+   Tests whether `a = b`, taking account of the fact that either may be an `any` value. The `result` is the intersection
+   of the possible values. e.g.::
+
+       MATCH("foo", "foo") -> "foo"
+       MATCH("foo", "bar") -> nothing
+       MATCH(any(String), any(Value)) -> any(String)
