@@ -4,7 +4,7 @@ hideUncalledReferences.
 
 class DataProvider {
   public File newFile() {
-    File file = new File();
+    Ref file = new File();
     return file;
   }
 }
@@ -15,8 +15,8 @@ class File {
 }
 
 class ServiceProvider {
-    public File process(File file) {
-        File image = new File();
+    public File process(Ref file) {
+        Ref image = new File();
         file.get();
         image.put();
         return image;
@@ -24,18 +24,18 @@ class ServiceProvider {
 }
 
 class Client {
-  private DataProvider myDataProvider;
-  private ServiceProvider myServiceProvider;
+  private Ref myDataProvider;
+  private Ref myServiceProvider;
 
-  public Client(DataProvider dataProvider, ServiceProvider serviceProvider) {
+  public Client(Ref dataProvider, Ref serviceProvider) {
     myDataProvider = dataProvider;
     myServiceProvider = serviceProvider;
   }
 
   public void test() {
-    File file = myDataProvider.newFile();
+    Ref file = myDataProvider.newFile();
     file.put();
-    File result = myServiceProvider.process(file);
+    Ref result = myServiceProvider.process(file);
     result.get();
   }
 }
@@ -43,8 +43,8 @@ class Client {
 config {
     Client user;
     Object otherUsers;
-    DataProvider dataProvider;
-    ServiceProvider serviceProvider;
+    Ref dataProvider;
+    Ref serviceProvider;
 
     test {
         dataProvider = new DataProvider();

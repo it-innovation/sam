@@ -26,7 +26,7 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-// Note: for maySend, Pos can be _ if the sender doesn't provide position
+// Note: for maySend, Pos can be any(int) if the sender doesn't provide position
 // information (e.g. Unknown sender).
 //
 // We don't care about Unknown receivers, since their Unknown.* method isn't GroupByArgAt.
@@ -59,34 +59,34 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method)
 
 // the GroupByArgAt arg
 
-didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ArgValue) :-
+didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
-    maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?ArgValue),
+    maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
     hasParam(?Method, ?ParamType, ?AnyParam, ?ParamPos),
-    MAY_ASSIGN(?ParamType, ?ArgValue),
+    ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
     MATCH(?SendPos, ?ParamPos, ?DontCarePos),
     GroupByArgAt(?Method, ?ParamPos),
-    GroupByArgCase(?Method, ?ArgValue, ?TargetInvocation).
+    GroupByArgCase(?Method, ?ReceivedValue, ?TargetInvocation).
 
 // the other args
 
 // senders that send at a particular position
-didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ArgValue) :-
+didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
-    maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?ArgValue),
+    maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
     hasParam(?Method, ?ParamType, ?AnyParam, ?ParamPos),
-    MAY_ASSIGN(?ParamType, ?ArgValue),
+    ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
     MATCH(?SendPos, ?ParamPos, ?DontCarePos),
     GroupByArgAt(?Method, ?GroupByArgAt), ?GroupByArgAt != ?ParamPos,
     GroupByArgCase(?Method, ?AnyArgValue, ?TargetInvocation).
 
-error("missing GroupByArgCase", ?Method, ?ArgValue) :- 
+error("missing GroupByArgCase", ?Method, ?ReceivedValue) :- 
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
-    maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue),
+    maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?SentValue),
     hasParam(?Method, ?ParamType, ?AnyParam, ?Pos),
-    MAY_ASSIGN(?ParamType, ?ArgValue),
+    ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
     GroupByArgAt(?Method, ?Pos),
-    !GroupByArgCase(?Method, ?ArgValue, ?TargetInvocation).
+    !GroupByArgCase(?Method, ?ReceivedValue, ?TargetInvocation).
 
 error("missing null GroupByArgCase", ?Method) :- 
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
@@ -105,4 +105,4 @@ error("GroupByArgCase without GroupByArgAt", ?Method) :-
 
 error("GroupByArgAt method cannot accept arguments at any position", ?Method) :-
     GroupByArgAt(?Method, ?Pos),
-    hasParam(?Method, ?ParamType, ?Param, _).
+    hasParam(?Method, ?ParamType, ?Param, any(int)).

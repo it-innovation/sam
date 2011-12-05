@@ -132,8 +132,20 @@ These are not relations, so you can't enumerate all their values, but you can us
 
 .. function:: IS_STRING(String string)
 
-   Checks that string is a String.
+   Checks that string is a String. Note: this method does not consider `any(String)` to be a string. It is usually better
+   to use `ASSIGN("String", ?StringIn, ?StringOut)`. For example, if `StringIn` is `any(Value)` then `StringOut` will be
+   `any(String)`.
 
-.. function:: TO_STRING(Object any, String string)
+.. function:: TO_STRING(Object object, String string)
 
    Converts `any` to a String.
+
+.. function:: ASSIGN(String Type, Object value, Type result)
+
+   Checks that `value` can be assigned to a field of the given type. The `result` parameter is needed to handle `any` types. Some
+   examples should make this clear::
+
+	ASSIGN("String", "hi") -> "hi"
+	ASSIGN("String", 4) -> nothing
+	ASSIGN("String", any(Value)) -> any(String)
+	ASSIGN("String", any(int)) -> nothing

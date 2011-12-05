@@ -32,38 +32,33 @@ class Target {
     public void testString(String x) { }
     public void testInt(int x) { }
     public void testValue(Value x) { }
-    public void testCustom(Custom x) { }
+    public void testCustom(Ref x) { }
 }
 
 config {
     test {
-        Target t = new Target();
-        Unknown unknown = new Unknown(t);
+        Ref t = new Target();
+        Ref unknown = new Unknown(t);
     }
 }
 
-assert local(<t>, "", "Target.testBool.x", true).
+assert local(<t>, "", "Target.testBool.x", any(boolean)).
 assert !local(<t>, "", "Target.testBool.x", <t>).
 
 assert local(<t>, "", "Target.testObject.x", <t>).
-assert local(<t>, "", "Target.testObject.x", true).
+assert local(<t>, "", "Target.testObject.x", any(Value)).
 
-assert local(<t>, "", "Target.testString.x", "hi").
+assert local(<t>, "", "Target.testString.x", any(String)).
 assert !local(<t>, "", "Target.testString.x", <t>).
 
-assert local(<t>, "", "Target.testInt.x", 3).
-assert !local(<t>, "", "Target.testInt.x", "hi").
+assert local(<t>, "", "Target.testInt.x", any(int)).
+assert !local(<t>, "", "Target.testInt.x", any(String)).
 
-assert local(<t>, "", "Target.testValue.x", 3).
-assert local(<t>, "", "Target.testValue.x", "hi").
+assert local(<t>, "", "Target.testValue.x", any(Value)).
 assert !local(<t>, "", "Target.testInt.x", <t>).
 
 assert local(<t>, "", "Target.testCustom.x", <t>).
-assert !local(<t>, "", "Target.testCustom.x", 3).
-
-isConstant(true).
-isConstant("hi").
-isConstant(3).
+assert !local(<t>, "", "Target.testCustom.x", any(Value)).
 
 
 // Test type-checker

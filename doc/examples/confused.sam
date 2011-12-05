@@ -15,11 +15,11 @@ isPublic(?X) :- isRef(?X).
 class Compiler {
     private Object myLog;
 
-    public Compiler(File log) {
+    public Compiler(Ref log) {
         myLog = log;
     }
 
-    public void exec(File input, File output) {
+    public void exec(Ref input, Ref output) {
         input.read();
         myLog.write();
         output.write();
@@ -33,18 +33,18 @@ class File {
 
 config {
     test {
-        File billing = new File();
-        Compiler compiler = new Compiler(billing);
-        File input = new File();
-        File output = new File();
-        Object alice = new Unknown();
+        Ref billing = new File();
+        Ref compiler = new Compiler(billing);
+        Ref input = new File();
+        Ref output = new File();
+        Ref alice = new Unknown();
 
         alice.test(compiler, input, output);
     }
 }
 
 class Alice {
-    public void test(Compiler compiler, File input, File output) {
+    public void test(Ref compiler, Ref input, Ref output) {
         input.write();
         compiler.exec(input, output);
         output.read();

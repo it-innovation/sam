@@ -34,7 +34,7 @@ class File {
     public Object read() { }
 
     public Object readOnly() {
-        ReadOnly readOnly = new ReadOnly(this);
+        Object readOnly = new ReadOnly(this);
         return readOnly;
     }
 }
@@ -43,13 +43,13 @@ config {
     Logger loggedReadOnly;
 
     setup {
-        File file = new File();
-        ReadOnly readOnly = file.readOnly();
+        Ref file = new File();
+        Object readOnly = file.readOnly();
         loggedReadOnly = new Logger(readOnly);
     }
 
     test {
-        Unknown delegate = new Unknown(loggedReadOnly);
+        Object delegate = new Unknown(loggedReadOnly);
     }
 }
 

@@ -6,9 +6,9 @@ class Precious {
 
 class Box {
   private Object precious;
-  private Object myUnsealer;
+  private Ref myUnsealer;
 
-  public Box(Unsealer unsealer, Object value) {
+  public Box(Ref unsealer, Object value) {
     precious = value;
     myUnsealer = unsealer;
   }
@@ -19,18 +19,18 @@ class Box {
 }
 
 class Sealer {
-  private Unsealer unsealer;
+  private Ref unsealer;
 
   public Sealer() {
     unsealer = new Unsealer();
   }
 
   public Box seal(Object value) {
-    Box box = new Box(unsealer, value);
+    Ref box = new Box(unsealer, value);
     return box;
   }
 
-  public Unsealer getUnsealer() {
+  public Ref getUnsealer() {
     return unsealer;
   }
 }
@@ -38,7 +38,7 @@ class Sealer {
 class Unsealer {
   private Object myTempContents;
 
-  public Object unseal(Box box) {
+  public Object unseal(Ref box) {
     box.offerContent();
     Object value = myTempContents :-
         didReceive(this, $Context, "Unsealer.acceptContent", 0, myTempContents);

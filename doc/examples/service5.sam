@@ -8,17 +8,17 @@ isPublic(?X) :- isRef(?X).   // anyone can get a reference to any object
 
 class DataProvider {
   @PermittedRole("world")
-  public File newFile(Identity owner) {
-    File file = new File(owner);
+  public File newFile(String owner) {
+    Ref file = new File(owner);
     return file;
   }
 }
 
 class File {
-  private Identity myOwner;
-  private Identity myReader;
+  private String myOwner;
+  private String myReader;
 
-  public File(Identity owner) {
+  public File(String owner) {
     myOwner = owner;
   }
 
@@ -30,15 +30,15 @@ class File {
   public void put() {}
 
   @PermittedRole("owner")
-  public void grantReadAccess(Identity id) {
+  public void grantReadAccess(String id) {
     myReader = id;
   }
 }
 
 class ServiceProvider {
     @PermittedRole("world")
-    public File process(File file, Identity reader) {
-        File image = new File("serviceProvider.crt");
+    public File process(Ref file, String reader) {
+        Ref image = new File("serviceProvider.crt");
         file.get();
         image.grantReadAccess(reader);
         image.put();
@@ -47,20 +47,20 @@ class ServiceProvider {
 }
 
 class Client {
-  private DataProvider myDataProvider;
-  private ServiceProvider myServiceProvider;
+  private Ref myDataProvider;
+  private Ref myServiceProvider;
 
-  public Client(DataProvider dataProvider, ServiceProvider serviceProvider) {
+  public Client(Ref dataProvider, Ref serviceProvider) {
     myDataProvider = dataProvider;
     myServiceProvider = serviceProvider;
   }
 
   public void test() {
-    File file = myDataProvider.newFile("user.crt");
+    Ref file = myDataProvider.newFile("user.crt");
     file.put();
-    Identity serviceIdentity = ?Cert :- hasIdentity(myServiceProvider, ?Cert);
+    String serviceIdentity = ?Cert :- hasIdentity(myServiceProvider, ?Cert);
     file.grantReadAccess(serviceIdentity);
-    File result = myServiceProvider.process(file, "user.crt");
+    Ref result = myServiceProvider.process(file, "user.crt");
     result.get();
   }
 }
@@ -68,8 +68,8 @@ class Client {
 config {
     Client user;
     Unknown otherUsers;
-    DataProvider dataProvider;
-    ServiceProvider serviceProvider;
+    Ref dataProvider;
+    Ref serviceProvider;
 
     test {
         dataProvider = new DataProvider();
@@ -93,8 +93,8 @@ hasIdentity(<serviceProvider>, "serviceProvider.crt").
 
 grantsRole(<dataProvider>, "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
 grantsRole(<serviceProvider>, "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
-grantsRole(?File, "owner", ?Identity) :- field(?File, "myOwner", ?Identity), IS_STRING(?Identity).
-grantsRole(?File, "reader", ?Identity) :- field(?File, "myReader", ?Identity), IS_STRING(?Identity).
+grantsRole(?File, "owner", ?Identity) :- field(?File, "myOwner", ?Value), ASSIGN("String", ?Value, ?Identity).
+grantsRole(?File, "reader", ?Identity) :- field(?File, "myReader", ?Value), ASSIGN("String", ?Value, ?Identity).
 
 ignoreEdgeForRanking(<serviceProvider>, <otherUsers>).
 

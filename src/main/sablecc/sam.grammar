@@ -62,10 +62,10 @@ Tokens
   assert_tok = 'assert';
   bool = 'true' | 'false';
   null = 'null';
+  any_tok = 'any';
 
   // must be last
   name = char(char|digit|underscore)*;
-  any = underscore;
 
 Ignored Tokens
   blank, comment, block_comment;
@@ -108,7 +108,7 @@ Productions
        | {int} number
        | {bool} bool
        | {special} dollar name
-       | {any} any
+       | {any} any_tok l_par name r_par
        | {composite} name l_par terms r_par;
 
   query = query_start literals dot;

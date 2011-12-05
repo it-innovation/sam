@@ -14,8 +14,8 @@ class Slot {
 config {
     test {
         Object value = new Unknown();
-        Slot slot1 = new Slot();
-        Slot slot2 = new Slot();
+        Ref slot1 = new Slot();
+        Ref slot2 = new Slot();
         slot1.put(value);
         Object val = slot1.get(value);
         slot2.put(val);

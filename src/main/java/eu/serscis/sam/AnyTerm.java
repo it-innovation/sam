@@ -28,18 +28,26 @@
 
 package eu.serscis.sam;
 
+import eu.serscis.sam.parser.ParserException;
+import eu.serscis.sam.node.TName;
 import java.net.URI;
 
 import org.deri.iris.api.terms.IConcreteTerm;
 import org.deri.iris.api.terms.ITerm;
 
 public class AnyTerm implements ITerm {
-	public static final AnyTerm THE_ONE = new AnyTerm();
-	private AnyTerm() {
+	public static final AnyTerm ANY_INT = new AnyTerm(Type.intT);
+
+	public final Type type;
+
+	public AnyTerm(Type type) {
+		this.type = type;
 	}
 
 	public String getValue() {
-		return "_";
+		String s = type.toString();
+		s = s.substring(0, s.length() - 1);
+		return "any("  + s + ")";
 	}
 
 	public boolean isGround() {
@@ -47,18 +55,29 @@ public class AnyTerm implements ITerm {
 	}
 
 	public int compareTo(ITerm o) {
-		return o == THE_ONE ? 0 : 1;
+		if (o instanceof AnyTerm) {
+			return type.compareTo(((AnyTerm) o).type);
+		}
+		return 0;
 	}
 
 	public int hashCode() {
-		return "_".hashCode();
+		return type.hashCode();
 	}
 
 	public boolean equals(final Object o) {
-		return o == THE_ONE;
+		return (o instanceof AnyTerm) && compareTo((ITerm) o) == 0;
 	}
 
 	public String toString() {
-		return "_";
+		return getValue();
+	}
+
+	public static AnyTerm valueOf(TName typeStr) throws ParserException {
+		try {
+			return new AnyTerm(Type.fromJavaName(typeStr.getText()));
+		} catch (IllegalArgumentException ex) {
+			throw new ParserException(typeStr, "Invalid type '" + typeStr + "'");
+		}
 	}
 }

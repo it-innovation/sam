@@ -28,8 +28,9 @@
 
 declare hasRole(Ref object, Ref target, String role).
 hasRole(?Object, ?Target, ?Role) :-
-    hasIdentity(?Object, ?Identity),
-    grantsRole(?Target, ?Role, ?Identity).
+    hasIdentity(?Object, ?Identity1),
+    grantsRole(?Target, ?Role, ?Identity2),
+    MATCH(?Identity1, ?Identity2, ?Identity).       // (may grant to any(String))
 
 guiObjectTab(50, "Has roles", "hasRole/3", "object").
 guiObjectTab(60, "Grants roles", "grantsRole/3", "target").

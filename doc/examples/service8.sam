@@ -3,8 +3,8 @@ import "includes/service6mustCall.sam".
 hideUncalledReferences.
 
 class DataProvider {
-  public File newFile(Identity owner) {
-    File file = new File(owner);
+  public File newFile(String owner) {
+    Ref file = new File(owner);
     return file;
   }
 }
@@ -15,8 +15,8 @@ class File {
 }
 
 class ServiceProvider {
-    public File process(File file) {
-        File image = new File("serviceProvider.crt");
+    public File process(Ref file) {
+        Ref image = new File("serviceProvider.crt");
         file.get();
         image.put();
         return image;
@@ -24,10 +24,10 @@ class ServiceProvider {
 }
 
 class Client {
-  public void test(DataProvider myDataProvider, ServiceProvider myServiceProvider) {
-    File file = myDataProvider.newFile();
+  public void test(Ref myDataProvider, Ref myServiceProvider) {
+    Ref file = myDataProvider.newFile();
     file.put();
-    File result = myServiceProvider.process(file);
+    Ref result = myServiceProvider.process(file);
     result.get();
   }
 }
@@ -35,8 +35,8 @@ class Client {
 config {
     Client user;
     Unknown others;
-    DataProvider dataProvider;
-    ServiceProvider serviceProvider;
+    Ref dataProvider;
+    Ref serviceProvider;
 
     test {
         dataProvider = new DataProvider();

@@ -11,7 +11,7 @@ config {
         Object a = new Thing();
         Object b = new Thing();
         Object c = new Thing();
-        Test t = new Test();
+        Ref t = new Test();
         t.test(a, b);
         t.test(b, b);
         t.test(a, c);

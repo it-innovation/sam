@@ -61,7 +61,8 @@ public class Eval {
 			public IRule process(IRule rule) throws RuleUnsafeException {
 				for (ILiteral lit : rule.getBody()) {
 					String p = lit.getAtom().getPredicate().getPredicateSymbol();
-					if (p.equals("TO_STRING") || p.equals("STRING_CONCAT") || p.equals("MAKE_OBJECT") || p.equals("MATCH")) {
+					if (p.equals("TO_STRING") || p.equals("STRING_CONCAT") ||
+					    p.equals("MAKE_OBJECT") || p.equals("MATCH") || p.equals("ASSIGN")) {
 						return rule;
 					}
 				}

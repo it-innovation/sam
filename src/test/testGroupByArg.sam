@@ -25,7 +25,7 @@ class User {
 
     @GroupByArgCase(<null>, "Null")
     public void test(Ref a) {
-        Box box = new Box();
+        Ref box = new Box();
         box.put(a);
 
         Object b = box.get(a);
@@ -42,7 +42,7 @@ class User2 {
     @GroupByArgCase(<x>, "ForX")
     @GroupByArgCase(<y>, "ForY")
     public void test2(Object ok, Object a) {
-        Box box = new Box();
+        Ref box = new Box();
         box.put(a);
 
         Object b = box.get(a);
@@ -63,7 +63,7 @@ config {
         // known -> known (testDriver -> user)
         Object x = new Unknown();
         Object y = new Unknown();
-        User user = new User();
+        Ref user = new User();
         user.test(x);
         user.test(y);
 

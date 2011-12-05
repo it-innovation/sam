@@ -364,11 +364,12 @@ class SAMMethod {
 				processCode(ts.getStatement());
 				for (PCatchBlock c : ts.getCatchBlock()) {
 					ACatchBlock cb = (ACatchBlock) c;
-					declareLocal(cb.getType(), cb.getName());
-
-					if (((AType) cb.getType()).getName().getText().equals("Throwable")) {
+					TName type = ((AType) cb.getType()).getName();
+					if (type.getText().equals("Throwable")) {
 						catchesThrowable = true;
+						type = new TName("Object");
 					}
+					declareLocal(type, cb.getName());
 
 					// local(?Object, ?Innovation, name, ?Exception) :-
 					//	didGetException(?Object, ?Invocation, ?CallSite, ?Exception),
@@ -454,6 +455,11 @@ class SAMMethod {
 	}
 
 	private void declareLocal(PType type, TName aName) throws ParserException {
+		declareLocal(((AType) type).getName(), aName);
+	}
+
+	private void declareLocal(TName type, TName aName) throws ParserException {
+		Type.validateJavaName(type);
 		String name = aName.getText();
 		if (locals.contains(name)) {
 			throw new ParserException(aName, "Duplicate definition of local " + name);
@@ -497,15 +503,16 @@ class SAMMethod {
 
 	// pos can be -1 if we accept arguments at any position
 	private void addParam(ITerm method, IRelation acceptRel, PParam pparam, int pos) throws ParserException {
-		ITerm posTerm = pos == -1 ? AnyTerm.THE_ONE : CONCRETE.createInt(pos);
+		ITerm posTerm = pos == -1 ? AnyTerm.ANY_INT : CONCRETE.createInt(pos);
 		AParam param = (AParam) pparam;
 		String name = param.getName().getText();
-		String type = ((AType) param.getType()).getName().getText();
+		TName type = ((AType) param.getType()).getName();
+		Type.validateJavaName(type);
 		acceptRel.add(BASIC.createTuple(method, TERM.createString(expandLocal(name)), posTerm));
 
 		IRelation hasParamRel = parent.model.getRelation(Constants.hasParamP);
 		hasParamRel.add(BASIC.createTuple(method,
-						  TERM.createString(type),
+						  TERM.createString(type.getText()),
 						  TERM.createString(name),
 						  posTerm));
 
@@ -525,7 +532,7 @@ class SAMMethod {
 	 *	local.
 	 */
 	private void addArg(String callSite, int pos, PExpr expr) throws ParserException {
-		ITerm posTerm = pos == -1 ? AnyTerm.THE_ONE : CONCRETE.createInt(pos);
+		ITerm posTerm = pos == -1 ? AnyTerm.ANY_INT : CONCRETE.createInt(pos);
 		IRule rule;
 
 		if (expr instanceof ACopyExpr) {

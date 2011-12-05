@@ -117,12 +117,12 @@ maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue) :-
     maySendFromAnyContext(?Caller, ?CallSite, ?Pos, ?ArgValue),
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
 
-didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ArgValue) :-
+didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
-	maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?ArgValue),
+	maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
         MATCH(?SendPos, ?ParamPos, ?DontCarePos),
         hasParam(?Method, ?ParamType, ?Param, ?ParamPos),
-        MAY_ASSIGN(?ParamType, ?ArgValue),
+        ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
         !methodDoesContextMapping(?Method).
 
 /* Default aggregation for child objects */
@@ -161,9 +161,10 @@ hasIdentity(?Child, ?Identity) :-
 
 /* Caller may invoke Target.Method if: */
 accessAllowed(?Caller, ?Target, ?Method) :-
-    hasIdentity(?Caller, ?Identity),           // Caller's identity is Identity
-    grantsRole(?Target, ?Role, ?Identity),     // Target grants Role to Identity
-    PermittedRole(?Method, ?Role).             // Role is allowed to invoke the method
+    hasIdentity(?Caller, ?CallerIdentity),              // Caller's identity is Identity
+    grantsRole(?Target, ?Role, ?GrantedIdentity),       // Target grants Role to Identity
+    MATCH(?CallerIdentity, ?GrantedIdentity, ?UnusedResult),  // Might be any() type
+    PermittedRole(?Method, ?Role).                      // Role is allowed to invoke the method
 
 /* Objects may call others with the same identity. */
 accessAllowed(?Caller, ?Target) :-

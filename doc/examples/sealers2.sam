@@ -3,11 +3,11 @@
 import "includes/sealers-common.sam".
 
 class Sender {
-  private Sealer mySealer;
-  private Box myBox1;
-  private Box myBox2;
+  private Ref mySealer;
+  private Ref myBox1;
+  private Ref myBox2;
 
-  public Sender(Sealer sealer) {
+  public Sender(Ref sealer) {
     mySealer = sealer;
   }
 

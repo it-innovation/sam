@@ -3,10 +3,10 @@
 import "includes/sealers-common.sam".
 
 class Sender {
-  private Sealer mySealer;
-  private Box myBox;
+  private Ref mySealer;
+  private Ref myBox;
 
-  public Sender(Sealer sealer) {
+  public Sender(Ref sealer) {
     mySealer = sealer;
     Object precious = new Precious();
     myBox = sealer.seal(precious);

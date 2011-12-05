@@ -43,26 +43,24 @@ public class TermDefinition {
 	public final String name;
 	public final Type type;
 
+	public TermDefinition(Type type) {
+		this.type = type;
+		decl = null;
+		name = null;
+	}
+
 	public TermDefinition(PTermDecl parsed) throws ParserException {
 		decl = ((ATermDecl) parsed);
 		this.name = decl.getName().getText();
 
 		AType type = (AType) decl.getType();
 		if (type == null) {
-			this.type = Type.OBJECT;
+			this.type = Type.ObjectT;
 		} else {
 			String typeName = type.getName().getText();
-			if (typeName.equals("Object")) {
-				this.type = Type.OBJECT;
-			} else if (typeName.equals("String")) {
-				this.type = Type.STRING;
-			} else if (typeName.equals("boolean")) {
-				this.type = Type.BOOL;
-			} else if (typeName.equals("int")) {
-				this.type = Type.INT;
-			} else if (typeName.equals("Ref")) {
-				this.type = Type.REF;
-			} else {
+			try {
+				this.type = Type.fromJavaName(typeName);
+			} catch (IllegalArgumentException ex) {
 				throw new ParserException(type.getName(), "Bad type: " + typeName);
 			}
 		}
@@ -79,23 +77,24 @@ public class TermDefinition {
 	public Type checkType(Type type, boolean head) throws ParserException {
 		if (!type.equals(this.type)) {
 			if (head) {
-				if (this.type.equals(Type.OBJECT)) {
+				if (this.type.equals(Type.ObjectT)) {
 					return type;
 				}
 			} else {
 				/* The possible types are the intersection of the two. If the intersection is empty,
 				 * it's probably an error.
 				 */
-				if (type.equals(Type.OBJECT)) {
-					return this.type;
-				}
-				if (this.type.equals(Type.OBJECT)) {
-					return type;
+				Type intersection = type.intersect(this.type);
+				if (intersection != null) {
+					return intersection;
 				}
 			}
 
 			AType aType = (AType) decl.getType();
-			throw new ParserException(aType == null ? null : aType.getName(), "Wrong type: declared=" + this.type + ", actual=" + type);
+			throw new ParserException(aType == null ? null : aType.getName(),
+					"Wrong type:\n" +
+					"declared=" + this.type.toJavaName() + "\n" +
+					"actual=" + type.toJavaName());
 		}
 		return type;
 	}

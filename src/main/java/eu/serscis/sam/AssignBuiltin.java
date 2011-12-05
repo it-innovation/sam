@@ -28,6 +28,7 @@
 
 package eu.serscis.sam;
 
+import org.deri.iris.builtins.FunctionalBuiltin;
 import org.deri.iris.api.terms.concrete.IBooleanTerm;
 import org.deri.iris.api.terms.concrete.IIntegerTerm;
 import org.deri.iris.api.terms.IStringTerm;
@@ -35,48 +36,45 @@ import eu.serscis.sam.RefTerm;
 
 import org.deri.iris.api.basics.IPredicate;
 import org.deri.iris.api.terms.ITerm;
-import org.deri.iris.builtins.BooleanBuiltin;
 import static org.deri.iris.factory.Factory.*;
 
-public class MayAssignBuiltin extends BooleanBuiltin {
-	private static final String PREDICATE_STRING = "MAY_ASSIGN";
+public class AssignBuiltin extends FunctionalBuiltin {
+	private static final String PREDICATE_STRING = "ASSIGN";
 	private static final IPredicate PREDICATE = BASIC.createPredicate(PREDICATE_STRING, -1);
 
-	public MayAssignBuiltin(ITerm... terms) {
+	public AssignBuiltin(ITerm... terms) {
 		super(BASIC.createPredicate(PREDICATE_STRING, terms.length), terms);
 		
-		if (terms.length != 2) {
-			throw new IllegalArgumentException("Must have exactly two terms");
+		if (terms.length != 3) {
+			throw new IllegalArgumentException("Must have exactly three terms");
 		}
 	}
 
-	protected boolean computeResult(ITerm[] terms) {
+	protected ITerm computeResult(ITerm[] terms) {
 		return mayAssign(terms[0], terms[1]);
 	}
 	
-	public static boolean mayAssign(ITerm type, ITerm value) {
+	public static ITerm mayAssign(ITerm type, ITerm value) {
 		if (type instanceof IStringTerm) {
 			String typeName = type.getValue().toString();
-			if (typeName.equals("Object")) {
-				return true;
+			Type requiredType = Type.fromJavaName(typeName);
+			Type valueType = Type.fromTerm(value);
+			Type intersection = requiredType.intersect(valueType);
+
+			//System.out.println("Assign " + type + " = " + value + " -> " + intersection);
+			//System.out.println("" + requiredType + ".intersect(" + valueType + ") = " + intersection);
+
+			if (intersection == null) {
+				return null;			// e.g. !ASSIGN("String", 3, ?Result)
 			}
-			if (typeName.equals("String") || typeName.equals("Identity")) {
-				return value instanceof IStringTerm;
+
+			if (value instanceof AnyTerm) {
+				return new AnyTerm(intersection);	// e.g. ASSIGN("String", any(Value), any(String))
 			}
-			if (typeName.equals("int")) {
-				return value instanceof IIntegerTerm;
-			}
-			if (typeName.equals("boolean")) {
-				return value instanceof IBooleanTerm;
-			}
-			if (typeName.equals("Value")) {
-				return !(value instanceof RefTerm);
-			}
-			// Otherwise, we specified a user-defined type, which
-			// must be a reference.
-			return value instanceof RefTerm;
+
+			return value;				// e.g. ASSIGN("String", "hi", "hi").
 		} else {
-			return false;
+			return null;
 		}
 	}
 }

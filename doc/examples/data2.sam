@@ -2,20 +2,20 @@ import "includes/data1MustCall.sam".
 
 class DataProvider {
   public File newFile() {
-    File file = new File();
+    Ref file = new File();
     return file;
   }
 }
 
 class Client {
-  private DataProvider myDataProvider;
+  private Ref myDataProvider;
 
-  public Client(DataProvider dataProvider) {
+  public Client(Ref dataProvider) {
     myDataProvider = dataProvider;
   }
 
   public void test() {
-    File file = myDataProvider.newFile();
+    Ref file = myDataProvider.newFile();
     file.put();
     file.get();
   }
@@ -29,7 +29,7 @@ class File {
 config {
     Client user;
     Client otherUsers;
-    DataProvider dataProvider;
+    Ref dataProvider;
 
     test {
         dataProvider = new DataProvider();

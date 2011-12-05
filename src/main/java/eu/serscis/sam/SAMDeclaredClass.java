@@ -66,6 +66,7 @@ class SAMDeclaredClass extends SAMClass {
 		for (PField f : body.getField()) {
 			AField field = (AField) f;
 
+			Type.validateJavaName(((AType) field.getType()).getName());
 			declareField(field.getName());
 		}
 

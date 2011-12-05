@@ -9,10 +9,10 @@ class User {
 
 config {
   test "A" {
-    Object x = new Unknown();
-    Object y = new Unknown();
+    Ref x = new Unknown();
+    Ref y = new Unknown();
 
-    User alice = new User();
+    Ref alice = new User();
 
     alice.run(x);
     alice.run(y);

@@ -39,9 +39,6 @@ hasValue(?Object, ?Value) :- field(?Object, ?AnyVar, ?Value), !isRef(?Value).
 
 /* Error checking */
 
-error("Not a value (not registered as a constant)", ?Object, ?Value) :-
-    hasValue(?Object, ?Value), !isConstant(?Value).
-
 error("Live invocation for non-alive object", ?Invocation, ?Object) :-
 	liveMethod(?Object, ?Invocation, ?Method), !live(?Object).
 

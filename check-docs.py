@@ -20,6 +20,8 @@ def parse_dl(path):
 			declared.add(line.split(' ', 1)[1].strip()[:-1])
 parse_dl(os.path.join(dldir, 'base.sam'))
 
+declared.add("ASSIGN(String Type, Object value, Type result)")
+
 undocumented = declared - documented
 if undocumented:
 	print "Undocumented:"

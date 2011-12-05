@@ -29,7 +29,7 @@
 /* declarations */
 
 declare IS_STRING(String string).
-declare TO_STRING(Object any, String string).
+declare TO_STRING(Object object, String string).
 declare IS_REF(Ref ref).
 
 declare definedType(String type).
@@ -216,7 +216,7 @@ accessAllowed(?Caller, ?Caller) :- isRef(?Caller).
 field(?Object, "ref", ?Target) :- isA(?Object, "Unknown"), isPublic(?Target).
 
 // Unknown objects have access to all constants too
-field(?Object, "ref", ?Value) :- isA(?Object, "Unknown"), isConstant(?Value).
+field(?Object, "ref", any(Value)) :- isA(?Object, "Unknown").
 
 /* A simplified version of didCall/5 useful for writing goals. */
 didCall(?Caller, ?Target, ?Method) :-

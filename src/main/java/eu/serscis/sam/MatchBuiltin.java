@@ -57,10 +57,13 @@ public class MatchBuiltin extends FunctionalBuiltin {
 
 		ITerm result;
 
+		/* If both terms are not any(), they match only if they are equal.
+		 * Otherwise, check that the types match.
+		 */
 		if (first instanceof AnyTerm) {
-			result = second;
+			result = matchAny((AnyTerm) first, second);
 		} else if (second instanceof AnyTerm) {
-			result = first;
+			result = matchAny((AnyTerm) second, first);
 		} else {
 			if (first.equals(second)) {
 				result = first;
@@ -72,4 +75,21 @@ public class MatchBuiltin extends FunctionalBuiltin {
 		return result;
 	}
 
+	private ITerm matchAny(AnyTerm any, ITerm other) {
+		if (other instanceof AnyTerm) {
+			Type intersection = any.type.intersect(((AnyTerm) other).type);
+			if (intersection == null) {
+				return null;			// e.g. !MATCH(any(int), any(bool), ?Result)
+			} else {
+				return new AnyTerm(intersection); // e.g. MATCH(any(int), any(Value), any(Value))
+			}
+		}
+
+		Type otherType = Type.fromTerm(other);
+		if (any.type.intersect(otherType) != null) {	// e.g. MATCH(any(int), 3, 3)
+			return other;
+		}
+
+		return null;					// e.g. !MATCH(any(int), "hi", ?Result)
+	}
 }

@@ -28,6 +28,14 @@
 
 package eu.serscis.sam;
 
+import eu.serscis.sam.parser.ParserException;
+import eu.serscis.sam.node.TName;
+import eu.serscis.sam.AnyTerm;
+import org.deri.iris.api.terms.concrete.IBooleanTerm;
+import org.deri.iris.api.terms.concrete.IIntegerTerm;
+import eu.serscis.sam.RefTerm;
+import org.deri.iris.api.terms.ITerm;
+import org.deri.iris.api.terms.IStringTerm;
 import eu.serscis.sam.node.ATermDecl;
 import eu.serscis.sam.node.PTermDecl;
 import java.util.List;
@@ -37,5 +45,70 @@ import org.deri.iris.api.terms.ITerm;
 import static org.deri.iris.factory.Factory.*;
 
 public enum Type {
-	OBJECT, REF, STRING, INT, BOOL, ANY;
+	ObjectT, RefT, StringT, intT, booleanT, ValueT;
+
+	static public Type fromJavaName(String javaName) {
+		return valueOf(javaName + "T");
+	}
+
+	static public Type fromTerm(ITerm term) {
+		if (term instanceof IStringTerm) {
+			return StringT;
+		} else if (term instanceof RefTerm) {
+			return RefT;
+		} else if (term instanceof IIntegerTerm) {
+			return intT;
+		} else if (term instanceof IBooleanTerm) {
+			return booleanT;
+		} else if (term instanceof AnyTerm) {
+			return ((AnyTerm) term).type;
+		} else {
+			throw new RuntimeException("Unknown term type: " + term);
+		}
+	}
+
+	public String toJavaName() {
+		String s = this.toString();
+		return s.substring(0, s.length() - 1);
+	}
+
+	public Type intersect(Type other) {
+		if (other == null) {
+			throw new IllegalArgumentException("other is null");
+		}
+		if (other == this) {
+			return this;
+		}
+		if (this == ObjectT) {
+			return other;
+		}
+		if (this == ValueT) {
+			if (other == ObjectT) {
+				return ValueT;
+			}
+			if (other == RefT) {
+				return null;
+			}
+			return other;
+		}
+		if (this == RefT) {
+			if (other == ObjectT) {
+				return RefT;
+			}
+			// (Ref*Ref handled above)
+			return null;
+		}
+		if (other == ObjectT || other == ValueT || other == RefT) {
+			return other.intersect(this);
+		}
+		return null;
+	}
+
+	public static void validateJavaName(TName type) throws ParserException {
+		try {
+			fromJavaName(type.getText());
+		} catch (IllegalArgumentException ex) {
+			throw new ParserException(type, "Unknown SAM type '" + type + "' (hint: use Object/Value/Ref)");
+		}
+	}
 }

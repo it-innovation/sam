@@ -5,7 +5,7 @@ class Task {
 
 class Factory {
   public Task newInstance() {
-    Task task = new Task();
+    Ref task = new Task();
     return task;
   }
 }

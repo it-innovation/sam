@@ -8,16 +8,16 @@ isPublic(?X) :- isRef(?X).   // anyone can get a reference to any object
 
 class DataProvider {
   @PermittedRole("world")
-  public File newFile(Identity owner) {
-    File file = new File(owner);
+  public File newFile(String owner) {
+    Ref file = new File(owner);
     return file;
   }
 }
 
 class File {
-  private Identity myOwner;
+  private String myOwner;
 
-  public File(Identity owner) {
+  public File(String owner) {
     myOwner = owner;
   }
 
@@ -30,8 +30,8 @@ class File {
 
 class ServiceProvider {
     @PermittedRole("world")
-    public File process(File file) {
-        File image = new File("serviceProvider.crt");
+    public File process(Ref file) {
+        Ref image = new File("serviceProvider.crt");
         file.get();
         image.put();
         return image;
@@ -39,26 +39,26 @@ class ServiceProvider {
 }
 
 class Client {
-  private DataProvider myDataProvider;
-  private ServiceProvider myServiceProvider;
+  private Ref myDataProvider;
+  private Ref myServiceProvider;
 
-  public Client(DataProvider dataProvider, ServiceProvider serviceProvider) {
+  public Client(Ref dataProvider, Ref serviceProvider) {
     myDataProvider = dataProvider;
     myServiceProvider = serviceProvider;
   }
 
   public void test() {
-    File file = myDataProvider.newFile("user.crt");
+    Ref file = myDataProvider.newFile("user.crt");
     file.put();
-    File result = myServiceProvider.process(file);
+    Ref result = myServiceProvider.process(file);
     result.get();
   }
 }
 
 config {
     Client user;
-    DataProvider dataProvider;
-    ServiceProvider serviceProvider;
+    Ref dataProvider;
+    Ref serviceProvider;
 
     test {
         dataProvider = new DataProvider();
@@ -76,6 +76,6 @@ hasIdentity(<serviceProvider>, "serviceProvider.crt").
 
 grantsRole(<dataProvider>, "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
 grantsRole(<serviceProvider>, "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
-grantsRole(?File, "owner", ?Identity) :- field(?File, "myOwner", ?Identity), IS_STRING(?Identity).
+grantsRole(?File, "owner", ?Identity) :- field(?File, "myOwner", ?Value), ASSIGN("String", ?Value, ?Identity).
 
 expectFailure.

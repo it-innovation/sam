@@ -92,7 +92,7 @@ public class Model {
 
 		builtinRegister.registerBuiltin(new IsRefBuiltin(t1));
 
-		builtinRegister.registerBuiltin(new MayAssignBuiltin(t1, t2));
+		builtinRegister.registerBuiltin(new AssignBuiltin(t1, t2, t3));
 
 		builtinRegister.registerBuiltin(new MatchBuiltin(t1, t2, t3));
 	}
@@ -174,7 +174,8 @@ public class Model {
 			boolean val = Boolean.valueOf(((ABoolTerm) parsed).getBool().getText());
 			return CONCRETE.createBoolean(val);
 		} else if (parsed instanceof AAnyTerm) {
-			return AnyTerm.THE_ONE;
+			AAnyTerm term = ((AAnyTerm) parsed);
+			return AnyTerm.valueOf(term.getName());
 		} else if (parsed instanceof AIntTerm) {
 			int val = Integer.valueOf(((AIntTerm) parsed).getNumber().getText());
 			return CONCRETE.createInt(val);
@@ -271,7 +272,17 @@ public class Model {
 		TermDefinition[] terms = getDefinition(predicate);
 
 		if (terms == null) {
-			return;
+			// Special-case the type for ASSIGN("type", ?X, ?Y).
+			if (predicate.equals(Constants.ASSIGNP) && tuple.get(0) instanceof IStringTerm) {
+				Type type = Type.fromJavaName(tuple.get(0).getValue().toString());
+				terms = new TermDefinition[] {
+						new TermDefinition(Type.StringT),
+						new TermDefinition(Type.ObjectT),
+						new TermDefinition(type)
+					};
+			} else {
+				return;
+			}
 		}
 
 		//System.out.println(predicate);
@@ -293,24 +304,12 @@ public class Model {
 					if (lit.isPositive()) {
 						types.put((IVariable) term, termType);
 					}
-				} else if (term instanceof AnyTerm) {
-					// Pass
 				} else {
-					if (term instanceof IStringTerm) {
-						termType = Type.STRING;
-					} else if (term instanceof RefTerm) {
-						termType = Type.REF;
-					} else if (term instanceof IIntegerTerm) {
-						termType = Type.INT;
-					} else if (term instanceof IBooleanTerm) {
-						termType = Type.BOOL;
-					} else {
-						throw new RuntimeException("Unknown term type: " + term);
-					}
+					termType = Type.fromTerm(term);
 					terms[i].checkType(termType, head);
 				}
 			} catch (ParserException ex) {
-				throw new ParserException(null, ex.getMessage() + " in " + predicate + "'s " + term);
+				throw new ParserException(null, ex.getMessage() + "\nin " + predicate + "'s " + term);
 			}
 
 			i++;
