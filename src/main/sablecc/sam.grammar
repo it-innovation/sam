@@ -115,6 +115,7 @@ Productions
   assert = assert_tok literals dot;
 
   pattern = {named} name
+  	  | {dollar} dollar name
           | {any} star;
   config = config_tok l_brace config_body r_brace;
   behaviour = class_tok name extends? l_brace class_body r_brace;

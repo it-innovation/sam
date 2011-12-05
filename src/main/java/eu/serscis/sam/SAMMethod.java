@@ -63,8 +63,12 @@ class SAMMethod {
 	private String parsePattern(PPattern parsed) {
 		if (parsed instanceof ANamedPattern) {
 			return ((ANamedPattern) parsed).getName().getText();
-		} else {
+		} else if (parsed instanceof AAnyPattern) {
 			return "*";
+		} else if (parsed instanceof ADollarPattern) {
+			return "$" + ((ADollarPattern) parsed).getName().getText();
+		} else {
+			throw new RuntimeException("Unknown pattern: " + parsed);
 		}
 	}
 
@@ -288,10 +292,21 @@ class SAMMethod {
 					addArgs(callSite, (AArgs) callExpr.getArgs(), callExpr.getStar());
 
 					// callsMethod(callSite, method)
-					IRelation callsMethod = parent.model.getRelation(callsMethodP);
-					if ("*".equals(targetMethod)) {
+					if (callExpr.getMethod() instanceof ADollarPattern) {
+						TName varName = ((ADollarPattern) (callExpr.getMethod())).getName();
+						// callsMethodInLocal(?CallSite, ?LocalVarName).
+						if (!locals.contains(varName.getText())) {
+							throw new ParserException(varName, "Must be a local variable");
+						}
+						parent.model.addFact(callsMethodInLocalP,
+									BASIC.createTuple(
+										TERM.createString(callSite),
+										TERM.createString(expandLocal(varName.getText()))));
+					} else if ("*".equals(targetMethod)) {
+						IRelation callsMethod = parent.model.getRelation(callsMethodP);
 						callsMethod.add(BASIC.createTuple(TERM.createString(callSite), new AnyTerm(Type.StringT)));
 					} else {
+						IRelation callsMethod = parent.model.getRelation(callsMethodP);
 						callsMethod.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetMethod)));
 					}
 

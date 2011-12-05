@@ -23,7 +23,9 @@ class Logger {
     }
 
     public Object *(Object arg*) {
-        Object value = myUnderlying.*(arg*);
+        String method = ?MethodName :- didCall($Caller, ?CInvocation, ?CallSite, this, $Context, ?Method),
+                                        callsMethod(?CallSite, ?MethodName);
+        Object value = myUnderlying.$method(arg*);
         return value;
     }
 }
@@ -49,7 +51,8 @@ config {
     }
 
     test {
-        Object delegate = new Unknown(loggedReadOnly);
+        Object delegate = new Unknown();
+        delegate.test(loggedReadOnly);
     }
 }
 

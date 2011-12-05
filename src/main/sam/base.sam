@@ -84,6 +84,7 @@ declare mayAccept(String method, String paramVar, int pos).
 declare accessControlOn().
 declare accessAllowed(Ref caller, Ref target).
 declare accessAllowed(Ref caller, Ref target, String method).
+declare callsMethodInLocal(String callSite, String localVarName).
 declare callsMethod(String callSite, String methodName).
 declare methodName(String method, String methodName).
 declare mayCallObject(Ref caller, String callerInvocation, String callSite, Object target).

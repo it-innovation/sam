@@ -49,6 +49,17 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method) :-
 	MATCH(?MethodName1, ?MethodName2, ?MethodName),
 	accessAllowed(?Caller, ?Target, ?Method).
 
+// For dynamic call-sites, e.g. targetObject.$method()
+didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method) :-
+	mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target),
+	isA(?Target, ?TargetType),
+	hasMethod(?TargetType, ?Method),
+	callsMethodInLocal(?CallSite, ?LocalVarName),
+	local(?Caller, ?CallerInvocation, ?LocalVarName, ?MethodName1),
+	methodName(?Method, ?MethodName2),
+	MATCH(?MethodName1, ?MethodName2, ?MethodName),
+	accessAllowed(?Caller, ?Target, ?Method).
+
 didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?CallerInvocation, ?Method) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
 	!methodDoesContextMapping(?Method).

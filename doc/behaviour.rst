@@ -124,6 +124,10 @@ Call-sites
 
    This call-site may call methods named `MethodName` (which may be `any(String)` for Unknown callers).
 
+.. function:: callsMethodInLocal(String callSite, String localVarName)
+
+   This call-site may call methods whose name are in the given local variable.
+
 .. function:: maySend(Ref caller, String callerInvocation, String callSite, int pos, Object argValue)
 
    CallSite may send the value `ArgValue` as parameter number `Pos` (or as any
@@ -232,3 +236,23 @@ Therefore:
 * If you define a behaviour (class) in SAM then the definition automatically says that the real system can't call fields on another object directly, since
   there is no way to express this in SAM syntax.
 * If you leave the behaviour undefined then the real system would still be safe even if all members were public.
+
+
+Dynamic calls
+-------------
+The syntax `$varName` can be used in place of a method name to indicate that the name is stored in a local variable. For example, to implement
+a proxy::
+
+  class Proxy {
+      private Object myUnderlying;
+
+      public Proxy(Object underlying) {
+          myUnderlying = underlying;
+      }
+
+      public Object $method(Object arg*) {
+          Object value = myUnderlying.$method(arg*);
+          return value;
+      }
+  }
+
