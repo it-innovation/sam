@@ -142,12 +142,6 @@ Low-level control
    enable this for a method, you will need to set :func:`didCall`/6 based on `didCall`/5
    somehow and arrange for :func:`didReceive` to get set based on :func:`maySend`/5.
 
-.. function:: methodMatches(String callSite, Ref target, String method)
-
-   When `CallSite` invokes `Target`, `Method` is a method that could be invoked. Normally this
-   is true when the method name in `CallSite` equals the name of `Method`, but there are extra
-   cases to support unknown caller and target types.
-
 Generated predicates
 --------------------
 

@@ -105,7 +105,13 @@ class SAMDeclaredClass extends SAMClass {
 				hasMethodRel.add(BASIC.createTuple(TERM.createString(this.name), methodNameFull));
 
 				// methodName("class.method", "method")
-				methodNameRel.add(BASIC.createTuple(methodNameFull, TERM.createString(methodName)));
+				ITerm methodNameTerm;
+				if (methodPattern instanceof ANamedPattern) {
+					methodNameTerm = TERM.createString(methodName);
+				} else {
+					methodNameTerm = new AnyTerm(Type.StringT);
+				}
+				methodNameRel.add(BASIC.createTuple(methodNameFull, methodNameTerm));
 			}
 
 			SAMMethod sm = new SAMMethod(this, method, methodNameFull);

@@ -122,11 +122,7 @@ Call-sites
 
 .. function:: callsMethod(String callSite, String methodName)
 
-   This call-site may call methods named `MethodName`.
-
-.. function:: callsAnyMethod(String callSite)
-
-   This call-site may call methods with any name.
+   This call-site may call methods named `MethodName` (which may be `any(String)` for Unknown callers).
 
 .. function:: maySend(Ref caller, String callerInvocation, String callSite, int pos, Object argValue)
 

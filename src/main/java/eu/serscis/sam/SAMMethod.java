@@ -59,6 +59,7 @@ class SAMMethod {
 		this.localPrefix = methodNameFull.getValue() + ".";
 	}
 
+	/* This is just used to name the call-site. */
 	private String parsePattern(PPattern parsed) {
 		if (parsed instanceof ANamedPattern) {
 			return ((ANamedPattern) parsed).getName().getText();
@@ -273,12 +274,11 @@ class SAMMethod {
 					addArgs(callSite, (AArgs) callExpr.getArgs(), callExpr.getStar());
 
 					// callsMethod(callSite, method)
+					IRelation callsMethod = parent.model.getRelation(callsMethodP);
 					if ("*".equals(targetMethod)) {
-						IRelation rel = parent.model.getRelation(callsAnyMethodP);
-						rel.add(BASIC.createTuple(TERM.createString(callSite)));
+						callsMethod.add(BASIC.createTuple(TERM.createString(callSite), new AnyTerm(Type.StringT)));
 					} else {
-						IRelation rel = parent.model.getRelation(callsMethodP);
-						rel.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetMethod)));
+						callsMethod.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetMethod)));
 					}
 
 					valueP = didGetP;

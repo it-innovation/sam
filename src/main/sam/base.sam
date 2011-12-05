@@ -84,10 +84,8 @@ declare mayAccept(String method, String paramVar, int pos).
 declare accessControlOn().
 declare accessAllowed(Ref caller, Ref target).
 declare accessAllowed(Ref caller, Ref target, String method).
-declare methodMatches(String callSite, Ref target, String method).
 declare callsMethod(String callSite, String methodName).
 declare methodName(String method, String methodName).
-declare callsAnyMethod(String callSite).
 declare mayCallObject(Ref caller, String callerInvocation, String callSite, Object target).
 declare didCreate(Ref caller, String invocation, String callSite, Ref newChild).
 declare hasConstructor(String type, String method).
