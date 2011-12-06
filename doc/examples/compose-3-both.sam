@@ -1,0 +1,42 @@
+import "includes/compose.sam".
+import "includes/compose3MustCall.sam".
+
+class Delegate {
+    public void test(Object file) {
+        file.read();
+    }
+}
+
+class File {
+    public void write() { }
+
+    public void read() { }
+
+    @AnyoneMayCall
+    public Object readOnly() {
+        Object readOnly = new ReadOnly(this);
+        return readOnly;
+    }
+}
+
+config {
+    Object file;
+    Object readOnly;
+    Object logged;
+
+    setup {
+        file = new File();
+        readOnly = file.readOnly();
+        logged = new Logger(readOnly);
+    }
+
+    test "NotLogged" {
+        //Object delegate = new Delegate();
+        Object delegate = new Unknown();
+        delegate.test(logged);
+    }
+}
+
+ignoreEdgeForRanking("logged", "delegate").
+
+expectFailure.

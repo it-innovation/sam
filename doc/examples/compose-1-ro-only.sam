@@ -1,0 +1,38 @@
+import "includes/compose.sam".
+//import "mustCall.sam".
+
+class Delegate {
+    public void test(Object file) {
+        file.read();
+    }
+}
+
+class File {
+    public void write() { }
+    public void read() { }
+
+    @AnyoneMayCall
+    public Object readOnly() {
+        Object readOnly = new ReadOnly(this);
+        return readOnly;
+    }
+}
+
+config {
+    Object file;
+    Object readOnly;
+
+    setup {
+        file = new File();
+	readOnly = file.readOnly();
+    }
+
+    test {
+        Object delegate;
+        
+        delegate = new Delegate();
+        //delegate = new Unknown();
+
+        delegate.test(readOnly);
+    }
+}

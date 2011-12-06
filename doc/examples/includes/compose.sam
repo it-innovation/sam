@@ -1,0 +1,31 @@
+class ReadOnly {
+    private Object myUnderlying;
+
+    public ReadOnly(Object underlying) {
+        myUnderlying = underlying;
+    }
+
+    public Object read() {
+        Object value = myUnderlying.read();
+        return value;
+    }
+
+    @AnyoneMayCall
+    public Object readOnly() {
+        return this;    // Already read-only
+    }
+}
+
+class Logger {
+    private Object myUnderlying;
+
+    public Logger(Object underlying) {
+        myUnderlying = underlying;
+    }
+
+    @GroupAs("Logged")
+    public Object $method(Object arg*) {
+        Object value = myUnderlying.$method(arg*);
+        return value;
+    }
+}

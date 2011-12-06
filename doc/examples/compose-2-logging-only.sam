@@ -1,0 +1,33 @@
+import "includes/compose.sam".
+//import "mustCall.sam".
+
+class Delegate {
+    public void test(Object file) {
+        file.read();
+        file.write();
+    }
+}
+
+class File {
+    public void write() { }
+    public void read() { }
+}
+
+
+config {
+    Object file;
+    Object logged;
+
+    setup {
+        file = new File();
+        logged = new Logger(file);
+    }
+
+    test "NotLogged" {
+        Object delegate = new Delegate();
+        //Object delegate = new Unknown();
+        delegate.test(logged);
+    }
+}
+
+ignoreEdgeForRanking("logged", "delegate").
