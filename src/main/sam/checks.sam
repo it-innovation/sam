@@ -92,6 +92,7 @@ mayCall(?Caller, ?Invocation, ?Target, ?Method) :-
 haveBadAccess(?Caller, ?Target) :-
     checkCalls(?Target),
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?AnyInvocation, ?Method),
+    !AnyoneMayCall(?Method),
     !mayCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     !mayCall(?Caller, ?CallerInvocation, ?Target, ?Method),
     !mayCall(?Caller, ?Target, ?Method).

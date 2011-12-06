@@ -123,6 +123,16 @@ could still call the method with a null argument).
 
    Defines which values map to which contexts.
 
+
+Group everything into a single context
+--------------------------------------
+
+.. function:: GroupAs(String method, String context)
+
+   All calls to this method are grouped into `context`. This can be useful to reduce the number
+   of contexts where it doesn't matter, or to tag certain calls (for example, grouping all calls
+   on a logging proxy into a "Logged" context).
+
 Low-level control
 -----------------
 

@@ -106,3 +106,23 @@ error("GroupByArgCase without GroupByArgAt", ?Method) :-
 error("GroupByArgAt method cannot accept arguments at any position", ?Method) :-
     GroupByArgAt(?Method, ?Pos),
     hasParam(?Method, ?ParamType, ?Param, any(int)).
+
+
+
+
+///////////////// Group everything into a single context
+
+methodDoesContextMapping(?Method) :- GroupAs(?Method, ?Context).
+isInvocation(?Context) :- GroupAs(?Method, ?Context).
+
+didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method) :-
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+	GroupAs(?Method, ?TargetContext).
+
+didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
+	MATCH(?SendPos, ?ParamPos, ?DontCarePos),
+	hasParam(?Method, ?ParamType, ?Param, ?ParamPos),
+	ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
+	GroupAs(?Method, ?TargetInvocation).

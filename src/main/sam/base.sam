@@ -114,6 +114,10 @@ declare didCreate(Ref factory, Ref object).
 
 declare hasIdentity(Ref object, String identity).
 
+declare AnyoneMayCall(String method).
+
+declare GroupAs(String method, String context).
+
 declare GroupByArgAt(String method, int Pos).
 declare GroupByArgCase(String method, Object value, String context).
 
