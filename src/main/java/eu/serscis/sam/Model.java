@@ -28,6 +28,13 @@
 
 package eu.serscis.sam;
 
+import eu.serscis.sam.node.TNumber;
+import eu.serscis.sam.node.TBool;
+import eu.serscis.sam.node.TName;
+import eu.serscis.sam.node.TRefLiteral;
+import eu.serscis.sam.node.TStringLiteral;
+import java.util.Iterator;
+import org.deri.iris.api.basics.IQuery;
 import eu.serscis.sam.node.AAnyTerm;
 import org.deri.iris.api.terms.concrete.IBooleanTerm;
 import org.deri.iris.api.terms.concrete.IIntegerTerm;
@@ -153,31 +160,41 @@ public class Model {
 		declared.put(pred, terms);
 	}
 
-	public ITerm parseTerm(PTerm parsed, TermProcessor termFn) throws ParserException {
+	public ITerm parseTerm(PTerm parsed, TermProcessor termFn, List<Token> tokensOut) throws ParserException {
 		if (termFn != null) {
-			ITerm term = termFn.process(parsed);
+			ITerm term = termFn.process(parsed, tokensOut);
 			if (term != null) {
 				return term;
 			}
 		}
 
 		if (parsed instanceof AStringTerm) {
-			String str = Constants.getString(((AStringTerm) parsed).getStringLiteral());
+			TStringLiteral lit = ((AStringTerm) parsed).getStringLiteral();
+			String str = Constants.getString(lit);
+			tokensOut.add(lit);
 			return TERM.createString(str);
 		} else if (parsed instanceof ARefTerm) {
-			String str = Constants.getRef(((ARefTerm) parsed).getRefLiteral());
+			TRefLiteral lit = ((ARefTerm) parsed).getRefLiteral();
+			String str = Constants.getRef(lit);
+			tokensOut.add(lit);
 			return new RefTerm(str);
 		} else if (parsed instanceof AVarTerm) {
-			String name = ((AVarTerm) parsed).getName().getText();
-			return TERM.createVariable(name);
+			TName name = ((AVarTerm) parsed).getName();
+			tokensOut.add(name);
+			return TERM.createVariable(name.getText());
 		} else if (parsed instanceof ABoolTerm) {
-			boolean val = Boolean.valueOf(((ABoolTerm) parsed).getBool().getText());
+			TBool bool =((ABoolTerm) parsed).getBool();
+			tokensOut.add(bool);
+			boolean val = Boolean.valueOf(bool.getText());
 			return CONCRETE.createBoolean(val);
 		} else if (parsed instanceof AAnyTerm) {
 			AAnyTerm term = ((AAnyTerm) parsed);
+			tokensOut.add(term.getName());
 			return AnyTerm.valueOf(term.getName());
 		} else if (parsed instanceof AIntTerm) {
-			int val = Integer.valueOf(((AIntTerm) parsed).getNumber().getText());
+			TNumber tok = ((AIntTerm) parsed).getNumber();
+			tokensOut.add(tok);
+			int val = Integer.valueOf(tok.getText());
 			return CONCRETE.createInt(val);
 		} else if (parsed instanceof AJavavarTerm) {
 			AJavavarTerm var = (AJavavarTerm) parsed;
@@ -187,27 +204,29 @@ public class Model {
 		}
 	}
 
-	public ITuple parseTerms(ATerms parsed, TermProcessor termFn) throws ParserException {
+	public ITuple parseTerms(ATerms parsed, TermProcessor termFn, List<Token> tokensOut) throws ParserException {
 		List<ITerm> terms = new LinkedList<ITerm>();
 
-		terms.add(parseTerm(parsed.getTerm(), termFn));
+		terms.add(parseTerm(parsed.getTerm(), termFn, tokensOut));
 
 		for (PTermTail tail : parsed.getTermTail()) {
-			terms.add(parseTerm(((ATermTail) tail).getTerm(), termFn));
+			terms.add(parseTerm(((ATermTail) tail).getTerm(), termFn, tokensOut));
 		}
 		return BASIC.createTuple(terms);
 	}
 
 	public IAtom parseAtom(PAtom parsed) throws ParserException {
-		return parseAtom(parsed, null);
+		return parseAtom(parsed, null, new LinkedList<Token>());
 	}
 
-	public IAtom parseAtom(PAtom parsed, TermProcessor termFn) throws ParserException {
+	public IAtom parseAtom(PAtom parsed, TermProcessor termFn, List<Token> tokensOut) throws ParserException {
 		if (parsed instanceof ANormalAtom) {
 			ANormalAtom atom = (ANormalAtom) parsed;
-			ITuple terms = parseTerms((ATerms) atom.getTerms(), termFn);
 
 			String name = atom.getName().getText();
+			tokensOut.add(atom.getName());
+
+			ITuple terms = parseTerms((ATerms) atom.getTerms(), termFn, tokensOut);
 
 			Class<?> builtinClass = builtinRegister.getBuiltinClass(name);
 			if (builtinClass == null) {
@@ -227,6 +246,8 @@ public class Model {
 		} else if (parsed instanceof ANullaryAtom) {
 			ANullaryAtom atom = (ANullaryAtom) parsed;
 
+			tokensOut.add(atom.getName());
+
 			String name = atom.getName().getText();
 			IPredicate predicate = BASIC.createPredicate(name, 0);
 
@@ -238,38 +259,52 @@ public class Model {
 			PBinop op = atom.getBinop();
 
 			if (op instanceof AEqBinop) {
-				return BUILTIN.createEqual(parseTerm(atom.getLhs(), termFn), parseTerm(atom.getRhs(), termFn));
+				tokensOut.add(((AEqBinop) op).getEq());
+				ITerm lhs = parseTerm(atom.getLhs(), termFn, tokensOut);
+				ITerm rhs = parseTerm(atom.getRhs(), termFn, tokensOut);
+				return BUILTIN.createEqual(lhs, rhs);
 			} else if (op instanceof ANeqBinop) {
-				return BUILTIN.createUnequal(parseTerm(atom.getLhs(), termFn), parseTerm(atom.getRhs(), termFn));
+				tokensOut.add(((ANeqBinop) op).getNeq());
+				ITerm lhs = parseTerm(atom.getLhs(), termFn, tokensOut);
+				ITerm rhs = parseTerm(atom.getRhs(), termFn, tokensOut);
+				return BUILTIN.createUnequal(lhs, rhs);
 			} else {
 				throw new RuntimeException("Unknown binary op " + op);
 			}
 		}
 	}
 
-	private ILiteral parseLiteral(PLiteral parsed, TermProcessor termFn) throws ParserException {
+	private ILiteral parseLiteral(PLiteral parsed, TermProcessor termFn, List<Token> tokensOut) throws ParserException {
 		if (parsed instanceof APositiveLiteral) {
-			return BASIC.createLiteral(true, parseAtom(((APositiveLiteral) parsed).getAtom(), termFn));
+			return BASIC.createLiteral(true, parseAtom(((APositiveLiteral) parsed).getAtom(), termFn, tokensOut));
 		} else {
-			return BASIC.createLiteral(false, parseAtom(((ANegativeLiteral) parsed).getAtom(), termFn));
+			return BASIC.createLiteral(false, parseAtom(((ANegativeLiteral) parsed).getAtom(), termFn, tokensOut));
 		}
 	}
 
-	public List<ILiteral> parseLiterals(ALiterals parsed, TermProcessor termFn) throws ParserException {
+	/* Stores a suitable List<Token> for each parsed literal in tokensOut. */
+	public List<ILiteral> parseLiterals(ALiterals parsed, TermProcessor termFn, List<List<Token>> tokensOut) throws ParserException {
 		List<ILiteral> literals = new LinkedList<ILiteral>();
 
-		literals.add(parseLiteral(parsed.getLiteral(), termFn));
+		List<Token> tokens = new LinkedList<Token>();
+		tokensOut.add(tokens);
+		literals.add(parseLiteral(parsed.getLiteral(), termFn, tokens));
 
 		for (PLiteralTail tail : parsed.getLiteralTail()) {
-			literals.add(parseLiteral(((ALiteralTail) tail).getLiteral(), termFn));
+			tokens = new LinkedList<Token>();
+			tokensOut.add(tokens);
+			literals.add(parseLiteral(((ALiteralTail) tail).getLiteral(), termFn, tokens));
 		}
 		return literals;
 	}
 
-	private void updateTypes(ILiteral lit, Map<IVariable,Type> types, boolean head) throws ParserException {
+	private void updateTypes(ILiteral lit, Map<IVariable,Type> types, boolean head, List<Token> tokens) throws ParserException {
 		IPredicate predicate = lit.getAtom().getPredicate();
 		ITuple tuple = lit.getAtom().getTuple();
 		TermDefinition[] terms = getDefinition(predicate);
+		if (tokens != null && tokens.size() != tuple.size() + 1) {
+			throw new RuntimeException("Wrong number of tokens:\n" + tokens + "\n" + lit);
+		}
 
 		if (terms == null) {
 			// Special-case the type for ASSIGN("type", ?X, ?Y).
@@ -309,7 +344,7 @@ public class Model {
 					terms[i].checkType(termType, head);
 				}
 			} catch (ParserException ex) {
-				throw new ParserException(null, ex.getMessage() + "\nin " + predicate + "'s " + term);
+				throw new ParserException(tokens == null ? null : tokens.get(i + 1), ex.getMessage() + "\nin " + predicate + "'s " + term);
 			}
 
 			i++;
@@ -317,29 +352,60 @@ public class Model {
 	}
 
 	public void addRule(IRule rule) throws ParserException {
+		addRule(rule, null);
+	}
+
+	public void addRule(IRule rule, List<List<Token>> tokens) throws ParserException {
 		try {
 			List<ILiteral> head = rule.getHead();
 			List<ILiteral> body = rule.getBody();
 
+			if (tokens != null && tokens.size() != head.size() + body.size()) {
+				throw new RuntimeException("Wrong number of tokens:\n" + tokens + "\n" + head + " :- " + body);
+			}
+
+			int i = head.size();
 			Map<IVariable,Type> types = new HashMap<IVariable,Type>();
 
 			for (ILiteral lit : body) {
-				updateTypes(lit, types, false);
+				updateTypes(lit, types, false, tokens == null ? null : tokens.get(i));
+				i++;
 			}
 
+			i = 0;
 			for (ILiteral lit : head) {
-				updateTypes(lit, types, true);
+				updateTypes(lit, types, true, tokens == null ? null : tokens.get(i));
+				i++;
 			}
 
 			rules.add(rule);
 		} catch (ParserException ex) {
-			throw new ParserException(null, ex.getMessage() + " in " + rule);
+			if (ex.getToken() == null) {
+				throw new ParserException(null, ex.getMessage() + " in " + rule);
+			} else {
+				throw ex;
+			}
+		}
+	}
+
+	public void validateQuery(IQuery query, List<List<Token>> tokens) throws ParserException {
+		List<ILiteral> body = query.getLiterals();
+		Iterator<List<Token>> tokit = tokens.iterator();
+
+		Map<IVariable,Type> types = new HashMap<IVariable,Type>();
+
+		for (ILiteral lit : body) {
+			updateTypes(lit, types, false, tokit.next());
 		}
 	}
 
 	public void addFact(IPredicate pred, ITuple tuple) throws ParserException {
+		addFact(pred, tuple, null);
+	}
+
+	public void addFact(IPredicate pred, ITuple tuple, List<Token> tokens) throws ParserException {
 		ILiteral lit = BASIC.createLiteral(true, pred, tuple);
-		updateTypes(lit, null, true);
+		updateTypes(lit, null, true, tokens);
 
 		IRelation rel = getRelation(pred);
 		rel.add(tuple);

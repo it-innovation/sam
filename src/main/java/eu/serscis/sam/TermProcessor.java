@@ -28,10 +28,12 @@
 
 package eu.serscis.sam;
 
+import eu.serscis.sam.node.Token;
+import java.util.List;
 import org.deri.iris.api.terms.ITerm;
 import eu.serscis.sam.parser.ParserException;
 import eu.serscis.sam.node.PTerm;
 
 public interface TermProcessor {
-	public ITerm process(PTerm parsedTerm) throws ParserException;
+	public ITerm process(PTerm parsedTerm, List<Token> tokenOut) throws ParserException;
 }

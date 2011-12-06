@@ -104,15 +104,20 @@ class SAMMethod {
 		ITerm[] values;
 
 		PAtom a = annotation.getAtom();
+		List<Token> tokens = new LinkedList<Token>();
 
 		if (a instanceof ANullaryAtom) {
 			ANullaryAtom nullary = (ANullaryAtom) a;
 			name = nullary.getName();
+			tokens.add(name);
+			tokens.add(null);
 			values = new ITerm[1];
 		} else {
 			ANormalAtom normal = (ANormalAtom) a;
 			name = normal.getName();
-			ITuple terms = parent.model.parseTerms((ATerms) normal.getTerms(), null);
+			tokens.add(name);
+			tokens.add(null);
+			ITuple terms = parent.model.parseTerms((ATerms) normal.getTerms(), null, tokens);
 
 			values = new ITerm[terms.size() + 1];
 
@@ -125,22 +130,21 @@ class SAMMethod {
 
 		IPredicate pred = BASIC.createPredicate(name.getText(), values.length);
 		parent.model.requireDeclared(name, pred);
-		IRelation rel = parent.model.getRelation(pred);
-
-		rel.add(BASIC.createTuple(values));
+		parent.model.addFact(pred, BASIC.createTuple(values), tokens);
 	}
 
-	public List<ILiteral> processJavaDl(PTerm value, ALiterals parsed) throws ParserException {
+	public List<ILiteral> processJavaDl(PTerm value, ALiterals parsed, List<List<Token>> tokens) throws ParserException {
 		final Set<String> javaVars = new HashSet<String>();
 		final List<ILiteral> extraLiterals = new LinkedList<ILiteral>();
 		final boolean[] need_caller = {false};
 
 		TermProcessor termFn = new TermProcessor() {
-			public ITerm process(PTerm term) throws ParserException {
+			public ITerm process(PTerm term, List<Token> tokenOut) throws ParserException {
 				if (term instanceof AJavavarTerm) {
 					TName tname = ((AJavavarTerm) term).getName();
 					ITerm var = TERM.createVariable("Java_" + tname.getText());
 					extraLiterals.add(getValue(var, tname));
+					tokenOut.add(tname);
 					return var;
 				} else if (term instanceof AVarTerm) {
 					// Rename user variables to avoid conflicts
@@ -150,10 +154,12 @@ class SAMMethod {
 						throw new ParserException(tname, "Possible old use of ?CallerInvocation; use $Context instead");
 					}
 					ITerm var = TERM.createVariable("User_" + name);
+					tokenOut.add(tname);
 					return var;
 				} else if (term instanceof ASpecialTerm) {
 					TName tname = ((ASpecialTerm) term).getName();
 					String name = tname.getText();
+					tokenOut.add(tname);
 					if (name.equals("Context")) {
 						return TERM.createVariable("CallerInvocation");
 					} else if (name.equals("Caller")) {
@@ -167,10 +173,13 @@ class SAMMethod {
 			}
 		};
 
-		List<ILiteral> literals = parent.model.parseLiterals(parsed, termFn);
-		ITerm term = parent.model.parseTerm(value, termFn);
+		List<ILiteral> literals = parent.model.parseLiterals(parsed, termFn, tokens);
+		ITerm term = parent.model.parseTerm(value, termFn, new LinkedList<Token>());
 
 		literals.addAll(extraLiterals);
+		for (int i = extraLiterals.size(); i > 0; i--) {
+			tokens.add(null);
+		}
 
 		/* local(?Caller, ?CallerInvocation, 'var', ?Value) :-
 		 *	isA(?Caller, type),
@@ -194,6 +203,10 @@ class SAMMethod {
 		literals.add(live);
 		literals.add(eq);
 
+		tokens.add(null);
+		tokens.add(null);
+		tokens.add(null);
+
 		if (need_caller[0]) {
 			// didCall(?CallerOfThisMethod, ?Caller_AnyInvocation, ?Caller_CallSite, ?Caller, ?CallerInvocation, method)
 
@@ -205,6 +218,7 @@ class SAMMethod {
 						TERM.createVariable("CallerInvocation"),	// == our invocation
 						methodNameFull));
 			literals.add(didCall);
+			tokens.add(null);
 		}
 
 		return literals;
@@ -411,9 +425,10 @@ class SAMMethod {
 
 				AAssign assign = (AAssign) s.getAssign();
 				PTerm term = s.getTerm();
-				List<ILiteral> lits = processJavaDl(term, (ALiterals) s.getLiterals());
+				List<List<Token>> tokens = new LinkedList<List<Token>>();
+				List<ILiteral> lits = processJavaDl(term, (ALiterals) s.getLiterals(), tokens);
 
-				assignVar(assign, lits);
+				assignVar(assign, lits, tokens);
 			} else {
 				throw new RuntimeException("Unknown statement type: " + ps);
 			}
@@ -470,12 +485,16 @@ class SAMMethod {
 		}
 	}
 
+	private void assignVar(AAssign assign, List<ILiteral> body) throws ParserException {
+		assignVar(assign, body, null);
+	}
+
 	/* Assign a local or field, as appropriate:
 	 *   local(?Caller, ?CallerInvocation, 'var', ?Value) :- body
 	 * or
 	 *   field(?Caller, 'var', ?Value) :- body
 	 */
-	private void assignVar(AAssign assign, List<ILiteral> body) throws ParserException {
+	private void assignVar(AAssign assign, List<ILiteral> body, List<List<Token>> tokens) throws ParserException {
 		ILiteral head;
 
 		declareLocal(assign);
@@ -496,9 +515,18 @@ class SAMMethod {
 			throw new ParserException(assign.getName(), "Undeclared variable: " + varName);
 		}
 
+		List<List<Token>> allTokens;
+		if (tokens == null) {
+			allTokens = null;
+		} else {
+			allTokens = new LinkedList<List<Token>>();
+			allTokens.add(null);
+			allTokens.addAll(tokens);
+		}
+
 		IRule rule = BASIC.createRule(makeList(head), body);
 		//System.out.println(rule);
-		parent.model.addRule(rule);
+		parent.model.addRule(rule, allTokens);
 	}
 
 	// pos can be -1 if we accept arguments at any position

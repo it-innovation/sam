@@ -194,40 +194,39 @@ public class SAMParser {
 
 
 	private void addFact(AFact fact) throws ParserException {
-		try {
-			IAtom atom = model.parseAtom(fact.getAtom());
-			model.addFact(atom.getPredicate(), atom.getTuple());
-		} catch (ParserException ex) {
-			throw new ParserException(((ANormalAtom) fact.getAtom()).getName(), ex.getMessage());
-		}
+		List<Token> tokens = new LinkedList<Token>();
+		IAtom atom = model.parseAtom(fact.getAtom(), null, tokens);
+		model.addFact(atom.getPredicate(), atom.getTuple(), tokens);
 	}
 
 	private void addRule(ARule rule) throws ParserException {
-		ILiteral head = BASIC.createLiteral(true, model.parseAtom(rule.getHead()));
+		List<List<Token>> tokens = new LinkedList<List<Token>>();
+		List<Token> headTokens = new LinkedList<Token>();
+		tokens.add(headTokens);
+		ILiteral head = BASIC.createLiteral(true, model.parseAtom(rule.getHead(), null, headTokens));
 
-		List<ILiteral> body = model.parseLiterals((ALiterals) rule.getBody(), null);
+		List<ILiteral> body = model.parseLiterals((ALiterals) rule.getBody(), null, tokens);
 
 		IRule r = BASIC.createRule(makeList(head), body);
 		//System.out.println(" --> " + r);
 
-		try {
-			model.addRule(r);
-		} catch (ParserException ex) {
-			TName name = ((ANormalAtom) rule.getHead()).getName();
-			throw new ParserException(name, ex.getMessage());
-		}
+		model.addRule(r, tokens);
 	}
 
 	private void addQuery(AQuery query) throws ParserException {
-		List<ILiteral> literals = model.parseLiterals((ALiterals) query.getLiterals(), null);
+		List<List<Token>> tokens = new LinkedList<List<Token>>();
+		List<ILiteral> literals = model.parseLiterals((ALiterals) query.getLiterals(), null, tokens);
 
 		IQuery q = BASIC.createQuery(literals);
+
+		model.validateQuery(q, tokens);
 
 		queries.add(q);
 	}
 
 	private void addAssert(AAssert ass) throws ParserException {
-		List<ILiteral> body = model.parseLiterals((ALiterals) ass.getLiterals(), null);
+		List<List<Token>> tokens = new LinkedList<List<Token>>();
+		List<ILiteral> body = model.parseLiterals((ALiterals) ass.getLiterals(), null, tokens);
 
 		if (body.size() != 1) {
 			throw new ParserException(ass.getAssertTok(), "Assert must contain exactly one goal");
