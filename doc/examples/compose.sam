@@ -22,9 +22,7 @@ class Logger {
         myUnderlying = underlying;
     }
 
-    public Object *(Object arg*) {
-        String method = ?MethodName :- didCall($Caller, ?CInvocation, ?CallSite, this, $Context, ?Method),
-                                        callsMethod(?CallSite, ?MethodName);
+    public Object $method(Object arg*) {
         Object value = myUnderlying.$method(arg*);
         return value;
     }

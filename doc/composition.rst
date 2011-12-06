@@ -41,8 +41,9 @@ The `ReadOnly` class simply forwards the `read` method and returns `this` for `r
       }
   }
 
-The logger introduces some new syntax. Using `*` in place of a method name matches any method. So a `Logger` provides every possible method and may
-call every possible method on the underlying object. `(arg*)` matches multiple arguments, so the logger can also proxy calls which pass multiple arguments::
+The logger introduces some new syntax. Using `$method` in place of a method name matches any method (and stores the result in the local variable `method`).
+So a `Logger` provides every possible method and may call the same method on the underlying object. `(arg*)` matches multiple arguments, so the logger
+can also proxy calls which pass multiple arguments::
 
   class Logger {
       private Object myUnderlying;
@@ -51,8 +52,8 @@ call every possible method on the underlying object. `(arg*)` matches multiple a
           myUnderlying = underlying;
       }
 
-      public Object *(Object arg*) {
-          Object value = myUnderlying.*(arg*);
+      public Object $method(Object arg*) {
+          Object value = myUnderlying.$method(arg*);
           return value;
       }
   }

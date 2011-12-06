@@ -88,9 +88,14 @@ class SAMDeclaredClass extends SAMClass {
 			String methodName;
 			if (methodPattern instanceof ANamedPattern) {
 				methodName = ((ANamedPattern) methodPattern).getName().getText();
-			} else {
+			} else if (methodPattern instanceof AAnyPattern) {
 				methodName = "*";
+			} else if (methodPattern instanceof ADollarPattern) {
+				methodName = "$" + ((ADollarPattern) methodPattern).getName().getText();
+			} else {
+				throw new RuntimeException("Unknown pattern: " + methodPattern);
 			}
+
 			ITerm methodNameFull;
 
 			if (method.getType() == null) {
