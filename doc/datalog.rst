@@ -27,7 +27,7 @@ Running this program, SAM would use the rule to deduce the new fact::
   isAdmin("Bob").
 
 Queries
-=======
+-------
 A like starting with `?-` is a query. When the model has been evaluated, SAM will write all matching values
 to the console. For example, to list all the admins::
 
@@ -36,8 +36,7 @@ to the console. For example, to list all the admins::
 .. _Types:
 
 Types
-=====
-
+-----
 Predicates (such as `isAdmin`) must be declared in SAM before they can be used. Each term is given a
 type and a name (the name is used in the GUI)::
 
@@ -57,8 +56,19 @@ References behave much like strings, but have their own namespace (so `"Bob" != 
 to identify objects in the model (representing instances of Java classes), while strings are used to represent
 literal strings.
 
+Negation
+--------
+You can use `!` to test whether something will never be a fact. For example::
+
+  error("Bob is not an admin") :- !isAdmin("Bob")
+
+For this to work, SAM must be able to completely determine the contents of the `isAdmin` relation before starting on
+the `error` relation. Therefore, there cannot be any `isAdmin` rule that depends on `error`. If you do this, you will
+get a `ProgramNotStratifiedException`.
+
+
 The `any` values
-================
+----------------
 
 There is a special `any` value for each type (`any(String)`, `any(Value)`, etc). The idea is that `Unknown` objects
 may pass `any(Value)` as an argument, rather than having to enumerate every possible constant value in the system::
