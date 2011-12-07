@@ -50,7 +50,6 @@ declare initialObject(Ref object, String type).
 declare initialInvocation(Ref object, String invocation).
 declare initialInvocation(Ref object, String methodName, String invocation).
 declare realInitialInvocation(Ref object, String method, String invocation).
-declare realNewObject(Ref object, String invocation, String childType, Ref newChild).
 declare denyAccess(Ref object, Ref target).
 declare requireAccess(Ref object, Ref target).
 declare hasField(String type, String fieldName).
@@ -99,7 +98,6 @@ declare maySendFromAnyContext(Ref caller, String callSite, int pos, Object argVa
 declare maySend(Ref caller, String callerInvocation, String callSite, int pos, Object argValue).
 declare didReceive(Ref target, String targetInvocation, String method, int pos, Object argValue).
 declare mayCreate(String callSite, String childType, String nameHint).
-declare newObject(Ref object, String invocation, String childType, Ref newObject).
 declare isPublic(Ref object).
 declare debug().
 declare assertionMessage(int number, String msg).

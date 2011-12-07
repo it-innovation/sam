@@ -103,7 +103,14 @@ didCreate(?Caller, ?Invocation, ?CallSite, ?Child) :-
 	liveMethod(?Caller, ?Invocation, ?Method),
 	hasCallSite(?Method, ?CallSite),
 	mayCreate(?CallSite, ?ChildType, ?NameHint),
-	realNewObject(?Caller, ?Invocation, ?NameHint, ?Child).
+	?Caller != <_testDriver>,
+	MAKE_OBJECT(?NameHint, ?Invocation, ?Child).
+
+didCreate(<_testDriver>, ?Invocation, ?CallSite, ?Child) :-
+	liveMethod(<_testDriver>, ?Invocation, ?Method),
+	hasCallSite(?Method, ?CallSite),
+	mayCreate(?CallSite, ?ChildType, ?NameHint),
+	MAKE_OBJECT(?NameHint, "", ?Child).
 
 live(?NewChild) :-
 	didCreate(?Object, ?Invocation, ?CallSite, ?NewChild).
@@ -122,31 +129,6 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
         hasParam(?Method, ?ParamType, ?Param, ?ParamPos),
         ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
         !methodDoesContextMapping(?Method).
-
-/* Default aggregation for child objects */
-
-declare typeHasCallSite(String type, String callSite).
-typeHasCallSite(?Type, ?CallSite) :- hasMethod(?Type, ?Method), hasCallSite(?Method, ?CallSite).
-typeHasCallSite(?Type, ?CallSite) :- hasConstructor(?Type, ?Constructor), hasCallSite(?Constructor, ?CallSite).
-	
-
-realNewObject(?Object, ?Invocation, ?NameHint, ?NewChild) :-
-	isA(?Object, ?Type),
-	typeHasCallSite(?Type, ?CallSite),
-	mayCreate(?CallSite, ?ChildType, ?NameHint),
-	newObject(?Object, ?Invocation, ?ChildType, ?NewChild).
-realNewObject(<_testDriver>, ?Invocation, ?NameHint, ?NewChild) :-
-	mayCreate(?CallSite, ?ChildType, ?NameHint),
-	isInvocation(?Invocation),
-        MAKE_OBJECT(?NameHint, "", ?NewChild).
-realNewObject(?Object, ?Invocation, ?NameHint, ?NewChild) :-
-	?Object != <_testDriver>,
-	isA(?Object, ?Type),
-	typeHasCallSite(?Type, ?CallSite),
-	mayCreate(?CallSite, ?ChildType, ?NameHint),
-	isInvocation(?Invocation),
-	!newObject(?Object, ?Invocation, ?ChildType, ?AnyChild),
-	MAKE_OBJECT(?NameHint, ?Invocation, ?NewChild).
 
 // Created objects live in the same JVM as their factory, and so have their
 // messages signed with the same X.509 certificate

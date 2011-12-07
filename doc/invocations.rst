@@ -136,14 +136,6 @@ Group everything into a single context
 Low-level control
 -----------------
 
-.. function:: newObject(Ref object, String invocation, String childType, Ref newObject)
-
-   Aggregate all new objects of type `Type` created by `Object` the context
-   `Invocation` into a single object `NewObject`. For example::
-
-     newObject("factory", "clientA", "Proxy", "newProxiesForA").
-     newObject("factory", "otherClients", "Proxy", "newProxiesForOthers").
-
 .. function:: methodDoesContextMapping(String method)
 
    Normally, when a caller calls a method in a particular context, the target method
@@ -154,11 +146,6 @@ Low-level control
 
 Generated predicates
 --------------------
-
-.. function:: realNewObject(Ref object, String invocation, String childType, Ref newChild)
-
-   The `realNewObject` relation is copied from `newObject`, but has a suitable
-   default whenever `newObject` wasn't defined.
 
 .. function:: realInitialInvocation(Ref object, String method, String invocation)
 

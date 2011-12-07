@@ -131,8 +131,8 @@ cannot get access to the new objects created by "clientA":
 
    See :ref:`graphing` for more information.
 
-Without modelling invocations we could only say that the factory creates newTasksForA
-and newTasksForOthers and that it may return both to its callers. The behaviour of an object
+Without modelling invocations we could only say that the factory creates `tasksForA`
+and `tasksForOthers` and that it may return both to its callers. The behaviour of an object
 cannot depend on who calls it, because an object being invoked does not know this and the
 behaviour of an object corresponds to its implementation in the real system.
 
@@ -148,7 +148,7 @@ of the factory shown in green, rather than aggregated with the factory object as
 
 .. tip:: Use :func:`showInvocation` to control which invocations are shown explicitly in the graph.
 
-Here we can see that none of otherClient's invocations can get access to newTasksForA, and so
+Here we can see that none of otherClient's invocations can get access to `tasksForA`, and so
 otherClients itself cannot either.
 
 The dashed arrow from each invocation to the factory represents the "this" variable, giving

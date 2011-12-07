@@ -5,8 +5,8 @@ class Task {
 
 class Factory {
   public Task newInstance() {
-    Ref task = new Task();
-    return task;
+    Ref tasks = new Task();
+    return tasks;
   }
 }
 
@@ -17,28 +17,22 @@ config {
         factory = new Factory();
     }
 
-    test "A" {
+    test "ForA" {
         Object clientA = new Unknown(factory);
     }
 
-    test "Other" {
+    test "ForOthers" {
         Object otherClients = new Unknown(factory);
     }
 }
 
-/* Aggregation */
-
-newObject(<factory>, "A", "Task", <newTasksForA>).
-newObject(<factory>, "Other", "Task", <newTasksOthers>).
-
-
 
 /* Graphing */
 
-//showInvocation(?Object, ?Invocation) :- live(?Object, ?Invocation).
+//showAllInvocations(<factory>).
 
 
 /* Goals */
 
-denyAccess(<otherClients>, <newTasksForA>).
-requireAccess(<clientA>, <newTasksForA>).
+denyAccess(<otherClients>, <tasksForA>).
+requireAccess(<clientA>, <tasksForA>).
