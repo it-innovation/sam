@@ -44,10 +44,16 @@ isInvocation(?Context) :- GroupByArgCase(?Method, ?Value, ?Context).
 
 // When Method is called, activate the contexts for every case which might
 // receive a value.
-didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method) :-
+didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
-    maySend(?Caller, ?CallerInvocation, ?CallSite, ?AnyPos, ?ArgValue),
-    GroupByArgCase(?Method, ?ArgValue, ?TargetContext).
+    maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
+    hasParam(?Method, ?ParamType, ?AnyParam, ?ParamPos),
+    ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
+    MATCH(?SendPos, ?ParamPos, ?DontCarePos),
+    GroupByArgAt(?Method, ?ParamPos),
+    GroupByArgCase(?Method, ?CaseValue, ?TargetInvocation),
+    MATCH(?ReceivedValue, ?CaseValue, ?DontCareValue).
+
 didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     GroupByArgCase(?Method, <null>, ?TargetContext).
@@ -59,18 +65,18 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method)
 
 // the GroupByArgAt arg
 
-didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
-    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedMatchedValue) :-
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
     hasParam(?Method, ?ParamType, ?AnyParam, ?ParamPos),
     ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
     MATCH(?SendPos, ?ParamPos, ?DontCarePos),
     GroupByArgAt(?Method, ?ParamPos),
-    GroupByArgCase(?Method, ?ReceivedValue, ?TargetInvocation).
+    GroupByArgCase(?Method, ?CaseValue, ?TargetInvocation),
+    MATCH(?ReceivedValue, ?CaseValue, ?ReceivedMatchedValue).
 
 // the other args
 
-// senders that send at a particular position
 didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
@@ -81,12 +87,13 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
     GroupByArgCase(?Method, ?AnyArgValue, ?TargetInvocation).
 
 error("missing GroupByArgCase", ?Method, ?ReceivedValue) :- 
+    GroupByArgAt(?Method, ?ParamPos),
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
-    maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?SentValue),
-    hasParam(?Method, ?ParamType, ?AnyParam, ?Pos),
+    maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
+    MATCH(?SendPos, ?ParamPos, ?DontCarePos),
+    hasParam(?Method, ?ParamType, ?AnyParam, ?ParamPos),
     ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
-    GroupByArgAt(?Method, ?Pos),
-    !GroupByArgCase(?Method, ?ReceivedValue, ?TargetInvocation).
+    !didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue).
 
 error("missing null GroupByArgCase", ?Method) :- 
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
