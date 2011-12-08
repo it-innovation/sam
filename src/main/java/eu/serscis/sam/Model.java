@@ -298,64 +298,12 @@ public class Model {
 		return literals;
 	}
 
-	private void updateTypes(ILiteral lit, Map<IVariable,Type> types, boolean head, List<Token> tokens) throws ParserException {
-		IPredicate predicate = lit.getAtom().getPredicate();
-		ITuple tuple = lit.getAtom().getTuple();
-		TermDefinition[] terms = getDefinition(predicate);
-		if (tokens != null && tokens.size() != tuple.size() + 1) {
-			throw new RuntimeException("Wrong number of tokens:\n" + tokens + "\n" + lit);
-		}
-
-		if (terms == null) {
-			// Special-case the type for ASSIGN("type", ?X, ?Y).
-			if (predicate.equals(Constants.ASSIGNP) && tuple.get(0) instanceof IStringTerm) {
-				Type type = Type.fromJavaName(tuple.get(0).getValue().toString());
-				terms = new TermDefinition[] {
-						new TermDefinition(Type.StringT),
-						new TermDefinition(Type.ObjectT),
-						new TermDefinition(type)
-					};
-			} else {
-				return;
-			}
-		}
-
-		//System.out.println(predicate);
-
-		int i = 0;
-		for (ITerm term : tuple) {
-			try {
-				Type termType;
-				if (term instanceof IVariable) {
-					if (types == null) {
-						throw new ParserException(null, "Variable in fact: " + term);
-					}
-					termType = types.get(term);
-					if (termType == null) {
-						termType = terms[i].type;
-					} else {
-						termType = terms[i].checkType(termType, head);
-					}
-					if (lit.isPositive()) {
-						types.put((IVariable) term, termType);
-					}
-				} else {
-					termType = Type.fromTerm(term);
-					terms[i].checkType(termType, head);
-				}
-			} catch (ParserException ex) {
-				throw new ParserException(tokens == null ? null : tokens.get(i + 1), ex.getMessage() + "\nin " + predicate + "'s " + term);
-			}
-
-			i++;
-		}
-	}
-
 	public void addRule(IRule rule) throws ParserException {
 		addRule(rule, null);
 	}
 
 	public void addRule(IRule rule, List<List<Token>> tokens) throws ParserException {
+		TypeChecker checker = new TypeChecker(this);
 		try {
 			List<ILiteral> head = rule.getHead();
 			List<ILiteral> body = rule.getBody();
@@ -365,16 +313,15 @@ public class Model {
 			}
 
 			int i = head.size();
-			Map<IVariable,Type> types = new HashMap<IVariable,Type>();
 
 			for (ILiteral lit : body) {
-				updateTypes(lit, types, false, tokens == null ? null : tokens.get(i));
+				checker.check(lit, false, tokens == null ? null : tokens.get(i));
 				i++;
 			}
 
 			i = 0;
 			for (ILiteral lit : head) {
-				updateTypes(lit, types, true, tokens == null ? null : tokens.get(i));
+				checker.check(lit, true, tokens == null ? null : tokens.get(i));
 				i++;
 			}
 
@@ -391,11 +338,10 @@ public class Model {
 	public void validateQuery(IQuery query, List<List<Token>> tokens) throws ParserException {
 		List<ILiteral> body = query.getLiterals();
 		Iterator<List<Token>> tokit = tokens.iterator();
-
-		Map<IVariable,Type> types = new HashMap<IVariable,Type>();
+		TypeChecker checker = new TypeChecker(this);
 
 		for (ILiteral lit : body) {
-			updateTypes(lit, types, false, tokit.next());
+			checker.check(lit, false, tokit.next());
 		}
 	}
 
@@ -405,7 +351,8 @@ public class Model {
 
 	public void addFact(IPredicate pred, ITuple tuple, List<Token> tokens) throws ParserException {
 		ILiteral lit = BASIC.createLiteral(true, pred, tuple);
-		updateTypes(lit, null, true, tokens);
+		TypeChecker checker = new TypeChecker(this);
+		checker.check(lit, true, tokens);
 
 		IRelation rel = getRelation(pred);
 		rel.add(tuple);

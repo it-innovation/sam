@@ -22,6 +22,7 @@ parse_dl(os.path.join(dldir, 'base.sam'))
 
 declared.add("ASSIGN(String Type, Object value, Type result)")
 declared.add("MATCH(Object a, Object b, Object result)")
+documented.add("NOT_EQUAL(Object a, Object b)")
 
 undocumented = declared - documented
 if undocumented:

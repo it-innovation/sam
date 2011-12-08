@@ -90,7 +90,7 @@ public class TermDefinition {
 				}
 			}
 
-			AType aType = (AType) decl.getType();
+			AType aType = decl == null ? null : (AType) decl.getType();
 			throw new ParserException(aType == null ? null : aType.getName(),
 					"Wrong type:\n" +
 					"declared=" + this.type.toJavaName() + "\n" +

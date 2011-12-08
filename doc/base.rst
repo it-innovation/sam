@@ -158,3 +158,7 @@ These are not relations, so you can't enumerate all their values, but you can us
        MATCH("foo", "foo") -> "foo"
        MATCH("foo", "bar") -> nothing
        MATCH(any(String), any(Value)) -> any(String)
+
+.. function:: MAKE_OBJECT(String nameHint, String invocation, Ref child)
+
+   Created a new reference by combining the `nameHint` and `invocation`.

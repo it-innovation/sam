@@ -31,6 +31,8 @@
 declare IS_STRING(String string).
 declare TO_STRING(Object object, String string).
 declare IS_REF(Ref ref).
+declare NOT_EQUAL(Object a, Object b).
+declare MAKE_OBJECT(String nameHint, String invocation, Ref child).
 
 declare definedType(String type).
 declare field(Ref object, String fieldName, Object value).
