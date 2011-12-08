@@ -94,8 +94,15 @@ didGet(?Caller, ?CallerInvocation, ?CallSite, ?ResultValue) :-
 
 /* (might not have caught it, though) */
 didGetException(?Caller, ?CallerInvocation, ?CallSite, ?Exception) :-
+	!exceptionsOnlyValues,
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	mayThrow(?Target, ?TargetInvocation, ?Method, ?Exception).
+
+didGetException(?Caller, ?CallerInvocation, ?CallSite, ?Exception) :-
+	exceptionsOnlyValues,
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	mayThrow(?Target, ?TargetInvocation, ?Method, ?ThrownException),
+	ASSIGN("Value", ?ThrownException, ?Exception).
 
 /* (auto re-throw) */
 mayThrow(?Caller, ?CallerInvocation, ?CallerMethod, ?Exception) :-

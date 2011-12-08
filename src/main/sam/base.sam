@@ -122,6 +122,7 @@ declare GroupAs(String method, String context).
 declare GroupByArgAt(String method, int Pos).
 declare GroupByArgCase(String method, Object value, String context).
 
+declare exceptionsOnlyValues().
 
 // RBAC (declared here so you don't get errors when turning off RBAC)
 declare PermittedRole(String method, String role).

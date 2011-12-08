@@ -162,3 +162,11 @@ These are not relations, so you can't enumerate all their values, but you can us
 .. function:: MAKE_OBJECT(String nameHint, String invocation, Ref child)
 
    Created a new reference by combining the `nameHint` and `invocation`.
+
+The world
+---------
+
+.. function:: exceptionsOnlyValues()
+
+   If set, exceptions can only be values (e.g. strings), not references. Set this for languages such as E and Joe-E which prevent
+   authority from propagating via exceptions.
