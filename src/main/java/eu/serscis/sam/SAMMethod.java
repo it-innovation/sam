@@ -79,28 +79,11 @@ class SAMMethod {
 
 		PPattern methodPattern = method.getName();
 		if (methodPattern instanceof ADollarPattern) {
-			/* local(?Object, ?Context, var, ?MethodName) :-
-			 *		didCall(?Caller, ?CallerInvocation, ?CallSite, ?Object, ?Context, method),
-                         *              callsMethod(?CallSite, ?MethodName).
-			 */
+			/* savesMethodInLocal(method, varName) */
 			String varName = ((ADollarPattern) methodPattern).getName().getText();
-			ILiteral head = BASIC.createLiteral(true, localP, BASIC.createTuple(
-						TERM.createVariable("Object"),
-						TERM.createVariable("Context"),
-						TERM.createString(expandLocal(varName)),
-						TERM.createVariable("MethodName")));
-			ILiteral didCall = BASIC.createLiteral(true, didCallP, BASIC.createTuple(
-						TERM.createVariable("Caller"),
-						TERM.createVariable("CallerInvocation"),
-						TERM.createVariable("CallSite"),
-						TERM.createVariable("Object"),
-						TERM.createVariable("Context"),
-						methodNameFull));
-			ILiteral callsMethod = BASIC.createLiteral(true, callsMethodP, BASIC.createTuple(
-						TERM.createVariable("CallSite"),
-						TERM.createVariable("MethodName")));
-			IRule rule = BASIC.createRule(makeList(head), makeList(didCall, callsMethod));
-			parent.model.addRule(rule);
+			parent.model.addFact(savesMethodInLocalP, BASIC.createTuple(
+						methodNameFull,
+						TERM.createString(expandLocal(varName))));
 			locals.add(varName);
 		}
 

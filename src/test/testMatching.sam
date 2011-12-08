@@ -10,6 +10,29 @@ class TwoArgs {
     }
 }
 
+class Underlying {
+	public void get() {}
+	public void put() {}
+}
+
+class Caller {
+	public void test(Ref target) {
+		target.get();
+	}
+}
+
+class Proxy {
+	private Ref myUnderlying;
+
+	public Proxy(Ref underlying) {
+		myUnderlying = underlying;
+	}
+
+	public void $method() {
+		myUnderlying.$method();
+	}
+}
+
 config {
     test {
         Object matcher = new Any();
@@ -21,8 +44,17 @@ config {
         Object a = new Unknown();
         Object twoArgs = new TwoArgs();
         a.process(twoArgs);
+
+	Ref underlying = new Underlying();
+	Ref proxy1 = new Proxy(underlying);
+	Ref proxy2 = new Proxy(proxy1);
+	Ref caller = new Caller();
+	caller.test(proxy2);
     }
 }
 
 assert getsAccess(<target>, <matcher>).
 assert didCall(<twoArgs>, <a>, ?Method).
+
+assert didCall(<proxy1>, <underlying>, "Underlying.get").
+assert !didCall(<proxy1>, <underlying>, "Underlying.put").

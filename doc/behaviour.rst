@@ -107,6 +107,10 @@ Methods
 
    This method invocation may throw `Exception` to its callers.
 
+.. function:: savesMethodInLocal(String method, String localVarName)
+
+   This method matches any method name and stores the result in the given local variable.
+
 .. function:: hasParam(String method, String type, String paramVar, int pos)
 
    This method has a parameter with the given name and position (starting from 0).

@@ -49,6 +49,20 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method) :-
 	MATCH(?MethodName1, ?MethodName2, ?MethodName),
 	accessAllowed(?Caller, ?Target, ?Method).
 
+// For dynamic receivers
+local(?Target, ?TargetInvocation, ?VarName, ?MethodName) :-
+	savesMethodInLocal(?Method, ?VarName),
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	callsMethod(?CallSite, ?MethodName).
+
+// For dynamic receivers with dynamic callers
+// (MethodName may be any(String); just copy it though in that case)
+local(?Target, ?TargetInvocation, ?VarName, ?MethodName) :-
+	savesMethodInLocal(?Method, ?VarName),
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
+	callsMethodInLocal(?CallSite, ?CallerVarName),
+	local(?Caller, ?CallerInvocation, ?CallerVarName, ?MethodName).
+
 // For dynamic call-sites, e.g. targetObject.$method()
 didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method) :-
 	mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Target),
