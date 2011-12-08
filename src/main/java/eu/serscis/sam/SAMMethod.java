@@ -370,6 +370,12 @@ class SAMMethod {
 					TName sourceVar = copyExpr.getName();
 
 					assignVar(assign, makeList(liveMethod, getValue(sourceVar)));
+				} else if (expr instanceof ABoolExpr) {
+					if (assign == null) {
+						throw new RuntimeException("Pointless constant expression: " + expr);
+					}
+					String bool = ((ABoolExpr) expr).getBool().getText();
+					assignConstant(assign, CONCRETE.createBoolean(Boolean.valueOf(bool)));
 				} else {
 					throw new RuntimeException("Unknown expr type: " + expr);
 				}
@@ -569,6 +575,42 @@ class SAMMethod {
 		IRule rule = BASIC.createRule(makeList(head), body);
 		//System.out.println(rule);
 		parent.model.addRule(rule, allTokens);
+	}
+
+	/* Assign a local or field, as appropriate:
+	 *   local(?Object, ?Invocation, 'var', value) :- liveMethod(?Object, ?Invocaiton, method).
+	 * or
+	 *   field(?Object, 'var', value) :- liveMethod(?Object, ?Invocaiton, method).
+	 */
+	private void assignConstant(AAssign assign, ITerm value) throws ParserException {
+		ILiteral head;
+
+		declareLocal(assign);
+
+		String varName = assign.getName().getText();
+		if (locals.contains(varName)) {
+			ITuple tuple = BASIC.createTuple(TERM.createVariable("Object"),
+							 TERM.createVariable("Invocation"),
+							 TERM.createString(expandLocal(varName)),
+							 value);
+			head = BASIC.createLiteral(true, BASIC.createAtom(localP, tuple));
+		} else if (parent.fields.contains(varName)) {
+			ITuple tuple = BASIC.createTuple(TERM.createVariable("Object"),
+							 TERM.createString(varName),
+							 value);
+			head = BASIC.createLiteral(true, BASIC.createAtom(fieldP, tuple));
+		} else {
+			throw new ParserException(assign.getName(), "Undeclared variable: " + varName);
+		}
+
+		ILiteral live = BASIC.createLiteral(true, BASIC.createAtom(liveMethodP, BASIC.createTuple(
+							 TERM.createVariable("Object"),
+							 TERM.createVariable("Invocation"),
+							 methodNameFull)));
+
+		IRule rule = BASIC.createRule(makeList(head), makeList(live));
+		//System.out.println(rule);
+		parent.model.addRule(rule);
 	}
 
 	// pos can be -1 if we accept arguments at any position
