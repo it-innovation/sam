@@ -78,13 +78,12 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedMatchedValue
 // the other args
 
 didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
-    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
     hasParam(?Method, ?ParamType, ?AnyParam, ?ParamPos),
     ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
     MATCH(?SendPos, ?ParamPos, ?DontCarePos),
-    GroupByArgAt(?Method, ?GroupByArgAt), ?GroupByArgAt != ?ParamPos,
-    GroupByArgCase(?Method, ?AnyArgValue, ?TargetInvocation).
+    GroupByArgAt(?Method, ?GroupByArgAt), ?GroupByArgAt != ?ParamPos.
 
 error("missing GroupByArgCase", ?Method, ?ReceivedValue) :- 
     GroupByArgAt(?Method, ?ParamPos),

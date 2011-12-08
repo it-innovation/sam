@@ -45,7 +45,7 @@ class User2 {
     private Object copy2;
 
     @GroupByArgAt(1)
-    @GroupByArgCase(<null>, "ForX")
+    @GroupByArgCase(<null>, "ForNull")
     @GroupByArgCase(<x>, "ForX")
     @GroupByArgCase(<y>, "ForY")
     public void test2(Object ok, Object a) {
@@ -83,6 +83,13 @@ config {
         user2.test2(false, y);
 
         user2.copy(null, true);
+
+	Object bob = new User2();
+	boolean both1 = true;
+	both1 = false;
+	Ref both2 = x;
+	both2 = y;
+        bob.test2(both1, both2);
     }
 }
 
@@ -94,11 +101,19 @@ assert !hasRef(<z>, <y>).
 // handling any(Value)
 assert local(<user>, ?C, "User.value.a", any(String)).
 
-// we didn't group on this arg
+// we didn't group on this arg, but the call-sites are separate
 assert local(<user2>, "ForX", "User2.test2.ok", true).
-assert local(<user2>, "ForX", "User2.test2.ok", false).
-assert local(<user2>, "ForY", "User2.test2.ok", true).
+assert !local(<user2>, "ForX", "User2.test2.ok", false).
+assert !local(<user2>, "ForY", "User2.test2.ok", true).
 assert local(<user2>, "ForY", "User2.test2.ok", false).
+assert local(<user2>, "ForNull", "User2.test2.ok", true).
+assert local(<user2>, "ForNull", "User2.test2.ok", false).
+
+// we didn't group on this arg
+assert local(<bob>, "ForX", "User2.test2.ok", true).
+assert local(<bob>, "ForX", "User2.test2.ok", false).
+assert local(<bob>, "ForY", "User2.test2.ok", true).
+assert local(<bob>, "ForY", "User2.test2.ok", false).
 
 // Check that User2.copy was called, even though no value was ever passed for the first argument.
 assert field(<user2>, "copy2", <x>).
