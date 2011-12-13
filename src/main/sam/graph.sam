@@ -59,7 +59,7 @@ graphNode(?Node, "shape=record") :-
     live(?Object), isPublic(?Object),
     TO_STRING(?Object, ?Node).
 
-graphNode(?Node, "fontcolor=red") :-
+graphNode(?Node, "fontcolor=blue") :-
     live(?Object), isA(?Object, "BaseUnknown"),
     TO_STRING(?Object, ?Node).
 

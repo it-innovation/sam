@@ -110,7 +110,7 @@ For example, consider a factory with some clients ("clientA" and "otherClients")
      digraph msg {
        node[shape=plaintext];
        factory;
-       node[fontcolor=red];
+       node[fontcolor=blue];
        clientA->factory;
        otherClients->factory;
      }
@@ -123,7 +123,7 @@ cannot get access to the new objects created by "clientA":
 .. note::
    These diagrams use the SAM notation:
 
-   * An object in red text indicates an object with unknown behaviour.
+   * An object in blue text indicates an object with unknown behaviour.
    * A green arrow represents a reference that was invoked.
    * A black arrow represents a reference that was not invoked.
    * A solid arrow represents a reference stored in a field on the object.

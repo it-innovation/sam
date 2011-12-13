@@ -278,7 +278,7 @@ so any safety property that is valid with `Unknown` behaviour will be valid for 
         otherUsers.test();
     }
 
-In the display, the `otherUsers` object is now shown in red to indicate `Unknown` behaviour, but the model is otherwise unchanged (the arrow from `otherUsers` to `fileOthers` becomes solid because `otherUsers` may now store the file reference in a field, but nothing else changes). This shows that `otherUsers`
+In the display, the `otherUsers` object is now shown in blue to indicate `Unknown` behaviour, but the model is otherwise unchanged (the arrow from `otherUsers` to `fileOthers` becomes solid because `otherUsers` may now store the file reference in a field, but nothing else changes). This shows that `otherUsers`
 still cannot get access to `user`'s `file`.
 
 .. sam-output:: data3

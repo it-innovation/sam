@@ -84,7 +84,7 @@ Notation
      P [shape=record,label="P\n(public)"];
      node [shape=plaintext];
      A -> B [label="field"];
-     C [label="C\n(unknown behaviour)",fontcolor=red];
+     C [label="C\n(unknown behaviour)",fontcolor=blue];
 
      A -> D [color=red,fontcolor=red,label="safety violation"];
 
