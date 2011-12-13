@@ -28,6 +28,8 @@
 
 package eu.serscis.sam.gui;
 
+import eu.serscis.sam.AnyTerm;
+import org.deri.iris.api.terms.ITerm;
 import org.deri.iris.api.IKnowledgeBase;
 import org.deri.iris.api.basics.IAtom;
 import org.eclipse.swt.events.SelectionEvent;
@@ -260,6 +262,22 @@ public class DebugViewer implements Updatable {
 			} else {
 				return msg + " [" + callerInvocation + " -> " + targetInvocation + "]";
 			}
+		} else if (p.equals(Constants.maySend5P)) {
+			String caller = getInvocation(tuple, 0);
+			String invocation = tuple.get(1).getValue().toString();
+			String callSite = tuple.get(2).getValue().toString();
+			String arg = tuple.get(4).getValue().toString();
+			String msg = "<" + caller + "> passed <" + arg + ">";
+			ITerm pos = tuple.get(3);
+			if (!(pos instanceof AnyTerm)) {
+				msg += " as argument " + pos;
+			} else {
+				msg += " as an argument";
+			}
+			if (!invocation.equals("")) {
+				msg += " [" + invocation + "]";
+			}
+			return msg;
 		} else if (p.equals(Constants.didGetP)) {
 			String caller = getInvocation(tuple, 0);
 			String callSite = tuple.get(2).getValue().toString();
