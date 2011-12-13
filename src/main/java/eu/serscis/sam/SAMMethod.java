@@ -272,7 +272,7 @@ class SAMMethod {
 				if (expr instanceof ACallExpr) {
 					ACallExpr callExpr = (ACallExpr) expr;
 					String targetMethod = parsePattern(callExpr.getMethod());
-					callSite = mintCallSite(assign, callExpr.getName().getText() + "." + targetMethod);
+					callSite = mintCallSite(assign, callExpr.getName().getText() + "." + targetMethod + "()");
 
 					// mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Value) :-
 					//	isA(?Caller, ?Type),

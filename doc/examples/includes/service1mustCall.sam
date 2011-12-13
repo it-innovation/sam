@@ -1,11 +1,11 @@
 mustCall(<dataProvider>, "", "DataProvider.newFile:file=new-File", <file>, "File.<init>").
-mustCall(<serviceProvider>, "", "ServiceProvider.process:file.get", <file>, "File.get").
-mustCall(<serviceProvider>, "", "ServiceProvider.process:image.put", <image>, "File.put").
+mustCall(<serviceProvider>, "", "ServiceProvider.process:file.get()", <file>, "File.get").
+mustCall(<serviceProvider>, "", "ServiceProvider.process:image.put()", <image>, "File.put").
 mustCall(<serviceProvider>, "", "ServiceProvider.process:image=new-File", <image>, "File.<init>").
-mustCall(<user>, "", "Client.test:file.put", <file>, "File.put").
-mustCall(<user>, "", "Client.test:file=myDataProvider.newFile", <dataProvider>, "DataProvider.newFile").
-mustCall(<user>, "", "Client.test:result.get", <image>, "File.get").
-mustCall(<user>, "", "Client.test:result=myServiceProvider.process", <serviceProvider>, "ServiceProvider.process").
+mustCall(<user>, "", "Client.test:file.put()", <file>, "File.put").
+mustCall(<user>, "", "Client.test:file=myDataProvider.newFile()", <dataProvider>, "DataProvider.newFile").
+mustCall(<user>, "", "Client.test:result.get()", <image>, "File.get").
+mustCall(<user>, "", "Client.test:result=myServiceProvider.process()", <serviceProvider>, "ServiceProvider.process").
 
 mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasMethod(?Type, ?Method).
 mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasConstructor(?Type, ?Method).
