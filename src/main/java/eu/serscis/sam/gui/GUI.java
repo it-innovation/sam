@@ -350,7 +350,7 @@ public class GUI {
 			File tmpFile = File.createTempFile("sam-", "-graph.png");
 			Image image;
 			try {
-				Graph.graph(results.finalKnowledgeBase, tmpFile);
+				Graph.graph(results.finalKnowledgeBase, tmpFile, "png");
 				InputStream is = new FileInputStream(tmpFile);
 				try {
 					image = new Image(display, is);

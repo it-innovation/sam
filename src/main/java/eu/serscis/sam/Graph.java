@@ -47,7 +47,7 @@ import org.deri.iris.storage.IRelation;
 import static org.deri.iris.factory.Factory.*;
 
 public class Graph {
-	static public void graph(IKnowledgeBase knowledgeBase, File outputPngFile) throws Exception {
+	static public void graph(IKnowledgeBase knowledgeBase, File outputPngFile, String format) throws Exception {
 		ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
 
 		IPredicate graphNodePredicate = BASIC.createPredicate("visibleGraphNode", 2);
@@ -71,7 +71,7 @@ public class Graph {
 		IQuery ignoredForRankingQuery = BASIC.createQuery(BASIC.createLiteral(true, Constants.ignoreEdgeForRankingP, xAndY));
 		IRelation ignoredForRankingResults = knowledgeBase.execute(ignoredForRankingQuery);
 
-		graph(graphNodeResults, graphEdgeResults, graphEdgeLabelResults, ignoredForRankingResults, knowledgeBase, outputPngFile);
+		graph(graphNodeResults, graphEdgeResults, graphEdgeLabelResults, ignoredForRankingResults, knowledgeBase, outputPngFile, format);
 	}
 
 	static private String format(ITerm term) {
@@ -147,7 +147,7 @@ public class Graph {
 		}
 	}
 
-	static private void graph(IRelation nodes, IRelation edges, IRelation labelledEdges, IRelation ignoredForRanking, IKnowledgeBase knowledgeBase, File pngFile) throws Exception {
+	static private void graph(IRelation nodes, IRelation edges, IRelation labelledEdges, IRelation ignoredForRanking, IKnowledgeBase knowledgeBase, File pngFile, String format) throws Exception {
 		File dotFile = File.createTempFile("SAM-tmp", ".dot");
 
 		FileWriter writer = new FileWriter(dotFile);
@@ -230,7 +230,7 @@ public class Graph {
 			}
 		}
 
-		Process proc = Runtime.getRuntime().exec(new String[] {dotBinary, "-o" + pngFile.getAbsolutePath(), "-Tpng", dotFile.getAbsolutePath()});
+		Process proc = Runtime.getRuntime().exec(new String[] {dotBinary, "-o" + pngFile.getAbsolutePath(), "-T" + format, dotFile.getAbsolutePath()});
 		int result = proc.waitFor();
 		if (result != 0) {
 			throw new RuntimeException("dot failed to run: exit status = " + result + "; see " + dotFile);

@@ -35,15 +35,18 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 		boolean batch = false;
 		File resultsDir = null;
+		String format = "png";
 
 		int i = 0;
-		while (i < args.length && args[i].startsWith("--")) {
-			String opt = args[i].substring(2);
-			if (opt.equals("batch")) {
+		while (i < args.length && args[i].startsWith("-")) {
+			String opt = args[i];
+			if (opt.equals("--batch")) {
 				batch = true;
-			} else if (opt.equals("results-dir")) {
+			} else if (opt.equals("--results-dir")) {
 				resultsDir = new File(args[i + 1]);
 				i++;
+			} else if (opt.startsWith("-T")) {
+				format = opt.substring(2);
 			} else {
 				usageError("Unknown option '" + args[i] + "'");
 			}
@@ -75,7 +78,7 @@ public class Main {
 					if (stem.endsWith(".sam")) {
 						stem = stem.substring(0, stem.length() - 4);
 					}
-					Graph.graph(results.finalKnowledgeBase, new File(stem + ".png"));
+					Graph.graph(results.finalKnowledgeBase, new File(stem + "." + format), format);
 
 					if (resultsDir != null) {
 						File resultsFile = new File(resultsDir, stem + ".results");
