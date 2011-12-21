@@ -190,7 +190,9 @@ public class TypeChecker {
 							new TermDefinition(Type.ObjectT)
 						};
 				}
-			} else if ((predicate.equals(Constants.EQUALP) || predicate.equals(Constants.MATCHP)) && !head) {
+			} else if ((predicate.equals(Constants.EQUALP) ||
+				    predicate.equals(Constants.MATCH2P) ||
+				    predicate.equals(Constants.MATCH_TOP)) && !head) {
 				updateTypesEqual(tuple, tokens);
 				return;
 			} else if ((predicate.getPredicateSymbol().equals("error")) && tuple.size() > 0) {

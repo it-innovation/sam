@@ -39,7 +39,7 @@ declare xfer(Ref a, Ref b, int pos).
 xfer(?A, ?B, ?Pos) :-
     sends(?A, ?PosA),
     accepts(?B, ?PosB),
-    MATCH(?PosA, ?PosB, ?Pos).
+    MATCH_TO(?PosA, ?PosB, ?Pos).
 
 declare foo(String c, Object x).
 declare bar(String c, Object y).
@@ -65,7 +65,7 @@ bar("e", <y>).
 foo("f", any(Ref)).
 bar("f", any(Object)).
 
-match(?C, ?Z) :- foo(?C, ?X), bar(?C, ?Y), MATCH(?X, ?Y, ?Z).
+match(?C, ?Z) :- foo(?C, ?X), bar(?C, ?Y), MATCH_TO(?X, ?Y, ?Z).
 
 assert match("a", any(boolean)).
 assert match("b", any(boolean)).

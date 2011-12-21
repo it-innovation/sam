@@ -46,7 +46,7 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method) :-
 	hasMethod(?TargetType, ?Method),
 	callsMethod(?CallSite, ?MethodName1),
 	methodName(?Method, ?MethodName2),
-	MATCH(?MethodName1, ?MethodName2, ?MethodName),
+	MATCH(?MethodName1, ?MethodName2),
 	accessAllowed(?Caller, ?Target, ?Method).
 
 // For dynamic receivers
@@ -71,7 +71,7 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method) :-
 	callsMethodInLocal(?CallSite, ?LocalVarName),
 	local(?Caller, ?CallerInvocation, ?LocalVarName, ?MethodName1),
 	methodName(?Method, ?MethodName2),
-	MATCH(?MethodName1, ?MethodName2, ?MethodName),
+	MATCH(?MethodName1, ?MethodName2),
 	accessAllowed(?Caller, ?Target, ?Method).
 
 didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?CallerInvocation, ?Method) :-
@@ -146,7 +146,7 @@ maySend(?Caller, ?CallerInvocation, ?CallSite, ?Pos, ?ArgValue) :-
 didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
-        MATCH(?SendPos, ?ParamPos, ?DontCarePos),
+        MATCH(?SendPos, ?ParamPos),
         hasParam(?Method, ?ParamType, ?Param, ?ParamPos),
         ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
         !methodDoesContextMapping(?Method).
@@ -165,7 +165,7 @@ hasIdentity(?Child, ?Identity) :-
 accessAllowed(?Caller, ?Target, ?Method) :-
     hasIdentity(?Caller, ?CallerIdentity),              // Caller's identity is Identity
     grantsRole(?Target, ?Role, ?GrantedIdentity),       // Target grants Role to Identity
-    MATCH(?CallerIdentity, ?GrantedIdentity, ?UnusedResult),  // Might be any() type
+    MATCH(?CallerIdentity, ?GrantedIdentity),  		// Might be any() type
     PermittedRole(?Method, ?Role).                      // Role is allowed to invoke the method
 
 /* Objects may call others with the same identity. */

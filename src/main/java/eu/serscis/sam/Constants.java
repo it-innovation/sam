@@ -37,7 +37,8 @@ import static org.deri.iris.factory.Factory.*;
 
 public class Constants {
 	static public IPredicate ASSIGNP = BASIC.createPredicate("ASSIGN", 3);
-	static public IPredicate MATCHP = BASIC.createPredicate("MATCH", 3);
+	static public IPredicate MATCH2P = BASIC.createPredicate("MATCH", 2);
+	static public IPredicate MATCH_TOP = BASIC.createPredicate("MATCH_TO", 3);
 	static public IPredicate EQUALP = BASIC.createPredicate("EQUAL", 2);
 	static public IPredicate accessControlOnP = BASIC.createPredicate("accessControlOn", 0);
 	static public IPredicate expectFailureP = BASIC.createPredicate("expectFailure", 0);

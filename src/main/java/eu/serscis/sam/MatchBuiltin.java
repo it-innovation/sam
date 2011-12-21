@@ -28,6 +28,7 @@
 
 package eu.serscis.sam;
 
+import org.deri.iris.builtins.BooleanBuiltin;
 import static org.deri.iris.factory.Factory.BASIC;
 
 import org.deri.iris.EvaluationException;
@@ -40,21 +41,25 @@ import org.deri.iris.factory.Factory;
 
 public class MatchBuiltin extends FunctionalBuiltin {
 
-	private static final String PREDICATE_STRING = "MATCH";
-	private static final IPredicate PREDICATE = BASIC.createPredicate(PREDICATE_STRING, -1);
+	private static final String PREDICATE_STRING = "MATCH_TO";
+	private static final IPredicate PREDICATE = Constants.MATCH_TOP;
 
 	public MatchBuiltin(ITerm... terms) {
 		super(BASIC.createPredicate(PREDICATE_STRING, terms.length), terms);
 		
-		if (terms.length < 2 || terms.length > 3) {
-			throw new IllegalArgumentException("The amount of terms <" + terms.length + "> must be 2 or 3");
+		if (terms.length != 3) {
+			throw new IllegalArgumentException("The amount of terms <" + terms.length + "> must be 3");
 		}
 	}
 
 	protected ITerm computeResult(ITerm[] terms) throws EvaluationException {
-		ITerm first = terms[0];
-		ITerm second = terms[1];
+		if (terms.length != 3) {
+			throw new IllegalArgumentException("The amount of terms <" + terms.length + "> must be 3");
+		}
+		return MatchBuiltin.computeResult(terms[0], terms[1]);
+	}
 
+	private static ITerm computeResult(ITerm first, ITerm second) throws EvaluationException {
 		ITerm result;
 
 		/* If both terms are not any(), they match only if they are equal.
@@ -75,7 +80,7 @@ public class MatchBuiltin extends FunctionalBuiltin {
 		return result;
 	}
 
-	private ITerm matchAny(AnyTerm any, ITerm other) {
+	private static ITerm matchAny(AnyTerm any, ITerm other) {
 		if (other instanceof AnyTerm) {
 			Type intersection = any.type.intersect(((AnyTerm) other).type);
 			if (intersection == null) {
@@ -91,5 +96,22 @@ public class MatchBuiltin extends FunctionalBuiltin {
 		}
 
 		return null;					// e.g. !MATCH(any(int), "hi", ?Result)
+	}
+
+	/* Two-argument form that just tests whether a match exists. */
+	public static class MatchBuiltinBoolean extends BooleanBuiltin {
+		private static final IPredicate PREDICATE = Constants.MATCH2P;
+
+		public MatchBuiltinBoolean(final ITerm... t) {
+			super(PREDICATE, t);
+		}
+
+		public boolean computeResult(ITerm[] terms) {
+			try {
+				return MatchBuiltin.computeResult(terms[0], terms[1]) != null;
+			} catch (EvaluationException ex) {
+				throw new RuntimeException(ex);
+			}
+		}
 	}
 }

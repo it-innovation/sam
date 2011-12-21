@@ -49,10 +49,10 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Meth
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
     hasParam(?Method, ?ParamType, ?AnyParam, ?ParamPos),
     ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
-    MATCH(?SendPos, ?ParamPos, ?DontCarePos),
+    MATCH(?SendPos, ?ParamPos),
     GroupByArgAt(?Method, ?ParamPos),
     GroupByArgCase(?Method, ?CaseValue, ?TargetInvocation),
-    MATCH(?ReceivedValue, ?CaseValue, ?DontCareValue).
+    MATCH(?ReceivedValue, ?CaseValue).
 
 didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method) :-
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
@@ -70,10 +70,10 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedMatchedValue
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
     hasParam(?Method, ?ParamType, ?AnyParam, ?ParamPos),
     ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
-    MATCH(?SendPos, ?ParamPos, ?DontCarePos),
+    MATCH(?SendPos, ?ParamPos),
     GroupByArgAt(?Method, ?ParamPos),
     GroupByArgCase(?Method, ?CaseValue, ?TargetInvocation),
-    MATCH(?ReceivedValue, ?CaseValue, ?ReceivedMatchedValue).
+    MATCH_TO(?ReceivedValue, ?CaseValue, ?ReceivedMatchedValue).
 
 // the other args
 
@@ -82,14 +82,14 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
     hasParam(?Method, ?ParamType, ?AnyParam, ?ParamPos),
     ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
-    MATCH(?SendPos, ?ParamPos, ?DontCarePos),
+    MATCH(?SendPos, ?ParamPos),
     GroupByArgAt(?Method, ?GroupByArgAt), ?GroupByArgAt != ?ParamPos.
 
 error("missing GroupByArgCase", ?Method, ?ReceivedValue) :- 
     GroupByArgAt(?Method, ?ParamPos),
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
     maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
-    MATCH(?SendPos, ?ParamPos, ?DontCarePos),
+    MATCH(?SendPos, ?ParamPos),
     hasParam(?Method, ?ParamType, ?AnyParam, ?ParamPos),
     ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
     !didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue).
@@ -128,7 +128,7 @@ didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method)
 didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
 	maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
-	MATCH(?SendPos, ?ParamPos, ?DontCarePos),
+	MATCH(?SendPos, ?ParamPos),
 	hasParam(?Method, ?ParamType, ?Param, ?ParamPos),
 	ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
 	GroupAs(?Method, ?TargetInvocation).
