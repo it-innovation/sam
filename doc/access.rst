@@ -30,7 +30,14 @@ Objects may be given an identity using :func:`hasIdentity`. Child objects inheri
 
    The given object may have this identity.
 
-These identities are often used with role-based access control rules (see below).
+.. function:: noDefaultIdentity(String callSite)
+
+   When a call-site creates a new object, the new object normally gets the same identity as its parent. This can be used to disable the default behaviour.
+   For example, if a service creates tasks with their own identities::
+
+     noDefaultIdentity("Service.makeTask:task=new-Task").
+
+Identities are often used with role-based access control rules (see below).
 
 To check that all objects have an identity, use::
 

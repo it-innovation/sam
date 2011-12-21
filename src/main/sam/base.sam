@@ -47,6 +47,7 @@ declare local(Ref object, String invocation, String varName, Object value).
 declare methodDoesContextMapping(String method).
 declare hasMethod(String type, String method).
 declare hasCallSite(String method, String callSite).
+declare noDefaultIdentity(String callSite).
 declare catchesAllExceptions(String callSite).
 declare initialObject(Ref object, String type).
 declare initialInvocation(Ref object, String invocation).

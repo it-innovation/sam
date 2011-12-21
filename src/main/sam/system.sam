@@ -155,7 +155,8 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
 // messages signed with the same X.509 certificate
 hasIdentity(?Child, ?Identity) :- 
     hasIdentity(?Factory, ?Identity),
-    didCreate(?Factory, ?Child).
+    didCreate(?Factory, ?Invocation, ?CallSite, ?Child),
+    !noDefaultIdentity(?CallSite).
 
 
 /* RBAC */
