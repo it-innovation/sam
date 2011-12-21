@@ -319,7 +319,7 @@ public class GUI {
 		}
 
 		Eval eval = new Eval();
-		shell.setText("SAM: " + myFile);
+		shell.setText("SAM: " + myFile.getName() + " (" + myFile.getParent() + ")");
 		final Results results = eval.evaluate(myFile);
 		liveResults.update(results);
 
