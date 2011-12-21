@@ -127,6 +127,7 @@ declare exceptionsOnlyValues().
 
 // RBAC (declared here so you don't get errors when turning off RBAC)
 declare PermittedRole(String method, String role).
+declare FieldGrantsRole(String type, String fieldName, String role).
 declare grantsRole(Ref target, String role, String callerIdentity).
 
 // GUI

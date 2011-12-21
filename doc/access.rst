@@ -53,27 +53,51 @@ Role-Based Access Control
 
 To model an RBAC system:
 
+- Annotate some fields with :func:`FieldGrantsRole`
 - Annotate some methods with :func:`PermittedRole`
-- Grant roles to callers based on their identities
 
 For example::
 
     class File {
+        @FieldGrantsRole("owner")
+        private String myOwners;
+
+        @FieldGrantsRole("reader")
+        private String myReaders;
+
+        @FieldGrantsRole("writer")
+        private String myWriters;
+
+        public File(String owner) {
+            myOwners = owner;
+        }
+
+        @PermittedRole("owner")
         @PermittedRole("reader")
-        @PermittedRole("writer")
         public void read() {}
 
+        @PermittedRole("owner")
         @PermittedRole("writer")
         public void write() {}
+
+        @PermittedRole("owner")
+        public void addReader(String reader) {
+            myReaders = reader;
+        }
+
+        @PermittedRole("owner")
+        public void addWriter(String writer) {
+            myWriters = writer;
+        }
     }
-
-    grantsRole(<log.txt>, "reader", "alice").
-    grantsRole(<log.txt>, "writer", "bob").
-
 
 .. function:: grantsRole(Ref target, String role, String callerIdentity)
 
    The object `Target` grants `Role` to any caller which :func:`hasIdentity` `CallerIdentity`.
+
+.. function:: FieldGrantsRole(String type, String fieldName, String role)
+
+   Callers with an identity stored in the given field have the given role.
 
 .. function:: PermittedRole(String method, String role)
 

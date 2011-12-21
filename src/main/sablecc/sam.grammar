@@ -122,7 +122,7 @@ Productions
   extends = extends_tok name;
   class_body = field* method*;
   config_body = config_field* namedblock+;
-  field = private_tok type name semi;
+  field = annotation* private_tok type name semi;
   config_field = type name semi;
   type = name;
   annotation = at_tok atom;

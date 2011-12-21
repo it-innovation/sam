@@ -28,6 +28,8 @@
 
 package eu.serscis.sam;
 
+import org.deri.iris.api.basics.IPredicate;
+import java.util.LinkedList;
 import eu.serscis.sam.node.*;
 import java.util.List;
 import org.deri.iris.api.basics.IRule;
@@ -68,6 +70,10 @@ class SAMDeclaredClass extends SAMClass {
 
 			Type.validateJavaName(((AType) field.getType()).getName());
 			declareField(field.getName());
+
+			for (PAnnotation a: field.getAnnotation()) {
+				processAnnotation(field.getName(), (AAnnotation) a);
+			}
 		}
 
 		IRelation hasConstructorRel = model.getRelation(hasConstructorP);
@@ -122,5 +128,42 @@ class SAMDeclaredClass extends SAMClass {
 			SAMMethod sm = new SAMMethod(this, method, methodNameFull);
 			sm.addDatalog();
 		}
+	}
+
+	private void processAnnotation(TName fieldName, AAnnotation annotation) throws Exception {
+		TName name;
+		ITerm[] values;
+
+		PAtom a = annotation.getAtom();
+		List<Token> tokens = new LinkedList<Token>();
+
+		if (a instanceof ANullaryAtom) {
+			ANullaryAtom nullary = (ANullaryAtom) a;
+			name = nullary.getName();
+			tokens.add(name);
+			tokens.add(null);
+			tokens.add(fieldName);
+			values = new ITerm[1];
+		} else {
+			ANormalAtom normal = (ANormalAtom) a;
+			name = normal.getName();
+			tokens.add(name);
+			tokens.add(null);
+			tokens.add(fieldName);
+			ITuple terms = model.parseTerms((ATerms) normal.getTerms(), null, tokens);
+
+			values = new ITerm[terms.size() + 2];
+
+			for (int i = 2; i < values.length; i++) {
+				values[i] = terms.get(i - 2);
+			}
+		}
+
+		values[0] = TERM.createString(this.name);
+		values[1] = TERM.createString(fieldName.getText());
+
+		IPredicate pred = BASIC.createPredicate(name.getText(), values.length);
+		model.requireDeclared(name, pred);
+		model.addFact(pred, BASIC.createTuple(values), tokens);
 	}
 }

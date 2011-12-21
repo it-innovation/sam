@@ -172,3 +172,9 @@ accessAllowed(?Caller, ?Target, ?Method) :-
 accessAllowed(?Caller, ?Target) :-
 	hasIdentity(?Caller, ?Identity),
 	hasIdentity(?Target, ?Identity).
+
+grantsRole(?Target, ?Role, ?Identity) :-
+    FieldGrantsRole(?Type, ?FieldName, ?Role),
+    isA(?Target, ?Type),
+    field(?Target, ?FieldName, ?Value),
+    ASSIGN("String", ?Value, ?Identity).

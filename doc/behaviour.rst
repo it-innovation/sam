@@ -15,6 +15,7 @@ A type may be defined using the "class" keyword. The syntax is::
 
   class NAME [extends SUPERCLASS] {
     // Zero or more fields, of the form:
+    ANNOTATION*
     private TYPE NAME;
 
     // Zero or more constructors, of the form:
@@ -49,18 +50,23 @@ Where `NAME` is a variable name, `TYPE` is a class name, `METHOD` is a method na
 and `ARGS` is a comma-separated list of variable names.
 
 Each `ANNOTATION` is of the form "@NAME(ARGS)", where NAME is the name of a Datalog predicate, and
-asserts a fact for this method. For example, the annotations in this code::
+asserts a fact for this method or field. For example, the annotations in this code::
 
   class Foo {
-    @restricted
-    @permittedRole("admin")
+    @FieldGrantsRole("admin")
+    private String myAdmins;
+
+    @Restricted
+    @PermittedRole("admin")
     public void destroy() {}
   }
 
 have the same effect as::
 
-  restricted("Foo.destroy").
-  permittedRole("Foo.destroy", "admin").
+  FieldGrantsRole("Foo", "myAdmins", "admin").
+
+  Restricted("Foo.destroy").
+  PermittedRole("Foo.destroy", "admin").
 
 
 Classes
