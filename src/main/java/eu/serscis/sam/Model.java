@@ -103,6 +103,8 @@ public class Model {
 
 		builtinRegister.registerBuiltin(new MatchBuiltin(t1, t2, t3));
 		builtinRegister.registerBuiltin(new MatchBuiltin.MatchBuiltinBoolean(t1, t2));
+
+		builtinRegister.registerBuiltin(new StringConcatBuiltin(t1, t2, t3));
 	}
 
 	public Model(Configuration configuration) {
