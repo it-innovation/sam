@@ -28,6 +28,8 @@
 
 package eu.serscis.sam;
 
+import java.util.Iterator;
+import java.util.LinkedList;
 import eu.serscis.sam.gui.GUI;
 import java.io.File;
 
@@ -67,6 +69,8 @@ public class Main {
 				if (results.exception != null) {
 					if (results.exception instanceof RuntimeException) {
 						results.exception.printStackTrace();
+					} else if (results.exception instanceof InvalidModelException) {
+						printParserException((InvalidModelException) results.exception);
 					} else {
 						//results.exception.printStackTrace();
 						System.out.println(results.exception);
@@ -124,5 +128,41 @@ public class Main {
 		System.out.println("Usage: sam model.sam");
 		System.out.println("       sam --batch [--results-dir DIR] model.sam ...");
 		System.exit(1);
+	}
+
+	private static void printParserException(InvalidModelException ex) {
+		LinkedList<InvalidModelException> chain = new LinkedList<InvalidModelException>();
+
+		while (ex != null) {
+			chain.add(ex);
+
+			Throwable cause = ex.getCause();
+			if (cause instanceof InvalidModelException) {
+				ex = (InvalidModelException) cause;
+			} else {
+				break;
+			}
+		}
+
+		boolean first = true;
+		Iterator<InvalidModelException> iter = chain.descendingIterator();
+		while (iter.hasNext()) {
+			InvalidModelException link = iter.next();
+
+			if (first) {
+				System.out.println("\nError: " + link.getMessage());
+				first = false;
+			} else {
+				System.out.println("\nImported from here:\n");
+			}
+
+			System.out.println(link.code);
+			String spaces = "";
+			for (int i = link.col; i > 1; i--) {
+				spaces += " ";
+			}
+			System.out.println(spaces + "^");
+			System.out.println("" + link.source + ":" + link.line);
+		}
 	}
 }

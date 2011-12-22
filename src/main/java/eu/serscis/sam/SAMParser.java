@@ -106,40 +106,33 @@ public class SAMParser {
 	}
 
 	private void reportError(Exception ex, String source, Reader reader) throws Exception {
+		int line = -1;
+		int col = -1;
+
 		if (ex instanceof LexerException) {
 			String msg = ((LexerException) ex).getMessage();
-			System.out.println("\nLexing error: " + ex.getMessage());
 			int lbracket = msg.indexOf('[');
 			int rbracket = msg.indexOf(']', lbracket);
 			String[] loc = msg.substring(lbracket + 1, rbracket).split(",");
-			int line = Integer.valueOf(loc[0]);
-			int col = Integer.valueOf(loc[1]);
-
-			System.out.println(getLine(reader, line));
-			String spaces = "";
-			for (int i = col; i > 1; i--) {
-				spaces += " ";
-			}
-			System.out.println(spaces + "^");
-			System.out.println("" + source + ":" + line);
-
-			throw ex;
+			line = Integer.valueOf(loc[0]);
+			col = Integer.valueOf(loc[1]);
 		} else if (ex instanceof ParserException) {
 			Token t = ((ParserException) ex).getToken();
-			System.out.println("\nParsing error: " + ex.getMessage());
 			if (t != null) {
-				System.out.println(getLine(reader, t.getLine()));
-				String spaces = "";
-				for (int i = t.getPos(); i > 1; i--) {
-					spaces += " ";
-				}
-				System.out.println(spaces + "^");
-				System.out.println("" + source + ":" + t.getLine());
+				line = t.getLine();
+				col = t.getPos();
 			}
-
-			throw ex;
+			if (ex instanceof AddImportException) {
+				ex = (InvalidModelException) ex.getCause();
+			}
 		} else {
 			throw ex;
+		}
+
+		if (line != -1) {
+			throw new InvalidModelException(ex, source, getLine(reader, line), line, col);
+		} else {
+			throw new InvalidModelException(ex, source, "(unknown location)", -1, -1);
 		}
 	}
 
@@ -354,10 +347,8 @@ public class SAMParser {
 
 		try {
 			new SAMParser(model, new File(dir, path));
-		} catch (LexerException ex) {
-			throw new ParserException(aImport.getStringLiteral(), ex.getMessage());
-		} catch (ParserException ex) {
-			throw new ParserException(aImport.getStringLiteral(), ex.getMessage());
+		} catch (InvalidModelException ex) {
+			throw new AddImportException(aImport.getStringLiteral(), ex);
 		}
 	}
 
@@ -394,5 +385,12 @@ public class SAMParser {
 		}
 
 		return testDriver;
+	}
+
+	private static class AddImportException extends ParserException {
+		public AddImportException(Token token, InvalidModelException cause) {
+			super(token, "Error in import");
+			initCause(cause);
+		}
 	}
 }

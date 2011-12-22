@@ -330,6 +330,10 @@ public class GUI {
 				msg = results.exception.toString();
 			}
 			addWarning(msg, null);
+			if (results.finalKnowledgeBase == null) {
+				mainImage.setText(results.exception.toString());
+				mainImage.pack();
+			}
 		} else if (results.phase != Results.Phase.Success) {
 			addWarning("Problem in " + results.phase + " phase", null);
 		} else {
