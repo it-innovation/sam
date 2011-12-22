@@ -59,10 +59,6 @@ Invocations
 
    It is possible for `Object.Method` to be invoked in the context `Invocation`.
 
-.. function:: isInvocation(String invocation)
-
-   There is some invocation with the context `Invocation`.
-
 .. function:: local(Ref object, String invocation, String varName, Object value)
 
    In some invocation of `Object` in context `Invocation`, local variable

@@ -53,8 +53,6 @@ haveBadAccess(?SourceObject, ?TargetObject) :-
 error("unsafe access may be possible", ?SourceObject, ?TargetObject) :-
 	haveBadAccess(?SourceObject, ?TargetObject).
 
-error("Local on non-invocation", ?Invocation, ?Var, ?Value) :- local(?Object, ?Invocation, ?Var, ?Value), !isInvocation(?Invocation).
-
 objectHasField(?Object, ?Field) :- isA(?Object, ?Type), hasField(?Type, ?Field).
 error("Undeclared field", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !objectHasField(?Object, ?Var).
 error("Field on non-object", ?Object, ?Var, ?Value) :- field(?Object, ?Var, ?Value), !isRef(?Object).

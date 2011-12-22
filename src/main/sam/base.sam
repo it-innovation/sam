@@ -38,7 +38,6 @@ declare definedType(String type).
 declare field(Ref object, String fieldName, Object value).
 declare getsAccess(Ref sourceObject, Ref targetObject).
 declare isA(Ref object, String type).
-declare isInvocation(String invocation).
 declare isRef(Ref ref).
 declare isConstant(Object object).
 declare live(Ref object).
@@ -148,8 +147,6 @@ isA(?Object, "Unknown") :- isA(?Object, ?Type), !definedType(?Type).
 
 liveMethod(?Object, ?Invocation, ?Method) :-
 	realInitialInvocation(?Object, ?Method, ?Invocation).
-
-isInvocation(?Invocation) :- realInitialInvocation(?Object, ?Method, ?Invocation).
 
 
 /* assume Unknown objects are initially active in the "unknown" context, unless the user specified

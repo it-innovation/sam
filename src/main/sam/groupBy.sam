@@ -40,8 +40,6 @@
 // Disable the normal rules (TargetContext = CallerContext)
 methodDoesContextMapping(?Method) :- GroupByArgAt(?Method, ?Pos).
 
-isInvocation(?Context) :- GroupByArgCase(?Method, ?Value, ?Context).
-
 // When Method is called, activate the contexts for every case which might
 // receive a value.
 didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method) :-
@@ -119,7 +117,6 @@ error("GroupByArgAt method cannot accept arguments at any position", ?Method) :-
 ///////////////// Group everything into a single context
 
 methodDoesContextMapping(?Method) :- GroupAs(?Method, ?Context).
-isInvocation(?Context) :- GroupAs(?Method, ?Context).
 
 didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, ?Method) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
