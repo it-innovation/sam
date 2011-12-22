@@ -28,6 +28,8 @@
 
 package eu.serscis.sam;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.Set;
 import eu.serscis.sam.node.*;
@@ -44,7 +46,7 @@ import eu.serscis.sam.parser.ParserException;
 import static eu.serscis.sam.Constants.*;
 
 class SAMMethod {
-	private Set<String> locals = new HashSet<String>();
+	private Map<String,Type> locals = new HashMap<String,Type>();
 	private SAMClass parent;
 	private String localPrefix;
 	private AMethod method;
@@ -84,7 +86,7 @@ class SAMMethod {
 			parent.model.addFact(savesMethodInLocalP, BASIC.createTuple(
 						methodNameFull,
 						TERM.createString(expandLocal(varName))));
-			locals.add(varName);
+			locals.put(varName, Type.StringT);
 		}
 
 		ACode code = (ACode) method.getCode();
@@ -305,7 +307,7 @@ class SAMMethod {
 					if (callExpr.getMethod() instanceof ADollarPattern) {
 						TName varName = ((ADollarPattern) (callExpr.getMethod())).getName();
 						// callsMethodInLocal(?CallSite, ?LocalVarName).
-						if (!locals.contains(varName.getText())) {
+						if (!locals.containsKey(varName.getText())) {
 							throw new ParserException(varName, "Must be a local variable");
 						}
 						parent.model.addFact(callsMethodInLocalP,
@@ -507,12 +509,12 @@ class SAMMethod {
 	private void declareLocal(TName type, TName aName) throws ParserException {
 		Type.validateJavaName(type);
 		String name = aName.getText();
-		if (locals.contains(name)) {
+		if (locals.containsKey(name)) {
 			throw new ParserException(aName, "Duplicate definition of local " + name);
 		} else if (parent.fields.contains(name)) {
 			throw new ParserException(aName, "Local variable shadows field of same name: " + name);
 		} else {
-			locals.add(name);
+			locals.put(name, Type.fromJavaName(type.getText()));
 		}
 	}
 
@@ -521,7 +523,9 @@ class SAMMethod {
 	}
 
 	/* Assign a local or field, as appropriate:
-	 *   local(?Caller, ?CallerInvocation, 'var', ?Value) :- body
+	 *   local(?Caller, ?CallerInvocation, 'var', ?RestrictedValue) :-
+	 *	body
+	 *	ASSIGN(type, ?Value, ?RestrictedValue).
 	 * or
 	 *   field(?Caller, 'var', ?Value) :- body
 	 */
@@ -530,22 +534,6 @@ class SAMMethod {
 
 		declareLocal(assign);
 
-		String varName = assign.getName().getText();
-		if (locals.contains(varName)) {
-			ITuple tuple = BASIC.createTuple(TERM.createVariable("Caller"),
-							 TERM.createVariable("CallerInvocation"),
-							 TERM.createString(expandLocal(varName)),
-							 TERM.createVariable("Value"));
-			head = BASIC.createLiteral(true, BASIC.createAtom(localP, tuple));
-		} else if (parent.fields.contains(varName)) {
-			ITuple tuple = BASIC.createTuple(TERM.createVariable("Caller"),
-							 TERM.createString(varName),
-							 TERM.createVariable("Value"));
-			head = BASIC.createLiteral(true, BASIC.createAtom(fieldP, tuple));
-		} else {
-			throw new ParserException(assign.getName(), "Undeclared variable: " + varName);
-		}
-
 		List<List<Token>> allTokens;
 		if (tokens == null) {
 			allTokens = null;
@@ -553,6 +541,32 @@ class SAMMethod {
 			allTokens = new LinkedList<List<Token>>();
 			allTokens.add(null);
 			allTokens.addAll(tokens);
+		}
+
+		String varName = assign.getName().getText();
+		if (locals.containsKey(varName)) {
+			ITuple tuple = BASIC.createTuple(TERM.createVariable("Caller"),
+							 TERM.createVariable("CallerInvocation"),
+							 TERM.createString(expandLocal(varName)),
+							 TERM.createVariable("RestrictedValue"));
+			head = BASIC.createLiteral(true, BASIC.createAtom(localP, tuple));
+
+			body = new LinkedList<ILiteral>(body);
+			body.add(BASIC.createLiteral(true,
+						new AssignBuiltin(
+							TERM.createString(locals.get(varName).toJavaName()),
+							TERM.createVariable("Value"),
+							TERM.createVariable("RestrictedValue"))));
+			if (allTokens != null) {
+				allTokens.add(null);
+			}
+		} else if (parent.fields.contains(varName)) {
+			ITuple tuple = BASIC.createTuple(TERM.createVariable("Caller"),
+							 TERM.createString(varName),
+							 TERM.createVariable("Value"));
+			head = BASIC.createLiteral(true, BASIC.createAtom(fieldP, tuple));
+		} else {
+			throw new ParserException(assign.getName(), "Undeclared variable: " + varName);
 		}
 
 		IRule rule = BASIC.createRule(makeList(head), body);
@@ -571,7 +585,7 @@ class SAMMethod {
 		declareLocal(assign);
 
 		String varName = assign.getName().getText();
-		if (locals.contains(varName)) {
+		if (locals.containsKey(varName)) {
 			ITuple tuple = BASIC.createTuple(TERM.createVariable("Object"),
 							 TERM.createVariable("Invocation"),
 							 TERM.createString(expandLocal(varName)),
@@ -602,7 +616,7 @@ class SAMMethod {
 		AParam param = (AParam) pparam;
 		String name = param.getName().getText();
 		TName type = ((AType) param.getType()).getName();
-		Type.validateJavaName(type);
+		Type t = Type.fromJavaName(type);
 		acceptRel.add(BASIC.createTuple(method, TERM.createString(expandLocal(name)), posTerm));
 
 		IRelation hasParamRel = parent.model.getRelation(Constants.hasParamP);
@@ -611,12 +625,12 @@ class SAMMethod {
 						  TERM.createString(name),
 						  posTerm));
 
-		if (locals.contains(name)) {
+		if (locals.containsKey(name)) {
 			throw new ParserException(((AParam) param).getName(), "Duplicate definition of local " + name);
 		} else if (parent.fields.contains(name)) {
 			throw new ParserException(((AParam) param).getName(), "Local variable shadows field of same name: " + name);
 		} else {
-			locals.add(name);
+			locals.put(name, t);
 		}
 	}
 
@@ -632,7 +646,7 @@ class SAMMethod {
 
 		if (expr instanceof ACopyExpr) {
 			TName varName = ((ACopyExpr) expr).getName();
-			boolean isLocal = locals.contains(varName.getText());
+			boolean isLocal = locals.containsKey(varName.getText());
 
 			ILiteral head;
 
@@ -730,7 +744,7 @@ class SAMMethod {
 	 */
 	private ILiteral getValue(ITerm targetVar, TName var) throws ParserException {
 		String sourceVar = var.getText();
-		if (locals.contains(sourceVar)) {
+		if (locals.containsKey(sourceVar)) {
 			ITuple tuple = BASIC.createTuple(
 					TERM.createVariable("Caller"),
 					TERM.createVariable("CallerInvocation"),

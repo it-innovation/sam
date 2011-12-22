@@ -51,6 +51,14 @@ public enum Type {
 		return valueOf(javaName + "T");
 	}
 
+	static public Type fromJavaName(TName javaName) throws ParserException {
+		try {
+			return fromJavaName(javaName.getText());
+		} catch (IllegalArgumentException ex) {
+			throw new ParserException(javaName, "Unknown SAM type '" + javaName + "' (hint: use Object/Value/Ref)");
+		}
+	}
+
 	static public Type fromTerm(ITerm term) {
 		if (term instanceof IStringTerm) {
 			return StringT;
@@ -105,10 +113,6 @@ public enum Type {
 	}
 
 	public static void validateJavaName(TName type) throws ParserException {
-		try {
-			fromJavaName(type.getText());
-		} catch (IllegalArgumentException ex) {
-			throw new ParserException(type, "Unknown SAM type '" + type + "' (hint: use Object/Value/Ref)");
-		}
+		fromJavaName(type);
 	}
 }
