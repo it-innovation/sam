@@ -28,6 +28,9 @@
 
 package eu.serscis.sam;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+
 public class InvalidModelException extends Exception {
 	public final String source;		// File/resource containing the line
 	public final String code;
@@ -40,5 +43,23 @@ public class InvalidModelException extends Exception {
 		this.code = code;
 		this.line = line;
 		this.col = col;
+	}
+
+	public Iterator<InvalidModelException> getChain() {
+		LinkedList<InvalidModelException> chain = new LinkedList<InvalidModelException>();
+
+		Throwable ex = this;
+		while (ex != null) {
+			chain.add((InvalidModelException) ex);
+
+			Throwable cause = ex.getCause();
+			if (cause instanceof InvalidModelException) {
+				ex = cause;
+			} else {
+				break;
+			}
+		}
+
+		return chain.descendingIterator();
 	}
 }

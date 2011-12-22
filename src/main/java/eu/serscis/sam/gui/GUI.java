@@ -28,6 +28,9 @@
 
 package eu.serscis.sam.gui;
 
+import org.eclipse.swt.graphics.Font;
+import java.util.Iterator;
+import eu.serscis.sam.InvalidModelException;
 import eu.serscis.sam.TermDefinition;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.deri.iris.api.terms.ITerm;
@@ -203,7 +206,10 @@ public class GUI {
 		final ScrolledComposite mainScrollArea = new ScrolledComposite(shell,
 							SWT.H_SCROLL | SWT.V_SCROLL);
 
-		mainImage = new Label(mainScrollArea, SWT.CENTER);
+		mainImage = new Label(mainScrollArea, SWT.LEFT);
+		Font mono = new Font(display, "Courier", 10, SWT.NORMAL);
+		mainImage.setFont(mono);
+		mainImage.setBackground(white);
 		mainScrollArea.setContent(mainImage);
 		mainScrollArea.setBackground(white);
 
@@ -331,7 +337,7 @@ public class GUI {
 			}
 			addWarning(msg, null);
 			if (results.finalKnowledgeBase == null) {
-				mainImage.setText(results.exception.toString());
+				mainImage.setText(formatException(results.exception));
 				mainImage.pack();
 			}
 		} else if (results.phase != Results.Phase.Success) {
@@ -493,5 +499,36 @@ public class GUI {
 		} finally {
 			writer.close();
 		}
+	}
+
+	public String formatException(Exception ex) {
+		if (!(ex instanceof InvalidModelException)) {
+			return ex.toString();
+		}
+
+		String msg = "";
+
+		boolean first = true;
+		Iterator<InvalidModelException> iter = ((InvalidModelException) ex).getChain();
+		while (iter.hasNext()) {
+			InvalidModelException link = iter.next();
+
+			if (first) {
+				msg += "Error: " + link.getMessage() + "\n\n";
+				first = false;
+			} else {
+				msg += "\nImported from here:\n\n";
+			}
+
+			msg += "  " + link.code + "\n";
+			String spaces = "  ";
+			for (int i = link.col; i > 1; i--) {
+				spaces += " ";
+			}
+			msg += spaces + "^\n";
+			msg += "  " + link.source + ":" + link.line + "\n";
+		}
+
+		return msg;
 	}
 }

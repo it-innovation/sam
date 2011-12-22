@@ -131,21 +131,8 @@ public class Main {
 	}
 
 	private static void printParserException(InvalidModelException ex) {
-		LinkedList<InvalidModelException> chain = new LinkedList<InvalidModelException>();
-
-		while (ex != null) {
-			chain.add(ex);
-
-			Throwable cause = ex.getCause();
-			if (cause instanceof InvalidModelException) {
-				ex = (InvalidModelException) cause;
-			} else {
-				break;
-			}
-		}
-
 		boolean first = true;
-		Iterator<InvalidModelException> iter = chain.descendingIterator();
+		Iterator<InvalidModelException> iter = ex.getChain();
 		while (iter.hasNext()) {
 			InvalidModelException link = iter.next();
 
