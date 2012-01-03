@@ -173,7 +173,7 @@ uncalledEdge(?SourceNode, ?TargetNode) :-
 
 /* Hide arrows that have higher-priority replacements. */
 
-graphEdge(?Object, ?Target, "color=red") :- errorEdge(?Object, ?Target).
+graphEdge(?Object, ?Target, "color=red,style=bold,arrowhead=crowopen") :- errorEdge(?Object, ?Target).
 
 /* Problem field */
 graphEdge(?GraphSourceNode, ?GraphTargetNode, "color=orange") :-
