@@ -15,6 +15,7 @@ class DataProvider {
 }
 
 class File {
+  @FieldGrantsRole("owner")
   private String myOwner;
 
   public File(String owner) {
@@ -66,4 +67,3 @@ hasIdentity(<otherUsers>, "otherUsers.crt").
 hasIdentity(<dataProvider>, "provider.crt").
 
 grantsRole(<dataProvider>, "world", ?Identity) :- hasIdentity(?AnyObject, ?Identity).
-grantsRole(?File, "owner", ?Identity) :- field(?File, "myOwner", ?Value), ASSIGN("String", ?Value, ?Identity).

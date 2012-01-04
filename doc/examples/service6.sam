@@ -50,7 +50,8 @@ class ServiceProvider {
         String caller = ?Identity :- hasIdentity($Caller, ?Identity);
         boolean checkResult = uncheckedFile.checkCanRead(caller);
 
-        Ref file = uncheckedFile :- mayReturn(uncheckedFile, $Context, "File.checkCanRead", true);
+        Ref file = uncheckedFile :- mayReturn(uncheckedFile, $Context, "File.checkCanRead", ?Result),
+				    MATCH(?Result, true);
         file.get();
         image.grantReadAccess(caller);
         image.put();

@@ -293,7 +293,7 @@ design: instead of bundling authorisation with designation they separate these t
 try to invoke it even when you don't have permission. Security is provided in these systems by access control policies.
 
 To indicate that an object is publicly available (anyone could get a reference to it), use the :func:`isPublic` tag. A border around the object indicates that it
-is public. To model a typical web-based distributed system we simply mark all objects as public ("something is public if it is an object")::
+is public. To model a typical web-based distributed system we simply mark all objects as public ("something is public if it is a reference-type object")::
 
   isPublic(?X) :- isRef(?X).
 
@@ -353,6 +353,7 @@ We could update `File` in a similar way, granting `user` and `otherUsers` a "use
 with this identity::
 
   class File {
+    @FieldGrantsRole("owner")
     private String myOwner;
 
     public File(String owner) {
@@ -365,9 +366,6 @@ with this identity::
     @PermittedRole("owner")
     public void put() {}
   }
-
-  // A file grants the "owner" role to Identity if Identity is a value of the "myOwner" field:
-  grantsRole(?File, "owner", ?Identity) :- field(?File, "myOwner", ?Identity).
 
 We must update `DataProvider` to pass through the `owner` argument, and update `Client` to provide its identity (:example:`data5`).
 SAM now reports that the model is safe:
@@ -468,7 +466,10 @@ The user needs some way to grant `serviceProvider` read access to the data (`fil
 to the resulting image. We can add an extra method to `File` for this::
 
   class File {
+    @FieldGrantsRole("owner")
     private String myOwner;
+
+    @FieldGrantsRole("reader")
     private String myReader;
 
     public File(String owner) {
@@ -487,9 +488,6 @@ to the resulting image. We can add an extra method to `File` for this::
       myReader = id;
     }
   }
-
-  grantsRole(?File, "owner", ?Identity) :- field(?File, "myOwner", ?Identity).
-  grantsRole(?File, "reader", ?Identity) :- field(?File, "myReader", ?Identity).
 
 This is the same pattern that we used for the "owner" role. After updating `Client` to grant access on `file` and `serviceProvider` to grant
 access on `image`, all required access is possible again (:example:`service4`):
@@ -545,7 +543,8 @@ We can then update the service provider to check that its caller has read access
           String caller = ?Identity :- hasIdentity($Caller, ?Identity);
           boolean checkResult = uncheckedFile.checkCanRead(caller);
 
-          Ref file = uncheckedFile :- mayReturn(uncheckedFile, $Context, "File.checkCanRead", true);
+          Ref file = uncheckedFile :- mayReturn(uncheckedFile, $Context, "File.checkCanRead", ?Result),
+                                      MATCH(?Result, true);
           file.get();
           image.grantReadAccess(caller);
           image.put();
@@ -562,7 +561,7 @@ Finally, we assign `file = uncheckedFile` only if `uncheckedFile.checkCanRead` c
 
 .. note::
 
-  Why do we need to do the :func:`mayReturn` test, rather than just `file = uncheckedFile :- checkResult = true`?
+  Why do we need to do the :func:`mayReturn` test, rather than just `file = uncheckedFile :- MATCH(checkResult, true)`?
 
   The reason is that we are aggregating two kinds of calls into the `Other` case:
 
