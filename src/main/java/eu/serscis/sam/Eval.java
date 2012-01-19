@@ -77,11 +77,11 @@ public class Eval {
 	public Eval() {
 	}
 
-	public Results evaluate(File scenario) {
+	public Results evaluate(File modelFile) {
 		Results results = new Results(new Model(createDefaultConfiguration()));
 
 		try {
-			evaluate(scenario, results);
+			evaluate(modelFile, results);
 		} catch (Exception ex) {
 			results.setException(ex);
 		}
@@ -89,8 +89,8 @@ public class Eval {
 		return results;
 	}
 
-	private void evaluate(File scenario, Results results) throws Exception {
-		File baseDir = scenario.getParentFile();
+	private void evaluate(File modelFile, Results results) throws Exception {
+		File baseDir = modelFile.getParentFile();
 
 		ClassLoader loader = Eval.class.getClassLoader();
 
@@ -99,7 +99,7 @@ public class Eval {
 		parseResource(results.model, "checks.sam");
 		parseResource(results.model, "graph.sam");
 
-		SAMParser parser = new SAMParser(results.model, scenario);
+		SAMParser parser = new SAMParser(results.model, modelFile);
 		List<IQuery> queries = parser.getQueries();
 
 		IKnowledgeBase initialKnowledgeBase = results.model.createKnowledgeBase();
@@ -117,7 +117,7 @@ public class Eval {
 		results.phase = Results.Phase.Setup;
 
 		if (!doSetup(results.model)) {
-			throw new ModelFailureException("Unexpected error in " + scenario);
+			throw new ModelFailureException("Unexpected error in " + modelFile);
 		}
 
 		results.phase = Results.Phase.Test;
