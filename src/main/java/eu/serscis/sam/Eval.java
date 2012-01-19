@@ -102,36 +102,26 @@ public class Eval {
 		SAMParser parser = new SAMParser(results.model, modelFile);
 		List<IQuery> queries = parser.getQueries();
 
-		IKnowledgeBase initialKnowledgeBase = results.model.createKnowledgeBase();
-		//graph(initialKnowledgeBase, new File("initial.png"));
-
-		results.expectingFailure = expectingFailure(initialKnowledgeBase);
-		boolean initialProblem = checkForErrors(results, initialKnowledgeBase, "in initial configuration");
-
-		if (initialProblem) {
-			return;
-		}
-
 		parseResource(results.model, "system.sam");
 
 		results.phase = Results.Phase.Setup;
 
-		if (!doSetup(results.model)) {
-			throw new ModelFailureException("Unexpected error in " + modelFile);
-		}
-
-		results.phase = Results.Phase.Test;
+		boolean setupOK = doSetup(results);
 
 		parseResource(results.model, "finalChecks.sam");
 		parseResource(results.model, "gui.sam");
 
-		IRelation phase = results.model.getRelation(Constants.phaseP);
-		phase.add(BASIC.createTuple(new ITerm[] { TERM.createString("test") }));
+		if (setupOK) {
+			results.phase = Results.Phase.Test;
 
-		IKnowledgeBase finalKnowledgeBase = results.model.createKnowledgeBase();
-		results.finalKnowledgeBase = doDebugging(results.model, finalKnowledgeBase);
+			IRelation phase = results.model.getRelation(Constants.phaseP);
+			phase.add(BASIC.createTuple(new ITerm[] { TERM.createString("test") }));
+		} // else doSetup set finalKnowledgeBase already
+
+		boolean finalProblem = (!setupOK) || checkForErrors(results, "after applying propagation rules");
+		results.expectingFailure = expectingFailure(results.finalKnowledgeBase);
+
 		doQueries(results.finalKnowledgeBase, queries);
-		boolean finalProblem = checkForErrors(results, results.finalKnowledgeBase, "after applying propagation rules");
 
 		if (!finalProblem) {
 			results.phase = Results.Phase.Success;
@@ -141,20 +131,26 @@ public class Eval {
 	/* Instantiate the Setup class and run the model. Update the
 	 * initialObject and field relations with the results,
 	 * throwing everything else away.
+	 * Returns true on success, false for an expected failure (also sets
+	 * finalKnowledgeBase), or throws an exception
+	 * on unexpected failure.
+	 * XXX: should also keep ACL updates.
 	 */
-	private boolean doSetup(Model mainModel) throws Exception {
+	private boolean doSetup(Results results) throws Exception {
+		Model mainModel = results.model;
 		Model tmpModel = new Model(mainModel);
 
 		IRelation phase = tmpModel.getRelation(Constants.phaseP);
 		phase.add(BASIC.createTuple(new ITerm[] { TERM.createString("setup") }));
 
-		IKnowledgeBase setupKnowledgeBase = tmpModel.createKnowledgeBase();
-		/*
-		boolean setupProblem = checkForErrors(setupKnowledgeBase, "during setup phase");
+		results.model = tmpModel;
+		boolean setupProblem = checkForErrors(results, "during setup phase");
 		if (setupProblem) {
 			return false;
 		}
-		*/
+		results.model = mainModel;
+
+		IKnowledgeBase setupKnowledgeBase = results.finalKnowledgeBase;
 
 		ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
 		ILiteral isAL = BASIC.createLiteral(true, Constants.isAP, xAndY);
@@ -242,10 +238,31 @@ public class Eval {
 		return (expectFailureResults.size() != 0);
 	}
 
-	/* Returns true if an error was detected */
-	private boolean checkForErrors(Results results, IKnowledgeBase knowledgeBase, String when) throws Exception {
+	/* Returns true if an error was detected, and adds the errors to results.errors.
+	 * Also runs the debugger, adding error edges to results.model.
+	 * Sets:
+	 * - results.expectingFailure
+	 * - results.finalKnowledgeBase
+	 * - results.errors
+	 */
+	private boolean checkForErrors(Results results, String when) throws Exception {
+		Model model = results.model;
+		IKnowledgeBase knowledgeBase = model.createKnowledgeBase();
+
+		results.expectingFailure = expectingFailure(knowledgeBase);
+
 		List<ITerm> terms = new LinkedList<ITerm>();
 		boolean problem = false;
+		boolean ranDebugger = false;
+
+		// If debug is set, run the debugger on that.
+		ILiteral debugL = BASIC.createLiteral(true, BASIC.createPredicate("debug", 0), BASIC.createTuple());
+		IQuery debugQ = BASIC.createQuery(debugL);
+		IRelation debugResults = knowledgeBase.execute(debugQ);
+		if (debugResults.size() != 0) {
+			doDebugging(model, debugL);
+			ranDebugger = true;
+		}
 
 		for (int i = 0; i < 7; i++) {
 			IPredicate errorPredicate = BASIC.createPredicate("error", i);
@@ -256,6 +273,13 @@ public class Eval {
 				if (!problem) {
 					System.out.println("\n=== Errors detected " + when + " ===\n");
 					problem = true;
+
+					// Run the debugger on the first error
+					//if (!ranDebugger && !results.expectingFailure) {
+					if (!ranDebugger) {
+						ranDebugger = true;
+						doDebugging(model, errorLiteral);
+					}
 				}
 				for(int t = 0; t < errorResults.size(); ++t )
 				{
@@ -277,23 +301,21 @@ public class Eval {
 			terms.add(newTerm);
 		}
 
+		if (ranDebugger) {
+			results.finalKnowledgeBase = model.createKnowledgeBase();		// Re-create KB to include debug edges
+		} else {
+			results.finalKnowledgeBase = knowledgeBase;
+		}
+
 		return problem;
 	}
 
-	private IKnowledgeBase doDebugging(Model model, IKnowledgeBase knowledgeBase) throws Exception {
-		ILiteral debugL = BASIC.createLiteral(true, BASIC.createPredicate("debug", 0), BASIC.createTuple());
-		IQuery debugQ = BASIC.createQuery(debugL);
-		IRelation debugResults = knowledgeBase.execute(debugQ);
-		if (debugResults.size() == 0) {
-			return knowledgeBase;
-		}
-
+	/* Evaluate the model with the debugger turned on. Add the resulting debug edges to model. */
+	private void doDebugging(Model model, ILiteral problem) throws Exception {
 		IRelation debugEdges = model.getRelation(Constants.debugEdgeP);
 		System.out.println("Starting debugger...");
 		Debugger debugger = new Debugger(model);
-		debugger.debug(debugL, debugEdges);
-
-		return model.createKnowledgeBase();
+		debugger.debug(problem, debugEdges);
 	}
 
 	static private void formatResults(IRelation m )

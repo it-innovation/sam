@@ -41,9 +41,6 @@ missingGoodAccess(?SourceObject, ?TargetObject) :-
 error("required access is not possible", ?SourceObject, ?TargetObject) :-
 	missingGoodAccess(?SourceObject, ?TargetObject).
 
-debug :- haveBadAccess(?Source, ?Target).
-
-debug :- failedAssertion(?N).
 error(?Msg) :- failedAssertion(?N), assertionMessage(?N, ?Msg).
 
 /* Check that all mustCall calls were made. */
@@ -68,3 +65,24 @@ missingGoodAccess(?Source, ?Target) :-
 error("Not an object", ?Target) :-
     grantsRole(?Target, ?Role, ?CallerIdentity),
     !isRef(?Target).
+
+/* Check that no calls were made on checkCalls objects except for mayCall ones. */
+
+mayCall(?Caller, ?Invocation, ?CallSite, ?Target, ?Method) :-
+	mustCall(?Caller, ?Invocation, ?CallSite, ?Target, ?Method).
+
+/* Don't check the call-site for Unknown callers */
+mayCall(?Caller, ?Invocation, ?Target, ?Method) :-
+	mustCall(?Caller, ?Invocation, ?AnyCallSite, ?Target, ?Method),
+	isA(?Caller, "Unknown").
+
+haveBadAccess(?Caller, ?Target) :-
+    checkCalls(?Target),
+    didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?AnyInvocation, ?Method),
+    !AnyoneMayCall(?Method),
+    !mayCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+    !mayCall(?Caller, ?CallerInvocation, ?Target, ?Method),
+    !mayCall(?Caller, ?Target, ?Method).
+
+// Unknown objects may call themselves
+mayCall(?Object, ?Object, "BaseUnknown.*") :- isA(?Object, "Unknown").
