@@ -28,6 +28,7 @@
 
 package eu.serscis.sam.gui;
 
+import eu.serscis.sam.ScenarioResult;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Arrays;
@@ -115,8 +116,12 @@ public class ResultsTable implements Updatable {
 		for (int i = 0; i < rows.length; i++) {
 			TableItem item = new TableItem(myTable, 0);
 
-			for (int c = 0; c < nColumns; c++) {
-				item.setText(c, rows[i].get(c).getValue().toString());
+			if (nColumns == 0) {
+				item.setText(0, "true");
+			} else {
+				for (int c = 0; c < nColumns; c++) {
+					item.setText(c, rows[i].get(c).getValue().toString());
+				}
 			}
 		}
 
@@ -133,7 +138,7 @@ public class ResultsTable implements Updatable {
 		if (myTable.isDisposed()) {
 			return;
 		}
-		Results results = myResults.getResults();
+		ScenarioResult results = myResults.getResults();
 		if (results.finalKnowledgeBase != null) {
 			myBindings = new LinkedList<IVariable>();
 			IRelation rel = results.finalKnowledgeBase.execute(myQuery, myBindings);
@@ -142,7 +147,7 @@ public class ResultsTable implements Updatable {
 			myTable.removeAll();
 			rows = null;
 			TableItem item = new TableItem(myTable, 0);
-			item.setText("problem: " + results.exception);
+			item.setText("problem");	// shouldn't happen
 
 			for (TableColumn column : myTable.getColumns()) {
 				column.pack();

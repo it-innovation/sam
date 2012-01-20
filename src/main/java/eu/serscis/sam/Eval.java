@@ -103,27 +103,37 @@ public class Eval {
 
 		List<IQuery> queries = parser.getQueries();
 
-		results.phase = Results.Phase.Setup;
+		for (String scenario : results.model.scenarios) {
+			ScenarioResult result = results.createScenarioResult(scenario);
 
-		boolean setupOK = doSetup(results);
+			IPredicate scenarioP = BASIC.createPredicate(scenario, 0);
+			IRelation scenarioR = result.model.getRelation(scenarioP);
+			scenarioR.add(BASIC.createTuple());
 
-		parseResource(results.model, "finalChecks.sam");
-		parseResource(results.model, "gui.sam");
+			evaluateScenario(result);
+			doQueries(results.scenarios.get(scenario).finalKnowledgeBase, queries);
+		}
+	}
+
+	private void evaluateScenario(ScenarioResult result) throws Exception {
+		result.phase = Phase.Setup;
+
+		boolean setupOK = doSetup(result);
+
+		parseResource(result.model, "finalChecks.sam");
+		parseResource(result.model, "gui.sam");
 
 		if (setupOK) {
-			results.phase = Results.Phase.Test;
+			result.phase = Phase.Test;
 
-			IRelation phase = results.model.getRelation(Constants.phaseP);
+			IRelation phase = result.model.getRelation(Constants.phaseP);
 			phase.add(BASIC.createTuple(new ITerm[] { TERM.createString("test") }));
 		} // else doSetup set finalKnowledgeBase already
 
-		boolean finalProblem = (!setupOK) || checkForErrors(results, "after applying propagation rules");
-		results.expectingFailure = expectingFailure(results.finalKnowledgeBase);
-
-		doQueries(results.finalKnowledgeBase, queries);
+		boolean finalProblem = (!setupOK) || checkForErrors(result, "after applying propagation rules");
 
 		if (!finalProblem) {
-			results.phase = Results.Phase.Success;
+			result.phase = Phase.Success;
 		}
 	}
 
@@ -135,21 +145,21 @@ public class Eval {
 	 * on unexpected failure.
 	 * XXX: should also keep ACL updates.
 	 */
-	private boolean doSetup(Results results) throws Exception {
-		Model mainModel = results.model;
+	private boolean doSetup(ScenarioResult result) throws Exception {
+		Model mainModel = result.model;
 		Model tmpModel = new Model(mainModel);
 
 		IRelation phase = tmpModel.getRelation(Constants.phaseP);
 		phase.add(BASIC.createTuple(new ITerm[] { TERM.createString("setup") }));
 
-		results.model = tmpModel;
-		boolean setupProblem = checkForErrors(results, "during setup phase");
+		result.model = tmpModel;
+		boolean setupProblem = checkForErrors(result, "during setup phase");
 		if (setupProblem) {
 			return false;
 		}
-		results.model = mainModel;
+		result.model = mainModel;
 
-		IKnowledgeBase setupKnowledgeBase = results.finalKnowledgeBase;
+		IKnowledgeBase setupKnowledgeBase = result.finalKnowledgeBase;
 
 		ITuple xAndY = BASIC.createTuple(TERM.createVariable("X"), TERM.createVariable("Y"));
 		ILiteral isAL = BASIC.createLiteral(true, Constants.isAP, xAndY);
@@ -244,7 +254,7 @@ public class Eval {
 	 * - results.finalKnowledgeBase
 	 * - results.errors
 	 */
-	private boolean checkForErrors(Results results, String when) throws Exception {
+	private boolean checkForErrors(ScenarioResult results, String when) throws Exception {
 		Model model = results.model;
 		IKnowledgeBase knowledgeBase = model.createKnowledgeBase();
 

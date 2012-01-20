@@ -28,6 +28,8 @@
 
 package eu.serscis.sam;
 
+import java.util.HashSet;
+import java.util.Set;
 import eu.serscis.sam.node.TNumber;
 import eu.serscis.sam.node.TBool;
 import eu.serscis.sam.node.TName;
@@ -84,6 +86,7 @@ import static org.deri.iris.factory.Factory.*;
 
 public class Model {
 	final Configuration configuration;
+	public final List<String> scenarios;
 	private final List<IRule> rules = new LinkedList<IRule>();
 	private final Map<IPredicate,IRelation> facts = new HashMap<IPredicate,IRelation>();
 	public final Map<IPredicate,TermDefinition[]> declared = new HashMap<IPredicate,TermDefinition[]>();
@@ -109,6 +112,16 @@ public class Model {
 
 	public Model(Configuration configuration) {
 		this.configuration = configuration;
+
+		// The baseline scenario is always present
+		try {
+			IPredicate predicate = BASIC.createPredicate("baseline", 0);
+			declare(null, predicate, new TermDefinition[0]);
+			scenarios = new LinkedList<String>();
+			scenarios.add("baseline");
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 
 	public Model(Model source) {
@@ -116,6 +129,7 @@ public class Model {
 		this.rules.addAll(source.rules);
 		this.facts.putAll(source.facts);
 		this.declared.putAll(source.declared);
+		this.scenarios = new LinkedList(source.scenarios);
 	}
 
 	public IRelation getRelation(IPredicate pred) {
@@ -378,5 +392,12 @@ public class Model {
 	public int nextAssertion() {
 		assertions += 1;
 		return assertions;
+	}
+
+	public void addScenario(Token nameTok) throws ParserException {
+		String name = nameTok.getText();
+		IPredicate predicate = BASIC.createPredicate(name, 0);
+		declare(nameTok, predicate, new TermDefinition[0]);
+		scenarios.add(name);
 	}
 }

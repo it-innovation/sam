@@ -160,7 +160,7 @@ public class SAMParser {
 			} else if (toplevel instanceof AQueryToplevel) {
 				addQuery((AQuery) ((AQueryToplevel) toplevel).getQuery());
 			} else if (toplevel instanceof ADeclareToplevel) {
-				addDeclare((ADeclare) ((ADeclareToplevel) toplevel).getDeclare());
+				addDeclare(((ADeclareToplevel) toplevel).getDeclare());
 			} else if (toplevel instanceof AAssertToplevel) {
 				addAssert((AAssert) ((AAssertToplevel) toplevel).getAssert());
 			} else if (toplevel instanceof AImportToplevel) {
@@ -316,7 +316,15 @@ public class SAMParser {
 		model.addFact(assertionMessageP, BASIC.createTuple(assertionN, TERM.createString(msg)));
 	}
 
-	private void addDeclare(ADeclare declare) throws ParserException {
+	private void addDeclare(PDeclare declare) throws ParserException {
+		if (declare instanceof APredicateDeclare) {
+			declarePredicate((APredicateDeclare) declare);
+		} else {
+			declareScenario((AScenarioDeclare) declare);
+		}
+	}
+
+	private void declarePredicate(APredicateDeclare declare) throws ParserException {
 		ATermDecls decls = (ATermDecls) declare.getTermDecls();
 
 		TName name = declare.getName();
@@ -340,6 +348,11 @@ public class SAMParser {
 			IPredicate predicate = BASIC.createPredicate(name.getText(), terms.length);
 			model.declare(name, predicate, terms);
 		}
+	}
+
+	private void declareScenario(AScenarioDeclare declare) throws ParserException {
+		TName name = declare.getName();
+		model.addScenario(name);
 	}
 
 	private void addImport(AImport aImport) throws Exception {

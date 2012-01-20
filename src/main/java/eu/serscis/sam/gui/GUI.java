@@ -28,6 +28,7 @@
 
 package eu.serscis.sam.gui;
 
+import eu.serscis.sam.ScenarioResult;
 import org.eclipse.swt.graphics.Font;
 import java.util.Iterator;
 import eu.serscis.sam.InvalidModelException;
@@ -47,6 +48,7 @@ import java.util.Arrays;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.FillLayout;
 import eu.serscis.sam.Graph;
 import eu.serscis.sam.Eval;
 import eu.serscis.sam.Results;
@@ -65,17 +67,18 @@ import static org.deri.iris.factory.Factory.*;
 
 public class GUI {
 	private File myFile;
-	private LiveResults liveResults = new LiveResults();
+	final LiveResults liveResults = new LiveResults();
 	private Display display;
-	private Shell shell;
-	private Label mainImage;
-	private Color white;
-	private MenuItem relationsMenuHeader;
-	private Menu relationsMenu;
-	private MenuItem objectsMenuHeader;
-	private Menu objectsMenu;
-	private List messageList;
-	private LinkedList<ILiteral> myProblems;
+	final Shell shell;
+	MenuItem relationsMenuHeader;
+	Menu relationsMenu;
+	MenuItem objectsMenuHeader;
+	Menu objectsMenu;
+	private TabItem welcomeTab = null;
+
+	private TabFolder mainFolder;
+	private LinkedList<String> currentTabs = null;
+	private LinkedList<ScenarioView> myTabs = new LinkedList<ScenarioView>();
 
 	public GUI(File file) throws Exception {
 		if (file != null) {
@@ -83,7 +86,6 @@ public class GUI {
 		}
 
 		display = new Display();
-		white = new Color(display, 255, 255, 255);
 		shell = new Shell(display, SWT.BORDER | SWT.CLOSE | SWT.MIN | SWT.MAX | SWT.RESIZE | SWT.TITLE);
 		shell.setText("SAM");
 
@@ -119,14 +121,6 @@ public class GUI {
 
 		MenuItem reloadItem = new MenuItem(fileMenu, SWT.PUSH);
 		reloadItem.setText("&Reload\tF5");
-		/*
-		reloadItem.setAccelerator(SWT.F5);
-		reloadItem.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-			}
-		});
-		*/
-
 		// Do it this way so it works in any window
 		display.addFilter(SWT.KeyDown, new Listener() {
 			public void handleEvent(Event ev) {
@@ -203,56 +197,45 @@ public class GUI {
 			}
 		});
 
-		final ScrolledComposite mainScrollArea = new ScrolledComposite(shell,
-							SWT.H_SCROLL | SWT.V_SCROLL);
-
-		mainImage = new Label(mainScrollArea, SWT.LEFT);
-		Font mono = new Font(display, "Courier", 10, SWT.NORMAL);
-		mainImage.setFont(mono);
-		mainImage.setBackground(white);
-		mainScrollArea.setContent(mainImage);
-		mainScrollArea.setBackground(white);
-
-		messageList = new List(shell, 0);
-		messageList.addSelectionListener(new SelectionAdapter() {
-			public void widgetDefaultSelected(SelectionEvent e) {
-				ILiteral optProblem = myProblems.get(messageList.getSelectionIndex());
-				System.out.println(optProblem);
-				if (optProblem != null) {
-					try {
-						new DebugViewer(shell, liveResults, optProblem);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-			}
-		});
+		mainFolder = new TabFolder(shell, 0);
 
 		GridLayout gridLayout = new GridLayout();
- 		gridLayout.numColumns = 1;
+		gridLayout.numColumns = 1;
 		gridLayout.marginHeight = 0;
 		gridLayout.marginWidth = 0;
 		gridLayout.verticalSpacing = 0;
 
-		GridData imageLayoutData = new GridData();
-		imageLayoutData.horizontalAlignment = GridData.FILL;
-		imageLayoutData.verticalAlignment = GridData.FILL;
-		imageLayoutData.grabExcessHorizontalSpace = true;
-		imageLayoutData.grabExcessVerticalSpace = true;
-		mainScrollArea.setLayoutData(imageLayoutData);
+		GridData layoutData = new GridData();
+		layoutData.horizontalAlignment = GridData.FILL;
+		layoutData.verticalAlignment = GridData.FILL;
+		layoutData.grabExcessHorizontalSpace = true;
+		layoutData.grabExcessVerticalSpace = true;
+		mainFolder.setLayoutData(layoutData);
 
-		GridData assertionsLayoutData = new GridData();
-		assertionsLayoutData.horizontalAlignment = GridData.FILL;
-		assertionsLayoutData.verticalAlignment = GridData.FILL;
-		assertionsLayoutData.grabExcessHorizontalSpace = true;
-		assertionsLayoutData.grabExcessVerticalSpace = false;
-		messageList.setLayoutData(assertionsLayoutData);
+		mainFolder.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				try {
+					if (myFile == null) {
+						return;		// the welcome tab
+					}
 
- 		shell.setLayout(gridLayout);
+					int i = mainFolder.getSelectionIndex();
+					ScenarioView view = myTabs.get(i);
+					String scenario = currentTabs.get(i);
 
-		evaluate();
+					liveResults.selectScenario(scenario);
+					view.update(liveResults);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		shell.setLayout(gridLayout);
 
 		shell.open();
+
+		evaluate();
 
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
@@ -260,6 +243,29 @@ public class GUI {
 			}
 		}
 		display.dispose();
+	}
+
+	private void updateTabs(Results results) {
+		if (!results.model.scenarios.equals(currentTabs)) {
+			if (welcomeTab != null) {
+				welcomeTab.dispose();
+				welcomeTab = null;
+			}
+
+			for (ScenarioView tab: myTabs) {
+				tab.dispose();
+			}
+			myTabs = new LinkedList<ScenarioView>();
+			for (String scenario : results.model.scenarios) {
+				ScenarioView view = new ScenarioView(this, mainFolder);
+				TabItem tabItem = view.getTab();
+				tabItem.setText(scenario);
+				myTabs.add(view);
+			}
+			currentTabs = new LinkedList<String>(results.model.scenarios);
+			liveResults.selectScenario("baseline");
+		}
+		shell.layout();
 	}
 
 	private Menu makeExamplesMenu(MenuItem parent) {
@@ -294,9 +300,24 @@ public class GUI {
 		BusyIndicator.showWhile(display, new Runnable() {
 			public void run() {
 				try {
+					relationsMenuHeader.setEnabled(false);
+					objectsMenuHeader.setEnabled(false);
+					if (myFile == null) {
+						welcomeTab = new TabItem(mainFolder, 0);
+						welcomeTab.setText("Welcome");
+						Label label = new Label(mainFolder, 0);
+						label.setText("Open a file to start");
+						welcomeTab.setControl(label);
+						return;
+					}
+
 					realEvaluate();
+
+					int i = mainFolder.getSelectionIndex();
+					ScenarioView view = myTabs.get(i);
+
+					view.update(liveResults);
 				} catch (Exception ex) {
-					addWarning("" + ex, null);
 					ex.printStackTrace();
 				}
 
@@ -306,118 +327,67 @@ public class GUI {
 	}
 
 	private void realEvaluate() throws Exception {
-		relationsMenuHeader.setEnabled(false);
-		objectsMenuHeader.setEnabled(false);
-		messageList.removeAll();
-		myProblems = new LinkedList<ILiteral>();
+		Eval eval = new Eval();
+		shell.setText("SAM: " + myFile.getName() + " (" + myFile.getParent() + ")");
+		Results results = eval.evaluate(myFile);
 
-		for (MenuItem item : relationsMenu.getItems()) {
-			item.dispose();
-		}
+		if (results.exception != null) {
+			final Shell errorBox = new Shell(shell, SWT.BORDER | SWT.CLOSE | SWT.TITLE | SWT.DIALOG_TRIM);
+			errorBox.setText("Error in " + myFile);
+			Label label = new Label(errorBox, 0);
+			label.setText(formatException(results.exception));
 
-		for (MenuItem item : objectsMenu.getItems()) {
-			item.dispose();
-		}
+			Font mono = new Font(display, "Courier", 10, SWT.NORMAL);
+			label.setFont(mono);
 
-		if (myFile == null) {
-			addInfo("Open a file to start");
+			Button ok = new Button(errorBox, SWT.PUSH);
+			ok.setText("OK");
+			ok.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					errorBox.dispose();
+				}
+			});
+
+			GridLayout gridLayout = new GridLayout();
+			gridLayout.numColumns = 1;
+			gridLayout.marginHeight = 8;
+			gridLayout.marginWidth = 8;
+			gridLayout.verticalSpacing = 8;
+
+			GridData layoutData = new GridData();
+			layoutData.horizontalAlignment = GridData.FILL;
+			layoutData.verticalAlignment = GridData.FILL;
+			layoutData.grabExcessHorizontalSpace = true;
+			layoutData.grabExcessVerticalSpace = true;
+			label.setLayoutData(layoutData);
+
+			GridData buttonData = new GridData();
+			buttonData.horizontalAlignment = GridData.END;
+			buttonData.verticalAlignment = GridData.FILL;
+			buttonData.grabExcessHorizontalSpace = false;
+			buttonData.grabExcessVerticalSpace = false;
+			ok.setLayoutData(buttonData);
+
+			errorBox.setLayout(gridLayout);
+
+			errorBox.layout();
+			errorBox.open();
 			return;
 		}
 
-		Eval eval = new Eval();
-		shell.setText("SAM: " + myFile.getName() + " (" + myFile.getParent() + ")");
-		final Results results = eval.evaluate(myFile);
 		liveResults.update(results);
-
-		if (results.exception != null) {
-			results.exception.printStackTrace();
-			String msg = results.exception.getMessage();
-			if (msg == null) {
-				msg = results.exception.toString();
-			}
-			addWarning(msg, null);
-			if (results.finalKnowledgeBase == null) {
-				mainImage.setText(formatException(results.exception));
-				mainImage.pack();
-			}
-		} else if (results.phase != Results.Phase.Success) {
-			addWarning("Problem in " + results.phase + " phase", null);
-		} else {
-			addInfo("OK");
-		}
-
-		for (ILiteral errorLit : results.errors) {
-			ITuple tuple = errorLit.getAtom().getTuple();
-			String msg = tuple.get(0).getValue().toString();
-			for (int part = 1; part < tuple.size(); part++) {
-				msg += ", " + tuple.get(part).getValue();
-			}
-
-			addWarning(msg, errorLit);
-		}
-
-		if (results.finalKnowledgeBase != null) {
-			File tmpFile = File.createTempFile("sam-", "-graph.png");
-			Image image;
-			try {
-				Graph.graph(results.finalKnowledgeBase, tmpFile, "png");
-				InputStream is = new FileInputStream(tmpFile);
-				try {
-					image = new Image(display, is);
-				} finally {
-					is.close();
-				}
-			} finally {
-				tmpFile.delete();
-			}
-
-			mainImage.setImage(image);
-			mainImage.pack();
-
-			relationsMenuHeader.setEnabled(true);
-			objectsMenuHeader.setEnabled(true);
-
-			/* Populate Relations menu */
-			IPredicate[] relations = results.model.declared.keySet().toArray(new IPredicate[] {});
-			Arrays.sort(relations);
-			for (final IPredicate pred : relations) {
-				MenuItem item = new MenuItem(relationsMenu, SWT.PUSH);
-				final TermDefinition[] args = results.model.declared.get(pred);
-				item.setText(pred.toString() + TermDefinition.makeTuple(args));
-				item.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(SelectionEvent e) {
-						try {
-							new RelationViewer(shell, liveResults, pred);
-						} catch (Throwable ex) {
-							ex.printStackTrace();
-						}
-					}
-				});
-			}
-
-			/* Populate Objects menu */
-			String[] objects = getObjects(results);
-			for (final String name : objects) {
-				MenuItem item = new MenuItem(objectsMenu, SWT.PUSH);
-				item.setText(name);
-				item.addSelectionListener(new SelectionAdapter() {
-					public void widgetSelected(SelectionEvent e) {
-						try {
-							new ObjectViewer(shell, liveResults, name);
-						} catch (Throwable ex) {
-							ex.printStackTrace();
-						}
-					}
-				});
-			}
-		} else {
-			mainImage.setImage(null);
-		}
-
-		messageList.pack();
+		updateTabs(results);
 	}
 
-	private String[] getObjects(Results results) throws Exception {
+	private String quote(ITerm term) {
+		return quote(term.getValue().toString());
+	}
+
+	private String quote(String s) {
+		return "\"" + s.replaceAll("\"", "\\\"") + "\"";
+	}
+
+	static String[] getObjects(ScenarioResult results) throws Exception {
 		ILiteral lit = BASIC.createLiteral(true, Constants.isRefP, BASIC.createTuple(TERM.createVariable("Object")));
 
 		IQuery query = BASIC.createQuery(lit);
@@ -430,26 +400,8 @@ public class GUI {
 		return objects;
 	}
 
-	private void addWarning(String msg, ILiteral optProblem) {
-		myProblems.add(optProblem);
-		messageList.add(msg);
-	}
-
-	private void addInfo(String msg) {
-		myProblems.add(null);
-		messageList.add(msg);
-	}
-
-	private String quote(ITerm term) {
-		return quote(term.getValue().toString());
-	}
-
-	private String quote(String s) {
-		return "\"" + s.replaceAll("\"", "\\\"") + "\"";
-	}
-
 	private void exportCalls(File file) throws Exception {
-		Results results = liveResults.getResults();
+		ScenarioResult results = liveResults.getResults();
 
 		ILiteral lit = BASIC.createLiteral(true, Constants.didCallP, BASIC.createTuple(
 					TERM.createVariable("Source"),

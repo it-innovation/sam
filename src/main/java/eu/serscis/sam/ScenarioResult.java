@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////
 //
-// © University of Southampton IT Innovation Centre, 2011
+// © University of Southampton IT Innovation Centre, 2012
 //
 // Copyright in this library belongs to the University of Southampton
 // University Road, Highfield, Southampton, UK, SO17 1BJ
@@ -17,7 +17,7 @@
 // the software.
 //
 //	Created By :			Thomas Leonard
-//	Created Date :			2011-08-17
+//	Created Date :			2012-01-19
 //	Created for Project :		SERSCIS
 //
 /////////////////////////////////////////////////////////////////////////
@@ -28,8 +28,6 @@
 
 package eu.serscis.sam;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.util.Arrays;
@@ -54,40 +52,40 @@ import org.deri.iris.rules.IRuleSafetyProcessor;
 import org.deri.iris.RuleUnsafeException;
 import static org.deri.iris.factory.Factory.*;
 
-public class Results {
+public class ScenarioResult {
 	public Model model;
-	public Exception exception;
-	public final Map<String,ScenarioResult> scenarios = new HashMap<String,ScenarioResult>();
+	public IKnowledgeBase finalKnowledgeBase;
+	public Phase phase = Phase.Init;
+	public boolean expectingFailure = false;
+	public List<ILiteral> errors = new LinkedList<ILiteral>();
+
+	public ScenarioResult(Model model) {
+		this.model = new Model(model);
+	}
 	
-	public Results(Model model) {
-		this.model = model;
-	}
+	public void save(Writer writer) throws Exception {
+		IPredicate[] relations = model.declared.keySet().toArray(new IPredicate[] {});
+		Arrays.sort(relations);
+		for (IPredicate pred : relations) {
+			TermDefinition[] termDefinitions = model.declared.get(pred);
+			IQuery query = BASIC.createQuery(BASIC.createLiteral(true, pred, TermDefinition.makeTuple(termDefinitions)));
+			IRelation rel = finalKnowledgeBase.execute(query);
 
-	public void setException(Exception ex) {
-		if (exception != null) {
-			throw new RuntimeException("Already have an exception", ex);
-		}
-		this.exception = ex;
-	}
-
-	public void save(File file) throws Exception {
-		Writer writer = new FileWriter(file);
-		try {
-			for (Map.Entry<String,ScenarioResult> entry : scenarios.entrySet()) {
-				writer.write("== " + entry.getKey() + " ==\n");
-				entry.getValue().save(writer);
+			if (rel.size() == 0) {
+				continue;
 			}
-		} finally {
-			writer.close();
-		}
-	}
 
-	public ScenarioResult createScenarioResult(String scenario) {
-		if (scenarios.containsKey(scenario)) {
-			throw new IllegalArgumentException("Scenario '" + scenario + "' already evaluated");
+			String[] rows = new String[rel.size()];
+			for (int i = 0; i < rows.length; i++) {
+				rows[i] = rel.get(i).toString() + "\n";
+			}
+			Arrays.sort(rows);
+
+			writer.write(pred.toString() + "\n");
+			for (String row : rows) {
+				writer.write(row);
+			}
+			writer.write("\n");
 		}
-		ScenarioResult result = new ScenarioResult(this.model);
-		scenarios.put(scenario, result);
-		return result;
 	}
 }

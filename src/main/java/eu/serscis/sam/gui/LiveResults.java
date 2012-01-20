@@ -28,6 +28,7 @@
 
 package eu.serscis.sam.gui;
 
+import eu.serscis.sam.ScenarioResult;
 import eu.serscis.sam.Results;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,6 +36,7 @@ import java.util.List;
 public class LiveResults {
 	private Results myResults;
 	private List<Updatable> myListeners;
+	private String selectedScenario = "baseline";
 
 	public void update(Results results) {
 		myResults = results;
@@ -60,7 +62,18 @@ public class LiveResults {
 		myListeners.add(listener);
 	}
 
-	public Results getResults() {
-		return myResults;
+	public ScenarioResult getResults() throws Exception {
+		if (myResults.exception != null) {
+			throw myResults.exception;
+		}
+		return myResults.scenarios.get(selectedScenario);
+	}
+
+	public void selectScenario(String scenario) {
+		if (selectedScenario.equals(scenario)) {
+			return;
+		}
+		selectedScenario = scenario;
+		update(myResults);
 	}
 }

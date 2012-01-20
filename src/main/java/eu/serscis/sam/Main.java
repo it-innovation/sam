@@ -64,8 +64,9 @@ public class Main {
 
 			while (i < args.length) {
 				String arg = args[i];
-				File scenario = new File(arg);
-				Results results = eval.evaluate(scenario);
+				File modelFile = new File(arg);
+				System.out.println(modelFile);
+				Results results = eval.evaluate(modelFile);
 				if (results.exception != null) {
 					if (results.exception instanceof RuntimeException) {
 						results.exception.printStackTrace();
@@ -77,32 +78,34 @@ public class Main {
 					}
 					System.exit(1);
 				}
-				if (results.finalKnowledgeBase != null) {
-					String stem = scenario.getName();
-					if (stem.endsWith(".sam")) {
-						stem = stem.substring(0, stem.length() - 4);
-					}
-					Graph.graph(results.finalKnowledgeBase, new File(stem + "." + format), format);
-
-					if (resultsDir != null) {
-						File resultsFile = new File(resultsDir, stem + ".results");
-						results.save(resultsFile);
-					}
+				String stem = modelFile.getName();
+				if (stem.endsWith(".sam")) {
+					stem = stem.substring(0, stem.length() - 4);
 				}
-				if (results.phase != Results.Phase.Success) {
-					if (results.expectingFailure) {
-						System.out.println(scenario + ": OK (failed, as expected)");
+				if (resultsDir != null) {
+					File resultsFile = new File(resultsDir, stem + ".results");
+					results.save(resultsFile);
+				}
+				for (String scenario : results.model.scenarios) {
+					ScenarioResult result = results.scenarios.get(scenario);
+					if (result.finalKnowledgeBase != null) {
+						Graph.graph(result.finalKnowledgeBase, new File(stem + "." + format), format);
+					}
+					if (result.phase != Phase.Success) {
+						if (result.expectingFailure) {
+							System.out.println(scenario + ": OK (failed, as expected)");
+						} else {
+							System.out.println(scenario + ": FAILED");
+							System.exit(1);
+						}
 					} else {
-						System.out.println(scenario + ": FAILED");
-						System.exit(1);
-					}
-				} else {
-					if (results.expectingFailure) {
-						System.out.println(scenario + ": Expecting model to fail ('expectFailure' is set), but passed!");
-						System.exit(1);
+						if (result.expectingFailure) {
+							System.out.println(scenario + ": Expecting model to fail ('expectFailure' is set), but passed!");
+							System.exit(1);
 
+						}
+						System.out.println(scenario + ": OK");
 					}
-					System.out.println(scenario + ": OK");
 				}
 
 				i++;

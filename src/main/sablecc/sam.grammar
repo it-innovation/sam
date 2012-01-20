@@ -54,6 +54,7 @@ Tokens
   dots = '...';
   dot = '.';
   declare_tok = 'declare';
+  scenario_tok = 'scenario';
   import_tok = 'import';
   config_tok = 'config';
 
@@ -83,7 +84,8 @@ Productions
 
   import = import_tok string_literal dot;
 
-  declare = declare_tok name l_par term_decls? r_par dot;
+  declare = {predicate} declare_tok name l_par term_decls? r_par dot
+  	  | {scenario} declare_tok scenario_tok name dot;
   term_decls = term_decl term_decls_tail*;
   term_decls_tail = comma term_decl;
   term_decl = type name;
