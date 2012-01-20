@@ -49,6 +49,7 @@ public class Constants {
 	static public IPredicate liveMethodP = BASIC.createPredicate("liveMethod", 3);
 	static public IPredicate hasCallSiteP = BASIC.createPredicate("hasCallSite", 2);
 	static public IPredicate catchesAllExceptionsP = BASIC.createPredicate("catchesAllExceptions", 1);
+	static public IPredicate mustCallP = BASIC.createPredicate("mustCall", 5);
 	static public IPredicate didCall3P = BASIC.createPredicate("didCall", 3);
 	static public IPredicate didCall5P = BASIC.createPredicate("didCall", 5);
 	static public IPredicate didCallP = BASIC.createPredicate("didCall", 6);

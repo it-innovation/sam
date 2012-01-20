@@ -103,6 +103,8 @@ public class Eval {
 
 		List<IQuery> queries = parser.getQueries();
 
+		boolean baseline = true;
+
 		for (String scenario : results.model.scenarios) {
 			ScenarioResult result = results.createScenarioResult(scenario);
 
@@ -112,6 +114,43 @@ public class Eval {
 
 			evaluateScenario(result);
 			doQueries(results.scenarios.get(scenario).finalKnowledgeBase, queries);
+
+			if (baseline) {
+				// Generate mustCall relations...
+				saveBaseline(result, results);
+				baseline = false;
+			}
+		}
+	}
+
+	/* Use the didCall relation in the model to generate a mustCall relationship in the
+	 * main model, for use in furture scenarios.
+	 */
+	private void saveBaseline(ScenarioResult baseline, Results results) throws Exception {
+		IRelation mustCall = results.model.getRelation(Constants.mustCallP);
+
+		ILiteral lit = BASIC.createLiteral(true, Constants.didCallP, BASIC.createTuple(
+					TERM.createVariable("Source"),
+					TERM.createVariable("SourceInvocation"),
+					TERM.createVariable("CallSite"),
+					TERM.createVariable("Target"),
+					TERM.createVariable("TargetInvocation"),
+					TERM.createVariable("Method")));
+
+		IQuery query = BASIC.createQuery(lit);
+		IRelation rel = baseline.finalKnowledgeBase.execute(query);
+		String[] calls = new String[rel.size()];
+		for (int i = 0; i < calls.length; i++) {
+			ITuple call = rel.get(i);
+			String caller = call.get(0).getValue().toString();
+			if (!caller.equals("_testDriver")) {
+				mustCall.add(BASIC.createTuple(
+						call.get(0),
+						call.get(1),
+						call.get(2),
+						call.get(3),
+						call.get(5)));
+			}
 		}
 	}
 
