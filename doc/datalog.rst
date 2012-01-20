@@ -28,7 +28,7 @@ Running this program, SAM would use the rule to deduce the new fact::
 
 Queries
 -------
-A like starting with `?-` is a query. When the model has been evaluated, SAM will write all matching values
+A line starting with `?-` is a query. When the model has been evaluated, SAM will write all matching values
 to the console. For example, to list all the admins::
 
   ?- isAdmin(?X).
