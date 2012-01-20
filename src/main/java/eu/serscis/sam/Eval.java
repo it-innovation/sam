@@ -95,14 +95,13 @@ public class Eval {
 		ClassLoader loader = Eval.class.getClassLoader();
 
 		parseResource(results.model, "base.sam");
+		SAMParser parser = new SAMParser(results.model, modelFile);
 		parseResource(results.model, "groupBy.sam");
 		parseResource(results.model, "checks.sam");
 		parseResource(results.model, "graph.sam");
-
-		SAMParser parser = new SAMParser(results.model, modelFile);
-		List<IQuery> queries = parser.getQueries();
-
 		parseResource(results.model, "system.sam");
+
+		List<IQuery> queries = parser.getQueries();
 
 		results.phase = Results.Phase.Setup;
 
