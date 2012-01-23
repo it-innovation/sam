@@ -1,4 +1,4 @@
-import "includes/confusedMustCall.sam".
+#declare scenario attack
 
 // The access control policy:
 accessControlOn.
@@ -37,7 +37,12 @@ config {
         Ref compiler = new Compiler(billing);
         Ref input = new File();
         Ref output = new File();
+
+#if baseline
+        Ref alice = new Alice();
+#else
         Ref alice = new Unknown();
+#endif
 
         alice.test(compiler, input, output);
     }
@@ -51,4 +56,12 @@ class Alice {
     }
 }
 
-expectFailure.
+// We (the compiler provider) don't care about attacks on the user's objects
+mayCall(<input>).
+mayCall(<output>).
+mayCall(<alice>).
+
+expectFailure :- attack.
+
+// Just makes the graph look nicer.
+ignoreEdgeForRanking("compiler", "alice").
