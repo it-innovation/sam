@@ -75,6 +75,14 @@ same identity (labelled with that identity)::
 
    Set label text for `ClusterID`.
 
+Low-level control
+-----------------
+
+.. function:: visibleGraphEdge(String sourceGraphNode, String targetGraphNode, String attrs)
+.. function:: visibleGraphNode(String graphNode, String attrs)
+
+   These are copies of :func:`graphEdge` and :func:`graphNode`, but filtered to remove hidden nodes.
+
 Notation
 --------
 

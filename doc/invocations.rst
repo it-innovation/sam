@@ -48,8 +48,8 @@ Sometimes this is not sufficient. For example::
     }
   }
 
-  assert !hasRef("x", "y").
-  assert !hasRef("y", "x")
+  assert !hasRef(<x>, <y>).
+  assert !hasRef(<y>, <x>)
 
 .. sam-output:: invocations-over-aggregation
 

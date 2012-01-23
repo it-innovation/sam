@@ -174,6 +174,9 @@ public class Graph {
 			ITerm b = tuple.get(1);
 			String edgeAttrs = tuple.get(2).getValue().toString();
 
+			/* (GraphViz renders this case badly) */
+			boolean disableDoubleDetection = edgeAttrs.endsWith("arrowhead=crowopen");
+
 			ITuple pair = BASIC.createTuple(a, b);
 			if (ignoredForRanking.contains(pair)) {
 				edgeAttrs += ",constraint=false";
@@ -181,7 +184,7 @@ public class Graph {
 
 			String reverse = format(b) + " -> " + format(a) + " [" + edgeAttrs;
 
-			if (dotEdges.contains(reverse)) {
+			if (dotEdges.contains(reverse) && !disableDoubleDetection) {
 				doubles.add(reverse);
 			} else {
 				String line = format(a) + " -> " + format(b) + " [" + edgeAttrs;
