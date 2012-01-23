@@ -105,6 +105,24 @@ public class SAMParser {
 		}
 	}
 
+	public SAMParser(Model model, SAMInput input, String scenario) throws Exception {
+		this.model = model;
+		myPath = input.getSource();
+		dir = myPath.getParentFile();
+
+		Reader reader = input.getScenario(scenario);
+
+		try {
+			parse(reader);
+		} catch (LexerException ex) {
+			reader.reset();
+			reportError(ex, myPath.toString(), reader);
+		} catch (ParserException ex) {
+			reader.reset();
+			reportError(ex, myPath.toString(), reader);
+		}
+	}
+
 	private void reportError(Exception ex, String source, Reader reader) throws Exception {
 		int line = -1;
 		int col = -1;

@@ -33,6 +33,7 @@ Reference
    graphing
    access
    gui
+   scenarios
 
 * :ref:`genindex`
 * :ref:`search`

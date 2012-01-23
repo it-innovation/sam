@@ -372,7 +372,7 @@ public class GUI {
 
 			errorBox.layout();
 			errorBox.open();
-			return;
+			throw results.exception;
 		}
 
 		liveResults.update(results);

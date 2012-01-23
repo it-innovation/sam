@@ -92,21 +92,23 @@ public class Eval {
 	private void evaluate(File modelFile, Results results) throws Exception {
 		File baseDir = modelFile.getParentFile();
 
+		SAMInput input = new SAMInput(modelFile, results.model);
+
 		ClassLoader loader = Eval.class.getClassLoader();
 
 		parseResource(results.model, "base.sam");
-		SAMParser parser = new SAMParser(results.model, modelFile);
-		parseResource(results.model, "groupBy.sam");
-		parseResource(results.model, "checks.sam");
-		parseResource(results.model, "graph.sam");
-		parseResource(results.model, "system.sam");
-
-		List<IQuery> queries = parser.getQueries();
-
 		boolean baseline = true;
 
 		for (String scenario : results.model.scenarios) {
 			ScenarioResult result = results.createScenarioResult(scenario);
+
+			SAMParser parser = new SAMParser(result.model, input, scenario);
+			parseResource(result.model, "groupBy.sam");
+			parseResource(result.model, "checks.sam");
+			parseResource(result.model, "graph.sam");
+			parseResource(result.model, "system.sam");
+
+			List<IQuery> queries = parser.getQueries();
 
 			IPredicate scenarioP = BASIC.createPredicate(scenario, 0);
 			IRelation scenarioR = result.model.getRelation(scenarioP);
