@@ -84,21 +84,31 @@ class SAMInput {
 
 	public Reader getScenario(String scenario) throws InvalidModelException {
 		// (note: nesting isn't very useful at the moment, since there's only ever one scenario active)
-		Stack<Boolean> stack = new Stack<Boolean>();
+		Stack<Directive.NestedIf> stack = new Stack<Directive.NestedIf>();
 		char[] chars = rawText.toCharArray();
 		int cutStart = -1;
 		int ignoresOnStack = 0;
 
 		for (Directive d : directives) {
+			String elseFor = null;
 			String[] parts = d.line.split(" +", 2);
+			String tok = parts[0];
 
-			if (d.line.trim().equals("#endif") || parts[0].equals("#elif")) {
+			if (tok.equals("#endif") || tok.equals("#elif") || tok.equals("#else")) {
+				if (tok.equals("#elif") && parts.length != 2) {
+					throw new InvalidModelException(new RuntimeException("Syntax error in #elif"),
+							file.toString(), d.line, d.lnum, 1);
+				} else if (parts.length != 1) {
+					throw new InvalidModelException(new RuntimeException("Syntax error in " + tok),
+							file.toString(), d.line, d.lnum, 1);
+				}
+
 				if (stack.empty()) {
 					throw new InvalidModelException(new RuntimeException("Unmatched #endif"),
 							file.toString(), d.line, d.lnum, 1);
 				}
-				boolean match = stack.pop();
-				if (!match) {
+				Directive.NestedIf start = stack.pop();
+				if (!start.match) {
 					ignoresOnStack--;
 					if (ignoresOnStack == 0) {
 						for (int i = cutStart; i < d.off; i++) {
@@ -109,20 +119,29 @@ class SAMInput {
 						cutStart = -1;
 					}
 				}
+
+				if (tok.equals("#else")) {
+					elseFor = start.getDirective().getArg();
+				}
 			}
 
-			if (parts[0].equals("#if") || parts[0].equals("#elif")) {
-				if (parts.length != 2) {
-					throw new InvalidModelException(new RuntimeException("Invalid " + parts[0] + " directive"),
-								file.toString(), d.line, d.lnum, 1);
+			if (parts[0].equals("#if") || parts[0].equals("#elif") || tok.equals("#else")) {
+				boolean match;
+				if (tok.equals("#else")) {
+					match = !elseFor.equals(scenario);
+				} else {
+					if (parts.length != 2) {
+						throw new InvalidModelException(new RuntimeException("Invalid " + parts[0] + " directive"),
+									file.toString(), d.line, d.lnum, 1);
+					}
+					String ifScenario = parts[1];
+					if (!model.scenarios.contains(ifScenario)) {
+						throw new InvalidModelException(new RuntimeException("Scenario '" + ifScenario + "' not declared"),
+									file.toString(), d.line, d.lnum, 5);
+					}
+					match = ifScenario.equals(scenario);
 				}
-				String ifScenario = parts[1];
-				if (!model.scenarios.contains(ifScenario)) {
-					throw new InvalidModelException(new RuntimeException("Scenario '" + ifScenario + "' not declared"),
-								file.toString(), d.line, d.lnum, 5);
-				}
-				boolean match = ifScenario.equals(scenario);
-				stack.push(match);
+				stack.push(d.nest(match));
 				if (!match) {
 					ignoresOnStack++;
 				}
@@ -136,7 +155,10 @@ class SAMInput {
 		}
 
 		if (!stack.empty()) {
-			throw new RuntimeException("Missing #endif");
+			Directive.NestedIf last = stack.pop();
+			Directive d = last.getDirective();
+			throw new InvalidModelException(new RuntimeException("Missing #endif"),
+						file.toString(), d.line, d.lnum, 1);
 		}
 
 		return new CharArrayReader(chars);
@@ -166,7 +188,7 @@ class SAMInput {
 		}
 	}
 
-	private static class Directive {
+	private class Directive {
 		private String line;
 		private int lnum;
 		private int off;
@@ -175,6 +197,31 @@ class SAMInput {
 			this.line = line;
 			this.lnum = lnum;
 			this.off = off;
+		}
+
+		public String getArg() throws InvalidModelException {
+			String[] parts = line.split(" +", 2);
+			if (parts.length != 2) {
+				throw new InvalidModelException(new RuntimeException("Wrong number of arguments"),
+						file.toString(), line, lnum, 1);
+			}
+			return parts[1];
+		}
+
+		public NestedIf nest(boolean match) {
+			return new NestedIf(match);
+		}
+
+		public class NestedIf {
+			public final boolean match;
+
+			public NestedIf(boolean match) {
+				this.match = match;
+			}
+
+			public Directive getDirective() {
+				return Directive.this;
+			}
 		}
 	}
 }
