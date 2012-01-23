@@ -277,9 +277,6 @@ isHiddenNode(?Node) :- showOnlyProblemNodes,
     !showInProblemGraph(?Node).
 
 
-declare visibleGraphNode(String graphNode, String attrs).
-declare visibleGraphEdge(String sourceGraphNode, String targetGraphNode, String attrs).
-
 visibleGraphNode(?GraphNode, ?Attrs) :-
 	graphNode(?GraphNode, ?Attrs),
 	!isHiddenNode(?GraphNode).

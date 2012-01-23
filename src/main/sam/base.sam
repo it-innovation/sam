@@ -65,6 +65,9 @@ declare missingGoodAccess(Ref sourceObject, Ref targetObject).
 
 declare graphNode(String node, String attrs).
 declare graphEdge(String source, String target, String attrs).
+declare visibleGraphNode(String graphNode, String attrs).
+declare visibleGraphEdge(String sourceGraphNode, String targetGraphNode, String attrs).
+
 declare debugEdge(Ref source, String sourceInvocation, String callSite, Ref target, String targetInvocation).
 declare showAllInvocations(Ref object).
 declare showInvocation(Ref object, String invocation).
