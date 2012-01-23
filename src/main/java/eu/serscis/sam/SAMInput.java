@@ -149,7 +149,11 @@ class SAMInput {
 					cutStart = d.off;
 				}
 			} else if (!d.line.trim().equals("#endif")) {
-				throw new InvalidModelException(new RuntimeException("Invalid pre-processor directive"),
+				String extra = "";
+				if (tok.equals("#ifdef")) {
+					extra = " (did you mean #if ?)";
+				}
+				throw new InvalidModelException(new RuntimeException("Invalid pre-processor directive" + extra),
 							file.toString(), d.line, d.lnum, 1);
 			}
 		}
