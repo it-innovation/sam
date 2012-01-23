@@ -81,16 +81,16 @@ grouping strategy is a valid over-approximation.
 However, be careful about using names derived from contexts when specifying goals. An object created in 
 context "X" will be called `<name>X`. If you write a goal such as::
 
-  assert !hasRef("alice", "fooX").
+  assert !hasRef(<alice>, <fooX>).
 
 then this assertion can be made to succeed by simply changing the aggregation strategy so that the objects
 created are aggregated as "fooY" instead. You need to make sure that `fooX` really does aggregate
 the objects you care about. A better solution may be to write the rule in a way
 that doesn't depend on contexts. For example::
 
-  haveBadAccess("alice", ?X) :- hasRef("bob", ?X).
+  haveBadAccess(<alice>, ?X) :- hasRef(<alice>, ?X), hasRef(<bob>, ?X).
 
-(it is an error for `alice` to get a reference to any object to which `bob` has a reference).
+(it is an error for `alice` to get a reference to any object to which `bob` also has a reference).
 
 
 Grouping by argument value
