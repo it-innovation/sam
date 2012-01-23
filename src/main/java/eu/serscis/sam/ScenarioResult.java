@@ -28,6 +28,8 @@
 
 package eu.serscis.sam;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.util.Arrays;
@@ -63,13 +65,16 @@ public class ScenarioResult {
 		this.model = new Model(model);
 	}
 	
-	public void save(Writer writer) throws Exception {
+	public Map<IPredicate,IRelation> saveBaseline(Writer writer) throws Exception {
+		Map<IPredicate,IRelation> baseline = new HashMap<IPredicate,IRelation>();
+
 		IPredicate[] relations = model.declared.keySet().toArray(new IPredicate[] {});
 		Arrays.sort(relations);
 		for (IPredicate pred : relations) {
 			TermDefinition[] termDefinitions = model.declared.get(pred);
 			IQuery query = BASIC.createQuery(BASIC.createLiteral(true, pred, TermDefinition.makeTuple(termDefinitions)));
 			IRelation rel = finalKnowledgeBase.execute(query);
+			baseline.put(pred, rel);
 
 			if (rel.size() == 0) {
 				continue;
@@ -86,6 +91,64 @@ public class ScenarioResult {
 				writer.write(row);
 			}
 			writer.write("\n");
+		}
+
+		return baseline;
+	}
+
+	public void saveDiff(Writer writer, Map<IPredicate,IRelation> baseline) throws Exception {
+		IPredicate[] relations = model.declared.keySet().toArray(new IPredicate[] {});
+		Arrays.sort(relations);
+		for (IPredicate pred : relations) {
+			TermDefinition[] termDefinitions = model.declared.get(pred);
+			IQuery query = BASIC.createQuery(BASIC.createLiteral(true, pred, TermDefinition.makeTuple(termDefinitions)));
+			IRelation rel = finalKnowledgeBase.execute(query);
+
+			IRelation baseRel = baseline.get(pred);
+			if (baseRel == null) {
+				baseRel = model.configuration.relationFactory.createRelation();	// empty
+			}
+
+			ArrayList<String> items = new ArrayList<String>();
+
+			for (int i = rel.size() - 1; i >= 0; i--) {
+				ITuple tup = rel.get(i);
+				if (!baseRel.contains(tup)) {
+					items.add("+ " + tup.toString() + "\n");
+				}
+			}
+
+			for (int i = baseRel.size() - 1; i >= 0; i--) {
+				ITuple tup = baseRel.get(i);
+				if (!rel.contains(tup)) {
+					items.add("- " + tup.toString() + "\n");
+				}
+			}
+
+			if (items.size() == 0) {
+				continue;
+			}
+
+			String[] rows = new String[items.size()];
+			for (int i = 0; i < rows.length; i++) {
+				rows[i] = items.get(i).toString();
+			}
+			Arrays.sort(rows);
+
+			writer.write(pred.toString() + "\n");
+			for (String row : rows) {
+				writer.write(row);
+			}
+			writer.write("\n");
+		}
+
+		// Check for entire relations that are missing
+		IPredicate[] baseRels = baseline.keySet().toArray(new IPredicate[] {});
+		Arrays.sort(baseRels);
+		for (IPredicate pred : baseRels) {
+			if (!model.declared.containsKey(pred)) {
+				writer.write("- " + pred + "\n");
+			}
 		}
 	}
 

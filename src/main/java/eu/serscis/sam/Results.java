@@ -71,11 +71,17 @@ public class Results {
 	}
 
 	public void save(File file) throws Exception {
+		Map<IPredicate,IRelation> baseline = null;
 		Writer writer = new FileWriter(file);
 		try {
-			for (Map.Entry<String,ScenarioResult> entry : scenarios.entrySet()) {
-				writer.write("== " + entry.getKey() + " ==\n");
-				entry.getValue().save(writer);
+			for (String scenario : model.scenarios) {
+				writer.write("== " + scenario + " ==\n\n");
+				ScenarioResult result = scenarios.get(scenario);
+				if (baseline == null) {
+					baseline = result.saveBaseline(writer);
+				} else {
+					result.saveDiff(writer, baseline);
+				}
 			}
 		} finally {
 			writer.close();

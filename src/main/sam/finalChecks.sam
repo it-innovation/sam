@@ -77,6 +77,7 @@ mayCall(?Caller, ?Invocation, ?Target, ?Method) :-
 	isA(?Caller, "Unknown").
 
 haveBadAccess(?Caller, ?Target) :-
+    ?Caller != <_testDriver>,
     checkCalls(?Target),
     didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?AnyInvocation, ?Method),
     !AnyoneMayCall(?Method),
@@ -84,11 +85,6 @@ haveBadAccess(?Caller, ?Target) :-
     !mayCall(?Caller, ?CallerInvocation, ?Target, ?Method),
     !mayCall(?Caller, ?Target, ?Method),
     !mayCall(?Target).
-
-
-// The test driver may call anything
-mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasMethod(?Type, ?Method).
-mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasConstructor(?Type, ?Method).
 
 
 // Unknown objects may call themselves
