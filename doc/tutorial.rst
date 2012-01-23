@@ -195,27 +195,16 @@ So, this tells us that <user>'s `test()` method called <file>.get() because it g
 Note that there may be many ways that something could be true. The SAM debugger displays one example showing how it could happen.
 
 
-Saving a baseline
------------------
+Comparing against a baseline
+----------------------------
 
-Our model so far only includes trusted actors with defined behaviour. The calls that happen in this model correspond to the calls that should be allowed
-to happen in the real system.
+Our model so far only includes trusted actors with defined behaviour. The calls that happen in this model correspond to the calls that should be allowed to happen in the real system.
 
-Use `File -> Export calls` to save all the calls that happened to a new file (:example:`includes/data1MustCall`). If you look in this file, you will see three sections:
+To detect unexpected access that may be possible, we will make changes to the model and compare the results against this baseline. Extra scenarios are declared by adding a line like this to the top of the file::
 
-* a set of :func:`mustCall` facts that list every call that happened in the model.
-* a pair of :func:`mayCall` rules that allow the special test driver object to call anything without triggering errors.
-* a set of :func:`checkCalls` facts telling SAM that for the three existing objects, it should check not only that all calls may happen, but that no other calls happen either.
+  #declare scenario others
 
-.. note::
-	SAM uses ref:`Datalog` syntax to state facts and rules. Literal strings must be in double-quotes.
-	Variable names are preceded by "?".
-
-Now import this file by adding this line to your model file::
-
-  import "data1MustCall.sam".
-
-When you change the model, you can just press F5 to reload and reevaluate it. You shouldn't see any difference now, since the set of calls hasn't changed.
+If you now press F5 to reload and reevaluate the model, you will see an extra tab in the main window. You shouldn't see any differences between the two tabs at the moment, since the set of calls hasn't changed.
 
 
 Adding other clients
@@ -230,7 +219,7 @@ show that none of the other users can access that user's files. Since we could h
 for all users.
 
 We also need to tell SAM that objects created by these other users should not be aggregated into `file`, but into a separate object. This is easily done by
-creating a new `test` block labelled with a "context" ("Others")::
+creating a new `test` block labelled with a "context" ("Others"). We wrap the new block in a "#if others" block so that it only appears in the "others" scenario::
 
   config {
       Ref user;
@@ -244,10 +233,12 @@ creating a new `test` block labelled with a "context" ("Others")::
           user.test();
       }
   
+  #if others
       test "Others" {
           otherUsers = new Client(dataProvider);
           otherUsers.test();
       }
+  #endif
   }
 
 If you run this model (:example:`data2`), SAM will show a new `otherUsers` object (representing all the other users) and a new `fileOthers` object
@@ -261,7 +252,10 @@ You can double-click on the warning message to see the reason:
 * <otherUsers> called <dataProvider>.newFile() [Others]
 * !mayCall('otherUsers', 'dataProvider', 'DataProvider.newFile').
 
-We don't really care who else uses the `dataProvider`; we only care about who uses our `file` object, so we can remove the `checkCalls("dataProvider")` line.
+We don't really care who else uses the `dataProvider`; we only care about who uses our `file` object, so we can tell SAM that this is OK using :func:`mayCall`::
+
+  mayCall(<dataProvider>).
+
 After reloading, the model is now "OK", and the lack of an arrow from `otherUsers` to `file` means that none of the other users will ever invoke a method
 on our sample user's files.
 

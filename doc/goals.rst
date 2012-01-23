@@ -121,6 +121,10 @@ Predicates
 
    Like :func:`mayCall`/4, but allow calls in any context.
 
+.. function:: mayCall(Ref target)
+
+   Like :func:`mayCall`/3, but allow calls of any method and by any caller.
+
 .. function:: AnyoneMayCall(String method)
 
    This annotation indicates that all calls to the given method are OK. This is useful to annotate harmless methods.

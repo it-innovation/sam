@@ -91,6 +91,7 @@ public class Constants {
 	static public IPredicate graphClusterP = BASIC.createPredicate("graphCluster", 2);
 	static public IPredicate graphClusterColourP = BASIC.createPredicate("graphClusterColour", 2);
 	static public IPredicate graphClusterLabelP = BASIC.createPredicate("graphClusterLabel", 2);
+	static public IPredicate checkCallsP = BASIC.createPredicate("checkCalls", 1);
 
 	static <X> List<X> makeList(X... items) {
 		return Arrays.asList(items);

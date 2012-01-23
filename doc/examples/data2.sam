@@ -1,4 +1,4 @@
-import "includes/data1MustCall.sam".
+#declare scenario others
 
 class DataProvider {
   public File newFile() {
@@ -28,7 +28,6 @@ class File {
 
 config {
     Client user;
-    Client otherUsers;
     Ref dataProvider;
 
     test {
@@ -38,10 +37,12 @@ config {
         user.test();
     }
 
+#if others
     test "Others" {
-        otherUsers = new Client(dataProvider);
+        Ref otherUsers = new Client(dataProvider);
         otherUsers.test();
     }
+#endif
 }
 
-expectFailure.
+expectFailure :- others.

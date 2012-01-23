@@ -88,4 +88,18 @@ public class ScenarioResult {
 			writer.write("\n");
 		}
 	}
+
+	public String[] getObjects() throws Exception {
+		ILiteral lit = BASIC.createLiteral(true, Constants.isRefP, BASIC.createTuple(TERM.createVariable("Object")));
+
+		IQuery query = BASIC.createQuery(lit);
+		IRelation rel = finalKnowledgeBase.execute(query);
+		String[] objects = new String[rel.size()];
+		for (int i = 0; i < objects.length; i++) {
+			objects[i] = rel.get(i).get(0).getValue().toString();
+		}
+		Arrays.sort(objects);
+		return objects;
+	}
+
 }

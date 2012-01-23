@@ -107,6 +107,7 @@ declare assertionMessage(int number, String msg).
 declare failedAssertion(int number).
 declare assertionArrow(int number, Ref source, Ref target, boolean positive).
 declare mustCall(Ref caller, String callerInvocation, String callSite, Ref target, String method).
+declare mayCall(Ref target).
 declare mayCall(Ref caller, Ref target, String method).
 declare mayCall(Ref caller, String callerInvocation, Ref target, String method).
 declare mayCall(Ref caller, String callerInvocation, String callSite, Ref target, String method).

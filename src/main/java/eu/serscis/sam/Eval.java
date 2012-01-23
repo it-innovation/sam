@@ -154,6 +154,18 @@ public class Eval {
 						call.get(5)));
 			}
 		}
+
+		String[] objects = baseline.getObjects();
+		IRelation checkCalls = results.model.getRelation(Constants.checkCallsP);
+
+		//writer.write("mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasMethod(?Type, ?Method).\n");
+		//writer.write("mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasConstructor(?Type, ?Method).\n");
+
+		for (String object : objects) {
+			if (!object.equals("_testDriver")) {
+				checkCalls.add(BASIC.createTuple(new RefTerm(object)));
+			}
+		}
 	}
 
 	private void evaluateScenario(ScenarioResult result) throws Exception {

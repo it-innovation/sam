@@ -210,7 +210,7 @@ public class ScenarioView {
 			}
 
 			// Populate Objects menu
-			String[] objects = GUI.getObjects(results);
+			String[] objects = results.getObjects();
 			for (final String name : objects) {
 				MenuItem item = new MenuItem(gui.objectsMenu, SWT.PUSH);
 				item.setText(name);

@@ -387,19 +387,6 @@ public class GUI {
 		return "\"" + s.replaceAll("\"", "\\\"") + "\"";
 	}
 
-	static String[] getObjects(ScenarioResult results) throws Exception {
-		ILiteral lit = BASIC.createLiteral(true, Constants.isRefP, BASIC.createTuple(TERM.createVariable("Object")));
-
-		IQuery query = BASIC.createQuery(lit);
-		IRelation rel = results.finalKnowledgeBase.execute(query);
-		String[] objects = new String[rel.size()];
-		for (int i = 0; i < objects.length; i++) {
-			objects[i] = rel.get(i).get(0).getValue().toString();
-		}
-		Arrays.sort(objects);
-		return objects;
-	}
-
 	private void exportCalls(File file) throws Exception {
 		ScenarioResult results = liveResults.getResults();
 
@@ -430,7 +417,7 @@ public class GUI {
 		}
 		Arrays.sort(calls);
 
-		String[] objects = getObjects(results);
+		String[] objects = results.getObjects();
 
 		Writer writer = new FileWriter(file);
 		try {
@@ -439,9 +426,6 @@ public class GUI {
 					writer.write(call);
 				}
 			}
-			writer.write("\n");
-			writer.write("mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasMethod(?Type, ?Method).\n");
-			writer.write("mayCall(<_testDriver>, ?Target, ?Method) :- isRef(?Target), hasConstructor(?Type, ?Method).\n");
 			writer.write("\n");
 			for (String object : objects) {
 				if (!object.equals("_testDriver")) {
