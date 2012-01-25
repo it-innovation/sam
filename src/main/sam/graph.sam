@@ -39,19 +39,18 @@ declare calledEdge(String source, String target).
 declare uncalledEdge(String source, String target).
 declare problemEdge(String source, String target).
 declare errorEdge(String source, String target).
-declare isBoring(Ref source, Ref target).
 
 /* Every unknown object knows the address of every public object, so don't bother showing that. */
-isBoring(?Source, ?Target) :-
+graphHideRef(?Source, ?Target) :-
     isA(?Source, "Unknown"),
     isPublic(?Target),
     !didCall(?Source, ?C1, ?CallSite, ?Target, ?C2, ?Method).
 
-isBoring(?X, ?Y) :-
+graphHideRef(?X, ?Y) :-
     hideUncalledReferences,
     hasRef(?X, ?Y), !didCall(?X, ?Y, ?M), !didCreate(?X, ?Y).
 
-isHidden(<_testDriver>).
+graphHideObject(<_testDriver>).
 
 /* Graphing */
 
@@ -108,14 +107,14 @@ calledEdgeViaLocal(?GraphSourceNode, ?GraphTargetNode) :-
 	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
 	graphInvocation(?Target, ?TargetInvocation, ?GraphTargetNode),
 	didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
-	!isBoring(?Source, ?Target),
+	!graphHideRef(?Source, ?Target),
 	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target).
 
 calledEdgeViaField(?GraphSourceNode, ?GraphTargetNode) :-
 	graphInvocation(?Source, ?SourceInvocation, ?GraphSourceNode),
 	graphInvocation(?Target, ?TargetInvocation, ?GraphTargetNode),
 	didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
-	!isBoring(?Source, ?Target),
+	!graphHideRef(?Source, ?Target),
 	field(?Source, ?AnyVar, ?Target).
 
 /* (invocation to invocation) */
@@ -141,7 +140,7 @@ calledEdge(?GraphSourceNode, ?TargetNode) :-
 	local(?Source, ?SourceInvocation, ?AnyLocal, ?Target),
 	didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
         TO_STRING(?Target, ?TargetNode),
-	!isBoring(?Source, ?Target).
+	!graphHideRef(?Source, ?Target).
 
 /* (object to object, for fields) */
 calledEdge(?SourceNode, ?TargetNode) :-
@@ -149,7 +148,7 @@ calledEdge(?SourceNode, ?TargetNode) :-
 	didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?TargetInvocation, ?Method),
         TO_STRING(?Source, ?SourceNode),
         TO_STRING(?Target, ?TargetNode),
-	!isBoring(?Source, ?Target).
+	!graphHideRef(?Source, ?Target).
 
 /* (invocation to object) */
 uncalledEdge(?GraphSourceNode, ?TargetNode) :-
@@ -158,7 +157,7 @@ uncalledEdge(?GraphSourceNode, ?TargetNode) :-
         isRef(?Target),
         TO_STRING(?Target, ?TargetNode),
 	!calledEdge(?GraphSourceNode, ?TargetNode),
-	!isBoring(?Source, ?Target).
+	!graphHideRef(?Source, ?Target).
 
 /* (object to object)
  * Ignores public objects to avoid cluttering the graph.
@@ -169,7 +168,7 @@ uncalledEdge(?SourceNode, ?TargetNode) :-
 	!calledEdge(?SourceNode, ?TargetNode),
         TO_STRING(?Source, ?SourceNode),
         TO_STRING(?Target, ?TargetNode),
-	!isBoring(?Source, ?Target).
+	!graphHideRef(?Source, ?Target).
 
 /* Hide arrows that have higher-priority replacements. */
 
@@ -270,7 +269,7 @@ showInProblemGraph(?Target) :- problemEdge(?Source, ?Target).
 
 
 declare isHiddenNode(String node).
-isHiddenNode(?Node) :- isHidden(?Object), TO_STRING(?Object, ?Node).
+isHiddenNode(?Node) :- graphHideObject(?Object), TO_STRING(?Object, ?Node).
 isHiddenNode(?Node) :- showOnlyProblemNodes,
     isRef(?Object), TO_STRING(?Object, ?Node),
     hasProblem,

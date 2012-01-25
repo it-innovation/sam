@@ -28,9 +28,10 @@ Graphing
    specific invocations of Object explicitly on the graph. If false, these
    invocations are aggregated with their object.
 
-.. function:: isHidden(Ref ref)
+.. function:: graphHideObject(Ref ref)
+.. function:: graphHideRef(Ref source, Ref target)
 
-   Don't show this object or references from it. Used to hide the `_testDriver` object.
+   Don't show this node or edge on the graph. Used to hide the `_testDriver` object.
 
 .. function:: showOnlyProblemNodes()
 

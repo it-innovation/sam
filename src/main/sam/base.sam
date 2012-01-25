@@ -71,7 +71,8 @@ declare visibleGraphEdge(String sourceGraphNode, String targetGraphNode, String 
 declare debugEdge(Ref source, String sourceInvocation, String callSite, Ref target, String targetInvocation).
 declare showAllInvocations(Ref object).
 declare showInvocation(Ref object, String invocation).
-declare isHidden(Ref ref).
+declare graphHideObject(Ref ref).
+declare graphHideRef(Ref source, Ref target).
 declare showOnlyProblemNodes().
 declare hideUncalledReferences().
 declare ignoreEdgeForRanking(Object source, Object target).
