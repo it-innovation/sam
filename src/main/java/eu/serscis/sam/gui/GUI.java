@@ -80,6 +80,8 @@ public class GUI {
 	private LinkedList<String> currentTabs = null;
 	private LinkedList<ScenarioView> myTabs = new LinkedList<ScenarioView>();
 
+	private Shell errorBox = null;
+
 	public GUI(File file) throws Exception {
 		if (file != null) {
 			myFile = file.getAbsoluteFile();
@@ -327,12 +329,17 @@ public class GUI {
 	}
 
 	private void realEvaluate() throws Exception {
+		if (errorBox != null) {
+			errorBox.dispose();
+			errorBox = null;
+		}
+
 		Eval eval = new Eval();
 		shell.setText("SAM: " + myFile.getName() + " (" + myFile.getParent() + ")");
 		Results results = eval.evaluate(myFile);
 
 		if (results.exception != null) {
-			final Shell errorBox = new Shell(shell, SWT.BORDER | SWT.CLOSE | SWT.TITLE | SWT.DIALOG_TRIM);
+			errorBox = new Shell(shell, SWT.BORDER | SWT.CLOSE | SWT.TITLE | SWT.DIALOG_TRIM);
 			errorBox.setText("Error in " + myFile);
 			Label label = new Label(errorBox, 0);
 			label.setText(formatException(results.exception));
@@ -372,6 +379,7 @@ public class GUI {
 
 			errorBox.layout();
 			errorBox.open();
+
 			throw results.exception;
 		}
 
