@@ -181,6 +181,11 @@ public class ScenarioView {
 				} finally {
 					is.close();
 				}
+			} catch (Exception ex) {
+				mainImage.setImage(null);
+				mainImage.setText(ex.toString());
+				mainImage.pack();
+				throw ex;
 			} finally {
 				tmpFile.delete();
 			}
