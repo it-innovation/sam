@@ -206,13 +206,13 @@ public class DebugViewer implements Updatable {
 			String target = tuple.get(0).getValue().toString();
 			String invocation = tuple.get(1).getValue().toString();
 			String method = tuple.get(2).getValue().toString().split("\\.", 2)[1];
-			String arg;
+			ITerm arg;
 			if (tuple.size() == 4) {
-				arg = tuple.get(3).getValue().toString();
+				arg = tuple.get(3);
 			} else {
-				arg = tuple.get(4).getValue().toString();
+				arg = tuple.get(4);
 			}
-			String msg = "<" + target + ">." + method + "() received argument <" + arg + ">";
+			String msg = "<" + target + ">." + method + "() received argument " + arg;
 			if (!invocation.equals("")) {
 				msg += " [" + invocation + "]";
 			}
@@ -225,8 +225,8 @@ public class DebugViewer implements Updatable {
 			String object = tuple.get(0).getValue().toString();
 			String invocation = tuple.get(1).getValue().toString();
 			String[] method = tuple.get(2).getValue().toString().split("\\.");
-			String value = tuple.get(3).getValue().toString();
-			String msg = "<" + object + ">." + method[1] + " returned <" + value + ">";
+			ITerm value = tuple.get(3);
+			String msg = "<" + object + ">." + method[1] + " returned " + value;
 			if (!invocation.equals("")) {
 				msg += " [" + invocation + "]";
 			}
@@ -266,8 +266,8 @@ public class DebugViewer implements Updatable {
 			String caller = getInvocation(tuple, 0);
 			String invocation = tuple.get(1).getValue().toString();
 			String callSite = tuple.get(2).getValue().toString();
-			String arg = tuple.get(4).getValue().toString();
-			String msg = "<" + caller + "> passed <" + arg + ">";
+			ITerm arg = tuple.get(4);
+			String msg = "<" + caller + "> passed " + arg;
 			ITerm pos = tuple.get(3);
 			if (!(pos instanceof AnyTerm)) {
 				msg += " as argument " + pos;
@@ -281,13 +281,13 @@ public class DebugViewer implements Updatable {
 		} else if (p.equals(Constants.didGetP)) {
 			String caller = getInvocation(tuple, 0);
 			String callSite = tuple.get(2).getValue().toString();
-			String result = tuple.get(3).getValue().toString();
-			return "<" + caller + "> got <" + result + ">";
+			ITerm result = tuple.get(3);
+			return "<" + caller + "> got " + result;
 		} else if (p.equals(Constants.didGetExceptionP)) {
 			String caller = getInvocation(tuple, 0);
 			String callSite = tuple.get(2).getValue().toString();
-			String result = tuple.get(3).getValue().toString();
-			return "<" + caller + "> got exception <" + result + ">";
+			ITerm result = tuple.get(3);
+			return "<" + caller + "> got exception " + result;
 		} else if (p.equals(Constants.liveMethodP)) {
 			String object = tuple.get(0).getValue().toString();
 			String invocation = tuple.get(1).getValue().toString();
@@ -312,8 +312,8 @@ public class DebugViewer implements Updatable {
 		} else if (p.equals(Constants.fieldP)) {
 			String actor = tuple.get(0).getValue().toString();
 			String name = tuple.get(1).getValue().toString();
-			String value = tuple.get(2).getValue().toString();
-			return "<" + actor + ">." + name + " = <" + value + ">";
+			ITerm value = tuple.get(2);
+			return "<" + actor + ">." + name + " = " + value;
 		} else if (p.equals(Constants.localP)) {
 			String actor = getInvocation(tuple, 0);
 			String invocation = tuple.get(1).getValue().toString();
@@ -322,8 +322,8 @@ public class DebugViewer implements Updatable {
 				return null;
 			}
 			String[] nameParts = name.split("\\.");
-			String value = tuple.get(3).getValue().toString();
-			String msg = "<" + actor + ">." + nameParts[1] + "()'s " + nameParts[2] + " = <" + value + ">";
+			ITerm value = tuple.get(3);
+			String msg = "<" + actor + ">." + nameParts[1] + "()'s " + nameParts[2] + " = " + value;
 			if (!invocation.equals("")) {
 				msg += " [" + invocation + "]";
 			}
