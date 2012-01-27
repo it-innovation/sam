@@ -129,3 +129,27 @@ didReceive(?Target, ?TargetInvocation, ?Method, ?ParamPos, ?ReceivedValue) :-
 	hasParam(?Method, ?ParamType, ?Param, ?ParamPos),
 	ASSIGN(?ParamType, ?SentValue, ?ReceivedValue),
 	GroupAs(?Method, ?TargetInvocation).
+
+
+///////////////// Group all Unknown invocations into a single context
+
+methodDoesContextMapping("BaseUnknown.*").
+
+// Map all invocation contexts to the (usually single) initial context. There's no point
+// modelling them separately since everything gets shared via the "ref" field anyway.
+didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, "BaseUnknown.*") :-
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, "BaseUnknown.*"),
+	initialInvocation(?Target, ?TargetContext).
+
+// Fall-back to default behaviour (use CallerInvocation) in case we don't have any initialInvocation.
+didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?CallerInvocation, "BaseUnknown.*") :-
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, "BaseUnknown.*"),
+	!initialInvocation(?Target, ?TargetContext).
+
+// The normal argument-copying rule (which is otherwise disabled by methodDoesContextMapping).
+didReceive(?Target, ?TargetInvocation, "BaseUnknown.*", ?ParamPos, ?ReceivedValue) :-
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetInvocation, "BaseUnknown.*"),
+	maySend(?Caller, ?CallerInvocation, ?CallSite, ?SendPos, ?SentValue),
+	MATCH(?SendPos, ?ParamPos),
+	hasParam("BaseUnknown.*", ?ParamType, ?Param, ?ParamPos),
+	ASSIGN(?ParamType, ?SentValue, ?ReceivedValue).
