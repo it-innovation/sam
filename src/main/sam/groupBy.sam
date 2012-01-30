@@ -137,14 +137,16 @@ methodDoesContextMapping("BaseUnknown.*").
 
 // Map all invocation contexts to the (usually single) initial context. There's no point
 // modelling them separately since everything gets shared via the "ref" field anyway.
+
+// If the object was present initially, use the recorded context.
 didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, "BaseUnknown.*") :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, "BaseUnknown.*"),
 	initialInvocation(?Target, ?TargetContext).
 
-// Fall-back to default behaviour (use CallerInvocation) in case we don't have any initialInvocation.
-didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?CallerInvocation, "BaseUnknown.*") :-
+// If the object was created during evaluation, use the creation context.
+didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?TargetContext, "BaseUnknown.*") :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, "BaseUnknown.*"),
-	!initialInvocation(?Target, ?TargetContext).
+	didCreate(?SomeFactory, ?TargetContext, ?FactoryCallSite, ?Target).
 
 // The normal argument-copying rule (which is otherwise disabled by methodDoesContextMapping).
 didReceive(?Target, ?TargetInvocation, "BaseUnknown.*", ?ParamPos, ?ReceivedValue) :-

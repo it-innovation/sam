@@ -89,3 +89,10 @@ haveBadAccess(?Caller, ?Target) :-
 
 // Unknown objects may call themselves
 mayCall(?Object, ?Object, "BaseUnknown.*") :- isA(?Object, "Unknown").
+
+
+// If a call was made, then it must have been received in some context. Detects some bugs
+// when using methodDoesContextMapping.
+error("No activation found for call") :-
+	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
+	!didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?AnyContext, ?Method).

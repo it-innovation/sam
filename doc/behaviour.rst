@@ -179,6 +179,13 @@ objects have some useful extra properties by default:
 You should use `Unknown` in most cases. Use `BaseUnknown` if you need to avoid these defaults
 (e.g. because you have some untrusted code that is still controlled by an access policy).
 
+BaseUnknown objects also override the default invocation aggregation rules, so that they are
+always activated in the context in which they were created, regardless of the context in which
+they were called. Since they store all references in a field and use every
+reference in every context anyway, no precision is lost by aggregating them all
+into one context. Doing this avoids some false positives where calls via an Unknown object get
+aggregated with calls made directly.
+
 
 The Value type
 --------------
