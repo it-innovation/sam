@@ -213,6 +213,9 @@ can be modelled as::
       }
   }
 
+(note: this is not a very realistic example, since you could achieve the same effect by just
+declaring the field as `private Value myValue`)
+
 You can use any Datalog query as the test and you can mix Java variables, Datalog variables and "special"
 variables freely. The special variables recognised are:
 
