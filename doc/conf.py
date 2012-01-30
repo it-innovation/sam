@@ -210,12 +210,13 @@ class SAMOutput(Directive):
 
 	 def run(self):
 		name, = self.content
-		source = name + '.sam'
+		source_name, scenario = name.rsplit('-', 1)
+		source = source_name + '.sam'
 
 		image_reference = directives.uri('_images/' + name + '.png')
 		self.options['uri'] = image_reference
 
-		source_link = nodes.reference(self.content, source, refuri = 'examples/' + name + '.sam')
+		source_link = nodes.reference(self.content, source, refuri = 'examples/' + source)
 		#text = nodes.text('', 'Output from ' + source)
 		image_node = nodes.image('_images/' + name + '.png', **self.options)
 		figure_node = nodes.figure('', image_node)

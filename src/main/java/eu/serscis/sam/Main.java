@@ -89,7 +89,7 @@ public class Main {
 				for (String scenario : results.model.scenarios) {
 					ScenarioResult result = results.scenarios.get(scenario);
 					if (result.finalKnowledgeBase != null) {
-						Graph.graph(result.finalKnowledgeBase, new File(stem + "." + format), format);
+						Graph.graph(result.finalKnowledgeBase, new File(stem + "-" + scenario + "." + format), format);
 					}
 					if (result.phase != Phase.Success) {
 						if (result.expectingFailure) {

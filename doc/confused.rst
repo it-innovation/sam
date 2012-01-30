@@ -49,7 +49,7 @@ giving `alice` the `Unknown` behaviour.
 
 Running this example (:example:`confused`) shows that it is not safe:
 
-.. sam-output:: confused
+.. sam-output:: confused-attack
 
 The debug example shows that:
 

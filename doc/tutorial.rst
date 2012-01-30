@@ -244,7 +244,7 @@ creating a new `test` block labelled with a "context" ("Others"). We wrap the ne
 If you run this model (:example:`data2`), SAM will show a new `otherUsers` object (representing all the other users) and a new `fileOthers` object
 (representing all the files they may create).
 
-.. sam-output:: data2
+.. sam-output:: data2-others
 
 It will also show a red arrow from `otherUsers` to `dataProvider`, indicating that an object from the baseline got called when it didn't before.
 You can double-click on the warning message to see the reason:
@@ -275,7 +275,7 @@ so any safety property that is valid with `Unknown` behaviour will be valid for 
 In the display, the `otherUsers` object is now shown in blue to indicate `Unknown` behaviour, but the model is otherwise unchanged (the arrow from `otherUsers` to `fileOthers` becomes solid because `otherUsers` may now store the file reference in a field, but nothing else changes). This shows that `otherUsers`
 still cannot get access to `user`'s `file`.
 
-.. sam-output:: data3
+.. sam-output:: data3-baseline
 
 
 Modelling non-capability systems
@@ -296,7 +296,7 @@ Since we have no access control, this immediately and unsurprisingly leads to th
 * `otherUsers` may invoke methods on `user` (or perhaps on the user's computer)
 * `otherUsers` may invoke methods on `file` (the user's files).
 
-.. sam-output:: data4
+.. sam-output:: data4-baseline
 
 Orange arrows indicate calls that were involved in the problem. In this case, `otherUsers` was only able to call `file` because `user` used `dataProvider`
 to create `file` first.
@@ -364,7 +364,7 @@ with this identity::
 We must update `DataProvider` to pass through the `owner` argument, and update `Client` to provide its identity (:example:`data5`).
 SAM now reports that the model is safe:
 
-.. sam-output:: data5
+.. sam-output:: data5-baseline
 
 
 Showing roles in the GUI
@@ -436,11 +436,11 @@ graph of the data in the file::
 
 Modelling this with a single client, using capabilities and no access control (:example:`service1`) creates a new baseline:
 
-.. sam-output:: service1
+.. sam-output:: service1-baseline
 
 Adding back in the `otherUsers` object shows that this design is still safe when using object-capabilities (:example:`service2`):
 
-.. sam-output:: service2
+.. sam-output:: service2-baseline
 
 .. note::
 
@@ -454,7 +454,7 @@ Adding a service in a non-capabilities system
 
 Turning on access control and the RBAC policy shows that required access is missing (:example:`service3`):
 
-.. sam-output:: service3
+.. sam-output:: service3-baseline
 
 The user needs some way to grant `serviceProvider` read access to the data (`file`), and `serviceProvider` needs to grant `user` access
 to the resulting image. We can add an extra method to `File` for this::
@@ -486,11 +486,11 @@ to the resulting image. We can add an extra method to `File` for this::
 This is the same pattern that we used for the "owner" role. After updating `Client` to grant access on `file` and `serviceProvider` to grant
 access on `image`, all required access is possible again (:example:`service4`):
 
-.. sam-output:: service4
+.. sam-output:: service4-baseline
 
 However, adding `otherUsers` back in shows that this design is not safe (:example:`service5`):
 
-.. sam-output:: service5
+.. sam-output:: service5-baseline
 
 `serviceProvider` may read `file` and `image` in response to calls from `otherUsers`. For example, double-clicking on the `file` problem shows the
 reason as:
@@ -553,7 +553,7 @@ that lets the programmer of the real system discover the identity of the caller.
 
 Finally, we assign `file = uncheckedFile` only if `uncheckedFile.checkCanRead` could return `true`.
 
-.. sam-output:: service6
+.. sam-output:: service6-baseline
 
 .. note::
 
@@ -614,7 +614,7 @@ Here, we have renamed `otherUsers` to `others` and changed the API of `Client` t
       }
   }
 
-.. sam-output:: service7
+.. sam-output:: service7-baseline
 
 This reveals a number of new problems:
 
@@ -628,7 +628,7 @@ This reveals a number of new problems:
 
 At this point, we could add yet more access control checks to the design, or we could decide to try the scenario using capability-based access control (:example:`service8`):
 
-.. sam-output:: service8
+.. sam-output:: service8-baseline
 
 This shows that, when using object-capabilities, `user` may safely use services and data hosting provided by parties with unknown behaviour, without the possibility of exposing access to
 data held at their trusted sites.

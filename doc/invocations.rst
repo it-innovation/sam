@@ -51,7 +51,7 @@ Sometimes this is not sufficient. For example::
   assert !hasRef(<x>, <y>).
   assert !hasRef(<y>, <x>)
 
-.. sam-output:: invocations-over-aggregation
+.. sam-output:: invocations-over-aggregation-baseline
 
 Here, SAM groups both calls to `alice.run` together. It therefore only knows that:
 

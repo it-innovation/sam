@@ -83,7 +83,7 @@ We define the `ReadOnly` class to proxy only the methods we desire::
       }
   }
 
-.. sam-output:: compose-1-ro-only
+.. sam-output:: compose-1-ro-only-baseline
 
 Testing this in SAM reveals that the delegate may call `readOnly`, but this is harmless so we allow it
 (by adding an :func:`AnyoneMayCall` annotation to the `readOnly` methods).
@@ -134,7 +134,7 @@ We have also set the default context to "NotLogged" for clarity::
       }
   }
 
-.. sam-output:: compose-2-logging-only
+.. sam-output:: compose-2-logging-only-baseline
 
 Testing this model shows that it is safe. Even with an `Unknown` delegate, the file object is only
 ever called in the `Logged` context.
@@ -149,7 +149,7 @@ and then wrap that in a `Logger`. In the base-line case, we see that the only in
 However, changing the type of `delegate` to `Unknown` reveals that the design is not
 safe: `delegate` can bypass the logger:
 
-.. sam-output:: compose-3-both
+.. sam-output:: compose-3-both-baseline
 
 The errors reported are:
 

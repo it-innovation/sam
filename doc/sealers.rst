@@ -113,13 +113,13 @@ in a box and passes the box to various other objects. Those with access to the
 unsealer (aggregated as `withUnsealer`) are able to get access to the value,
 while those without it can't:
 
-.. sam-output:: sealers
+.. sam-output:: sealers-baseline
 
 The :example:`sealers2` example has `sender` seal two different values and give them to
 different objects, which all have access to the unsealer. Each object can only
 unseal the correct value:
 
-.. sam-output:: sealers2
+.. sam-output:: sealers2-baseline
 
 To prove this, we needed to aggregate calls to the unsealer separately for the two groups
 of clients, and to the sealer separately for the two values being sealed.
