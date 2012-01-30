@@ -537,7 +537,9 @@ We can then update the service provider to check that its caller has read access
           String caller = ?Identity :- hasIdentity($Caller, ?Identity);
           boolean checkResult = uncheckedFile.checkCanRead(caller);
 
-          Ref file = uncheckedFile :- mayReturn(uncheckedFile, $Context, "File.checkCanRead", ?Result),
+          Ref file = uncheckedFile :- mayReturn(uncheckedFile, $Context, ?Method, ?Result),
+                                      methodName(?Method, ?MethodName),
+                                      MATCH(?MethodName, "checkCanRead"),
                                       MATCH(?Result, true);
           file.get();
           image.grantReadAccess(caller);
@@ -563,6 +565,9 @@ Finally, we assign `file = uncheckedFile` only if `uncheckedFile.checkCanRead` c
   * in others, a fake file is passed and `checkResult = true`.
 
   Therefore, in the aggregated model, `checkResult` could be `true` and `uncheckedFile` could be <file>, which doesn't allow us to verify the property (it is an over-aggregation). The `mayReturn` makes a stronger check: we only use a particular `uncheckedFile` if that object returned `true`, not if any possible other value of `uncheckedFile` could return `true`.
+
+  Using :func:`MATCH` (rather than literal values) is necessary because Unknown objects have a single method
+  that matches all names, and may return a single value that matches all values.
 
 
 Unknown providers
