@@ -117,3 +117,6 @@ assert local(<bob>, "ForY", "User2.test2.ok", false).
 
 // Check that User2.copy was called, even though no value was ever passed for the first argument.
 assert field(<user2>, "copy2", <x>).
+
+assert didGetException(<bob>, "ForX", ?CallSite, <x>).
+assert didGetException(<_testDriver>, "", "_TestDriver.test_1:bob.test2()", <x>).

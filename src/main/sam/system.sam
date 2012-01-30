@@ -104,12 +104,16 @@ didGetException(?Caller, ?CallerInvocation, ?CallSite, ?Exception) :-
 	mayThrow(?Target, ?TargetInvocation, ?Method, ?ThrownException),
 	ASSIGN("Value", ?ThrownException, ?Exception).
 
-/* (auto re-throw) */
+/* (auto re-throw)
+ * A method may throw an exception if
+ * - it contains a call-site which calls a method that throws an exception
+ * - the call-site does not handle exceptions itself
+ */
 mayThrow(?Caller, ?CallerInvocation, ?CallerMethod, ?Exception) :-
 	hasCallSite(?CallerMethod, ?CallerCallSite),
 	didCall(?Caller, ?CallerInvocation, ?CallerCallSite, ?Target, ?TargetInvocation, ?TargetMethod),
 	didGetException(?Target, ?TargetInvocation, ?TargetCallSite, ?Exception),
-	!catchesAllExceptions(?TargetCallSite).
+	!catchesAllExceptions(?CallerCallSite).
 
 /* (normal call; sender and receiver use fixed args) */
 didAccept(?Target, ?TargetInvocation, ?ParamVar, ?ArgValue) :-
