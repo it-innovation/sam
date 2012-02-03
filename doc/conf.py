@@ -220,7 +220,10 @@ class SAMOutput(Directive):
 		#text = nodes.text('', 'Output from ' + source)
 		image_node = nodes.image('_images/' + name + '.png', **self.options)
 		figure_node = nodes.figure('', image_node)
-		caption = nodes.caption("hi", 'Output from ', source_link)
+		msg = 'Output from '
+		if scenario != 'baseline':
+			msg += "'" + scenario + "' in "
+		caption = nodes.caption("hi", msg, source_link)
 		figure_node += caption
 		return [figure_node]
 
