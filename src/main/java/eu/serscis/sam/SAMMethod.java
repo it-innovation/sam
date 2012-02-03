@@ -256,7 +256,66 @@ class SAMMethod {
 
 		callSites.add(result);
 
+		// hasCallSite(methodFull, callSite).
+		IRelation rel = parent.model.getRelation(hasCallSiteP);
+		rel.add(BASIC.createTuple(methodNameFull, TERM.createString(result)));
+
+		if (callSitesInCurrentTryBlock != null) {
+			callSitesInCurrentTryBlock.add(result);
+		}
+
 		return result;
+	}
+
+	/** Create a call-site that performs this call. */
+	private void processCall(String callSite, ACallExpr callExpr) throws Exception {
+		String targetMethod = parsePattern(callExpr.getMethod());
+
+		// mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Value) :-
+		//	isA(?Caller, ?Type),
+		//	liveMethod(?Caller, ?CallerInvocation, method),
+		//	value(?Caller, ?CallerInvocation, ?TargetVar, ?Value).
+
+		ITuple tuple = BASIC.createTuple(
+				TERM.createVariable("Caller"),
+				TERM.createVariable("CallerInvocation"),
+				TERM.createString(callSite),
+				TERM.createVariable("Value"));
+
+		ILiteral head = BASIC.createLiteral(true, BASIC.createAtom(mayCallObjectP, tuple));
+
+		ILiteral isA = BASIC.createLiteral(true, BASIC.createAtom(isAP, BASIC.createTuple(
+						TERM.createVariable("Caller"),
+						TERM.createString(this.parent.name))));
+		ILiteral liveMethod = BASIC.createLiteral(true, BASIC.createAtom(liveMethodP, BASIC.createTuple(
+						TERM.createVariable("Caller"),
+						TERM.createVariable("CallerInvocation"),
+						methodNameFull)));
+
+		IRule rule = BASIC.createRule(makeList(head), makeList(isA, liveMethod, getValue(callExpr.getName())));
+		//System.out.println(rule);
+		parent.model.addRule(rule);
+
+		addArgs(callSite, (AArgs) callExpr.getArgs(), callExpr.getStar());
+
+		// callsMethod(callSite, method)
+		if (callExpr.getMethod() instanceof ADollarPattern) {
+			TName varName = ((ADollarPattern) (callExpr.getMethod())).getName();
+			// callsMethodInLocal(?CallSite, ?LocalVarName).
+			if (!locals.containsKey(varName.getText())) {
+				throw new ParserException(varName, "Must be a local variable");
+			}
+			parent.model.addFact(callsMethodInLocalP,
+					BASIC.createTuple(
+						TERM.createString(callSite),
+						TERM.createString(expandLocal(varName.getText()))));
+		} else if ("*".equals(targetMethod)) {
+			IRelation callsMethod = parent.model.getRelation(callsMethodP);
+			callsMethod.add(BASIC.createTuple(TERM.createString(callSite), new AnyTerm(Type.StringT)));
+		} else {
+			IRelation callsMethod = parent.model.getRelation(callsMethodP);
+			callsMethod.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetMethod)));
+		}
 	}
 
 	private void processCode(List<PStatement> statements) throws Exception {
@@ -275,53 +334,7 @@ class SAMMethod {
 					ACallExpr callExpr = (ACallExpr) expr;
 					String targetMethod = parsePattern(callExpr.getMethod());
 					callSite = mintCallSite(assign, callExpr.getName().getText() + "." + targetMethod + "()");
-
-					// mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Value) :-
-					//	isA(?Caller, ?Type),
-					//	liveMethod(?Caller, ?CallerInvocation, method),
-					//	value(?Caller, ?CallerInvocation, ?TargetVar, ?Value).
-
-					ITuple tuple = BASIC.createTuple(
-							TERM.createVariable("Caller"),
-							TERM.createVariable("CallerInvocation"),
-							TERM.createString(callSite),
-							TERM.createVariable("Value"));
-
-					ILiteral head = BASIC.createLiteral(true, BASIC.createAtom(mayCallObjectP, tuple));
-
-					ILiteral isA = BASIC.createLiteral(true, BASIC.createAtom(isAP, BASIC.createTuple(
-								TERM.createVariable("Caller"),
-								TERM.createString(this.parent.name))));
-					ILiteral liveMethod = BASIC.createLiteral(true, BASIC.createAtom(liveMethodP, BASIC.createTuple(
-								TERM.createVariable("Caller"),
-								TERM.createVariable("CallerInvocation"),
-								methodNameFull)));
-
-					IRule rule = BASIC.createRule(makeList(head), makeList(isA, liveMethod, getValue(callExpr.getName())));
-					//System.out.println(rule);
-					parent.model.addRule(rule);
-
-					addArgs(callSite, (AArgs) callExpr.getArgs(), callExpr.getStar());
-
-					// callsMethod(callSite, method)
-					if (callExpr.getMethod() instanceof ADollarPattern) {
-						TName varName = ((ADollarPattern) (callExpr.getMethod())).getName();
-						// callsMethodInLocal(?CallSite, ?LocalVarName).
-						if (!locals.containsKey(varName.getText())) {
-							throw new ParserException(varName, "Must be a local variable");
-						}
-						parent.model.addFact(callsMethodInLocalP,
-									BASIC.createTuple(
-										TERM.createString(callSite),
-										TERM.createString(expandLocal(varName.getText()))));
-					} else if ("*".equals(targetMethod)) {
-						IRelation callsMethod = parent.model.getRelation(callsMethodP);
-						callsMethod.add(BASIC.createTuple(TERM.createString(callSite), new AnyTerm(Type.StringT)));
-					} else {
-						IRelation callsMethod = parent.model.getRelation(callsMethodP);
-						callsMethod.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetMethod)));
-					}
-
+					processCall(callSite, callExpr);
 					valueP = didGetP;
 				} else if (expr instanceof ANewExpr) {
 					ANewExpr newExpr = (ANewExpr) expr;
@@ -375,17 +388,6 @@ class SAMMethod {
 
 					assignVar(assign, makeList(value));
 				}
-
-				if (callSite != null) {
-					// hasCallSite(methodFull, callSite).
-					IRelation rel = parent.model.getRelation(hasCallSiteP);
-					rel.add(BASIC.createTuple(methodNameFull, TERM.createString(callSite)));
-
-					if (callSitesInCurrentTryBlock != null) {
-						callSitesInCurrentTryBlock.add(callSite);
-					}
-				}
-
 			} else if (ps instanceof ADeclStatement) {
 				ADeclStatement decl = (ADeclStatement) ps;
 				declareLocal(decl.getType(), decl.getName());
@@ -462,6 +464,15 @@ class SAMMethod {
 				List<ILiteral> lits = processJavaDl(term, (ALiterals) s.getLiterals(), tokens);
 
 				assignVar(assign, lits, tokens);
+			} else if (ps instanceof AIfStatement) {
+				// Currently, just evaluates the expression and runs the code always (ignoring the result)
+				AIfStatement ifs = (AIfStatement) ps;
+				ACallExpr callExpr = (ACallExpr) (ifs.getExpr());
+				String targetMethod = parsePattern(callExpr.getMethod());
+				ACode code = (ACode) (ifs.getCode());
+				String callSite = mintCallSite(null, "if-" + callExpr.getName().getText() + "." + targetMethod + "()");
+				processCall(callSite, (ACallExpr) callExpr);
+				processCode(code.getStatement());
 			} else {
 				throw new RuntimeException("Unknown statement type: " + ps);
 			}

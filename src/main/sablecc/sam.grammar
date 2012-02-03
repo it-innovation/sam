@@ -64,6 +64,7 @@ Tokens
   bool = 'true' | 'false';
   null = 'null';
   any_tok = 'any';
+  if_tok = 'if';
 
   // must be last
   name = char(char|digit|underscore)*;
@@ -135,6 +136,7 @@ Productions
             | {assign_dl} assign term if_dl literals semi
             | {decl} type name semi
 	    | {try} try l_brace statement* r_brace catch_block*
+	    | {if} if_tok l_par expr r_par l_brace code r_brace
             | {throw} throw name semi
 	    | {return} return name semi;
   catch_block = catch l_par type name r_par l_brace statement* r_brace;

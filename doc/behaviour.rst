@@ -45,9 +45,13 @@ Types are currently ignored (and treated safely as "Object").
   return NAME;
   throw NAME;
   try { CODE } catch (TYPE NAME) { CODE }
+  if (EXPR) { CODE }
 
 Where `NAME` is a variable name, `TYPE` is a class name, `METHOD` is a method name,
 and `ARGS` is a comma-separated list of variable names.
+
+If expressions currently over-approximate by assuming that the body (`CODE`) is always executed (i.e.
+SAM doesn't look at the result of the test). Also, `EXPR` must be a call expression.
 
 Each `ANNOTATION` is of the form "@NAME(ARGS)", where NAME is the name of a Datalog predicate, and
 asserts a fact for this method or field. For example, the annotations in this code::

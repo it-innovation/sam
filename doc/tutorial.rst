@@ -524,7 +524,7 @@ calling `File.get` (:example:`service6`)::
 
 This demonstrates how Datalog can be embedded into the Java syntax to make the language more expressive where necessary. Care must be taken when
 doing this that the implementer of the real system will be able to turn this into real code (for example, it is easy to rely on a private field in
-another object using this syntax, but the real software would not be able to do that). In this case, we assume that the code will able to query
+another object using this syntax, but the real software would not be able to do that). In this case, we assume that the code will be able to query
 its own access control policy, even though we don't model the access control system itself.
 
 We can then update the service provider to check that its caller has read access on the file::
