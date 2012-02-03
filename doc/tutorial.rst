@@ -488,9 +488,9 @@ access on `image`, all required access is possible again (:example:`service4`):
 
 .. sam-output:: service4-baseline
 
-However, adding `otherUsers` back in shows that this design is not safe (:example:`service5`):
+However, adding `otherUsers` back in shows that this design is not safe:
 
-.. sam-output:: service5-baseline
+.. sam-output:: service4-others
 
 `serviceProvider` may read `file` and `image` in response to calls from `otherUsers`. For example, double-clicking on the `file` problem shows the
 reason as:
