@@ -44,17 +44,12 @@ class File {
 
 class ServiceProvider {
     @PermittedRole("world")
-    public File process(Ref uncheckedFile) {
+    public File process(Ref file) {
         Ref image = new File("serviceProvider.crt");
 
         String caller = ?Identity :- hasIdentity($Caller, ?Identity);
 
-        if (uncheckedFile.checkCanRead(caller)) {
-            Ref file = uncheckedFile :-
-                            mayReturn(uncheckedFile, $Context, ?Method, ?Result),
-                            methodName(?Method, ?MethodName),
-                            MATCH(?MethodName, "checkCanRead"),
-                            MATCH(?Result, true);
+        if (file.checkCanRead(caller)) {
             file.get();
             image.grantReadAccess(caller);
             image.put();

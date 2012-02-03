@@ -53,6 +53,10 @@ class SAMMethod {
 	private ITerm methodNameFull;
 	private Set<String> callSites = new HashSet<String>();
 	private List<String> callSitesInCurrentTryBlock = null;	// null => not in a try block
+	private int nTempVars = 0;
+
+	// Variable name rewriting for if blocks
+	private Map<String,String> localRedirects = new HashMap<String,String>();
 
 	public SAMMethod(SAMClass parent, AMethod m, ITerm methodNameFull) throws Exception {
 		this.parent = parent;
@@ -240,6 +244,13 @@ class SAMMethod {
 		return literals;
 	}
 
+	private String mintTempVar() {
+		nTempVars++;
+		String name = "__tmp" + nTempVars;
+		locals.put(name, Type.RefT);
+		return name;
+	}
+
 	private String mintCallSite(AAssign optAssign, String base) {
 		String prefix = methodNameFull.getValue() + ":";
 		if (optAssign != null) {
@@ -316,6 +327,73 @@ class SAMMethod {
 			IRelation callsMethod = parent.model.getRelation(callsMethodP);
 			callsMethod.add(BASIC.createTuple(TERM.createString(callSite), TERM.createString(targetMethod)));
 		}
+	}
+
+	private void processIf(AIfStatement ifs) throws Exception {
+		ACallExpr callExpr = (ACallExpr) (ifs.getExpr());
+		ANamedPattern pattern = (ANamedPattern) callExpr.getMethod();	// rejects specials, which are not supported
+		String targetMethod = parsePattern(pattern);
+		ACode code = (ACode) (ifs.getCode());
+		String callSite = mintCallSite(null, "if-" + callExpr.getName().getText() + "." + targetMethod + "()");
+		processCall(callSite, (ACallExpr) callExpr);
+
+		// if (foo.method(...)) { body }
+		//
+		// Inside the body, we replace "foo" with a temporary variable, which is copied from
+		// foo only if the call returned true.
+		String objVar = callExpr.getName().getText();
+		String tmpVar = mintTempVar();
+
+		/* local(?Caller, ?CallerInvocation, tmpVar, ?Value) :-
+		 *	isA(?Caller, type),
+		 *	liveMethod(?Caller, ?CallerInvocation, method),
+		 *      local(?Caller, ?CallerInvocation, objVar, ?Value),
+		 *	mayReturn(objVar, $Context, ?Method, ?ConditionResult),
+		 *	methodName(?Method, ?MethodName),
+		 *	MATCH(?MethodName, targetMethod),
+		 *	MATCH(?ConditionResult, true);
+		 */
+		IRule rule = BASIC.createRule(
+				makeList(
+					BASIC.createLiteral(true, BASIC.createAtom(localP, BASIC.createTuple(
+								TERM.createVariable("Caller"),
+								TERM.createVariable("CallerInvocation"),
+								TERM.createString(expandLocal(tmpVar)),
+								TERM.createVariable("Value"))))),
+				makeList(
+					BASIC.createLiteral(true, BASIC.createAtom(isAP, BASIC.createTuple(
+								TERM.createVariable("Caller"),
+								TERM.createString(this.parent.name)))),
+					BASIC.createLiteral(true, BASIC.createAtom(liveMethodP, BASIC.createTuple(
+								TERM.createVariable("Caller"),
+								TERM.createVariable("CallerInvocation"),
+								methodNameFull))),
+					getValue(callExpr.getName()),		// value of objVar -> ?Value
+					BASIC.createLiteral(true, BASIC.createAtom(mayReturnP, BASIC.createTuple(
+								TERM.createVariable("Value"),
+								TERM.createVariable("CallerInvocation"),
+								TERM.createVariable("Method"),
+								TERM.createVariable("ConditionResult")))),
+					BASIC.createLiteral(true, BASIC.createAtom(methodNameP, BASIC.createTuple(
+								TERM.createVariable("Method"),
+								TERM.createVariable("MethodName")))),
+					BASIC.createLiteral(true,  new MatchBuiltin.MatchBuiltinBoolean(
+								TERM.createVariable("MethodName"),
+								TERM.createString(targetMethod))),
+					BASIC.createLiteral(true,  new MatchBuiltin.MatchBuiltinBoolean(
+								TERM.createVariable("ConditionResult"),
+								CONCRETE.createBoolean(true)))));
+
+		//System.out.println(rule);
+		parent.model.addRule(rule);
+
+		String oldMapping = localRedirects.get(objVar);
+		localRedirects.put(objVar, tmpVar);
+
+		processCode(code.getStatement());
+
+		localRedirects.put(objVar, oldMapping);
+		locals.remove(tmpVar);
 	}
 
 	private void processCode(List<PStatement> statements) throws Exception {
@@ -465,14 +543,7 @@ class SAMMethod {
 
 				assignVar(assign, lits, tokens);
 			} else if (ps instanceof AIfStatement) {
-				// Currently, just evaluates the expression and runs the code always (ignoring the result)
-				AIfStatement ifs = (AIfStatement) ps;
-				ACallExpr callExpr = (ACallExpr) (ifs.getExpr());
-				String targetMethod = parsePattern(callExpr.getMethod());
-				ACode code = (ACode) (ifs.getCode());
-				String callSite = mintCallSite(null, "if-" + callExpr.getName().getText() + "." + targetMethod + "()");
-				processCall(callSite, (ACallExpr) callExpr);
-				processCode(code.getStatement());
+				processIf((AIfStatement) ps);
 			} else {
 				throw new RuntimeException("Unknown statement type: " + ps);
 			}
@@ -778,6 +849,10 @@ class SAMMethod {
 	}
 
 	private String expandLocal(String local) {
+		String redirect = localRedirects.get(local);
+		if (redirect != null) {
+			local = redirect;
+		}
 		return localPrefix + local;
 	}
 }

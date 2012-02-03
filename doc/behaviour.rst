@@ -50,9 +50,6 @@ Types are currently ignored (and treated safely as "Object").
 Where `NAME` is a variable name, `TYPE` is a class name, `METHOD` is a method name,
 and `ARGS` is a comma-separated list of variable names.
 
-If expressions currently over-approximate by assuming that the body (`CODE`) is always executed (i.e.
-SAM doesn't look at the result of the test). Also, `EXPR` must be a call expression.
-
 Each `ANNOTATION` is of the form "@NAME(ARGS)", where NAME is the name of a Datalog predicate, and
 asserts a fact for this method or field. For example, the annotations in this code::
 
@@ -71,6 +68,39 @@ have the same effect as::
 
   Restricted("Foo.destroy").
   PermittedRole("Foo.destroy", "admin").
+
+.. _If:
+
+If expressions
+--------------
+An if expression in SAM must use a call as the condition. Within the body of the loop, the variable can only have the values
+of objects which could have returned true. For example::
+
+  if (file.checkCanRead(caller)) {
+      file.get();
+      image.grantReadAccess(caller);
+   }
+
+Expands to::
+
+  file.checkCanRead(caller);
+
+  Ref __tmp1 = file :- mayReturn(file, $Context, ?Method, ?Result),
+                       methodName(?Method, ?MethodName),
+                       MATCH(?MethodName, "checkCanRead"),
+                       MATCH(?Result, true);
+  __tmp1.get();
+  image.grantReadAccess(caller);
+
+Note that (currently) SAM always assumes that the body of the if statement executes (e.g. the `image` line above is assumed to run, even if the condition is never true).
+SAM simply rewrites occurances of the target variable (`file`) to a temporary (`__tmp1`) inside the body, and assigns it only values which could return true.
+
+This is useful because asking an object to confirm something (that `caller` may read it in the example above) typically results in two cases:
+
+* an Unknown caller passes a genuine object, which returns `false`
+* an Unknown caller passes a fake object, which returns `true`
+
+SAM's default aggregation rules would group these two cases together, and SAM would be unable to confirm that the genuine object didn't return true.
 
 
 Classes

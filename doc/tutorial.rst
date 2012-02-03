@@ -531,43 +531,28 @@ We can then update the service provider to check that its caller has read access
 
   class ServiceProvider {
       @PermittedRole("world")
-      public Ref process(Ref uncheckedFile) {
-          Ref image = new File("serviceProvider.crt");
+      public File process(Ref file) {
+        Ref image = new File("serviceProvider.crt");
 
-          String caller = ?Identity :- hasIdentity($Caller, ?Identity);
-          boolean checkResult = uncheckedFile.checkCanRead(caller);
+        String caller = ?Identity :- hasIdentity($Caller, ?Identity);
 
-          Ref file = uncheckedFile :- mayReturn(uncheckedFile, $Context, ?Method, ?Result),
-                                      methodName(?Method, ?MethodName),
-                                      MATCH(?MethodName, "checkCanRead"),
-                                      MATCH(?Result, true);
-          file.get();
-          image.grantReadAccess(caller);
-          image.put();
-          return image;
-      }
+        if (file.checkCanRead(caller)) {
+            file.get();
+            image.grantReadAccess(caller);
+            image.put();
+            return image;
+        }
+    }
   }
 
 Here we say that the Java variable `caller` may be set to `Identity` if the caller of this method has that identity. Again, we assume some API
-that lets the programmer of the real system discover the identity of the caller. See :ref:`Behaviour` for a full description of the Datalog syntax.
-
-Finally, we assign `file = uncheckedFile` only if `uncheckedFile.checkCanRead` could return `true`.
+that lets the programmer of the real system discover the identity of the caller. See :ref:`Behaviour` for a full description of the Datalog syntax. SAM
+confirms that the design is now safe:
 
 .. sam-output:: service6-baseline
 
 .. note::
-
-  Why do we need to do the :func:`mayReturn` test, rather than just `file = uncheckedFile :- MATCH(checkResult, true)`?
-
-  The reason is that we are aggregating two kinds of calls into the `Other` case:
-
-  * in some, a genuine file is passed and `checkResult = false`.
-  * in others, a fake file is passed and `checkResult = true`.
-
-  Therefore, in the aggregated model, `checkResult` could be `true` and `uncheckedFile` could be <file>, which doesn't allow us to verify the property (it is an over-aggregation). The `mayReturn` makes a stronger check: we only use a particular `uncheckedFile` if that object returned `true`, not if any possible other value of `uncheckedFile` could return `true`.
-
-  Using :func:`MATCH` (rather than literal values) is necessary because Unknown objects have a single method
-  that matches all names, and may return a single value that matches all values.
+  SAM's "if" statement handling is very limited (it is usually a large over-approximation). See :ref:`If` for details.
 
 
 Unknown providers
