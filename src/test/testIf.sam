@@ -1,0 +1,51 @@
+class Secret {
+	public void use() {}
+}
+
+class Box {
+	private Ref mySecret;
+	private boolean myCheck;
+
+	public Box(Ref secret, boolean check) {
+		mySecret = secret;
+		myCheck = check;
+	}
+
+	public boolean check() {
+		return myCheck;
+	}
+
+	public Ref get() {
+		return mySecret;
+	}
+}
+
+class User {
+    private Object results;
+
+    public Ref test(Object a) {
+        if (a.check()) {
+		a = a.get();
+	}
+	a.use();
+    }
+}
+
+config {
+    test {
+	Ref secretA = new Secret();
+	Ref secretB = new Secret();
+
+	Ref a = new Box(secretA, true);
+	Ref b = new Box(secretB, false);
+	Ref user = new User();
+	user.test(a);
+	user.test(b);
+    }
+}
+
+assert local(<user>, "", "User.test.a", <secretA>).
+assert !local(<user>, "", "User.test.a", <secretB>).
+
+assert didCall(<user>, <secretA>, "Secret.use").
+assert !didCall(<user>, <secretB>, "Secret.use").

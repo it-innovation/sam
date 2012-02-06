@@ -387,6 +387,36 @@ class SAMMethod {
 		//System.out.println(rule);
 		parent.model.addRule(rule);
 
+		// If the temporary variable gets assigned to, copy the result back.
+		/* local(?Caller, ?CallerInvocation, objVar, ?Value) :-
+		 *      local(?Caller, ?CallerInvocation, tmpVar, ?Value).
+		 */
+		ILiteral assignHead;
+		if (locals.containsKey(objVar)) {
+			 ITuple tuple = BASIC.createTuple(TERM.createVariable("Caller"),
+							  TERM.createVariable("CallerInvocation"),
+							  TERM.createString(expandLocal(objVar)),
+							  TERM.createVariable("Value"));
+			 assignHead = BASIC.createLiteral(true, BASIC.createAtom(localP, tuple));
+		 } else if (parent.fields.contains(objVar)) {
+			 ITuple tuple = BASIC.createTuple(TERM.createVariable("Caller"),
+							  TERM.createString(objVar),
+							  TERM.createVariable("Value"));
+			 assignHead = BASIC.createLiteral(true, BASIC.createAtom(fieldP, tuple));
+		 } else {
+			 throw new RuntimeException("Undeclared variable: " + objVar);
+		 }
+
+		rule = BASIC.createRule(
+				makeList(assignHead),
+				makeList(BASIC.createLiteral(true, BASIC.createAtom(localP, BASIC.createTuple(
+								TERM.createVariable("Caller"),
+								TERM.createVariable("CallerInvocation"),
+								TERM.createString(expandLocal(tmpVar)),
+								TERM.createVariable("Value"))))));
+		//System.out.println(rule);
+		parent.model.addRule(rule);
+
 		String oldMapping = localRedirects.get(objVar);
 		localRedirects.put(objVar, tmpVar);
 
