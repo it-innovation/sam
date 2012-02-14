@@ -221,12 +221,13 @@ public class GUI {
 						return;		// the welcome tab
 					}
 
-					if (myTabs == null) {
+					int i = mainFolder.getSelectionIndex();
+
+					if (myTabs == null || i >= myTabs.size()) {
 						// (only seems to happen on Windows)
 						return;		// still initialising
 					}
 
-					int i = mainFolder.getSelectionIndex();
 					ScenarioView view = myTabs.get(i);
 					String scenario = currentTabs.get(i);
 
