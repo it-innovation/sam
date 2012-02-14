@@ -59,27 +59,3 @@ The debug example shows that:
 
 So, if Alice tells the compiler that the output file is the compiler's billing file, the compiler will
 overwrite the billing file (and Alice won't have to pay for using the service).
-
-Comparison with Authodox
-------------------------
-
-We have actually changed the scenario slightly from the Authodox original (`<http://www.cs.ox.ac.uk/people/toby.murray/tools/authodox/doc/index.html#authodox-tutorial>`_). The Authodox tutorial says that:
-
-* The compiler will **Write** to the output file
-* The compiler will **Append** to the billing file
-
-The original problem statement (`<http://cap-lore.com/CapTheory/ConfusedDeputy.html>`_) does not mention "appending", and talks of "writing" in both cases; and while the paper does not mention the exact operating system used, under POSIX systems appending and writing would both be done using the "write" system call.
-
-This change was necessary because otherwise Authodox would not be able to detect the problem, since the compiler writes to the billing file in the baseline case and in the attack case. However, the change makes
-the example unconvincing, since it is highly unlikely that someone doing the modelling would make
-the change, unless they already knew about the problem.
-
-In SAM, this modification is not necessary. When SAM records a baseline it also records the particular
-call-site used to make each call. So, SAM doesn't just record that `compiler` called `billing.write`, it
-records that `compiler` called `billing.write` from the call-site `myLog.write()`.
-
-In the attack scenario, SAM is therefore able to detect the unexpected access. The compiler is now writing
-to the billing file from the `output.write()` call-site.
-
-Another change is that the SAM model includes the input and output files. These were omitted from the
-Authodox model for simplicity, but in SAM it's easy to add them so we do.
