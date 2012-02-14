@@ -272,11 +272,9 @@ public class SAMParser {
 
 		int i = 0;
 		for (TermDefinition term : terms) {
-			String var = term.name;
 			ITuple bodyTuple = bodyLit.getAtom().getTuple();
 
-			if ("caller".equals(var) || "target".equals(var) || "object".equals(var) ||
-			    "source".equals(var) || "sourceObject".equals(var) || "targetObject".equals(var)) {
+			if (term.type == Type.RefT) {
 				ITerm bodyTerm = bodyTuple.get(i);
 				if (positive && !(bodyTerm instanceof IConcreteTerm)) {
 					//System.out.println("Can't do arrow for variable term " + bodyTerm + " in " + ass);
