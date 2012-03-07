@@ -73,7 +73,7 @@ Ignored Tokens
   blank, comment, block_comment;
 
 Productions
-  program = toplevel+;
+  program = toplevel*;
   toplevel = {behaviour} behaviour
   	   | {config} config
 	   | {import} import
