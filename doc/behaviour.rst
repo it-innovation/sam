@@ -33,7 +33,7 @@ A type may be defined using the "class" keyword. The syntax is::
 Note: fields *must* be "private" and methods *must* be "public". Fields must
 come before constructors, which come before methods.
 
-Types are currently ignored (and treated safely as "Object").
+A TYPE can be `String`, `int` or `boolean` (for values), `Value` (matching any value type), `Ref` (for non-value types), or `Other` (any type).
 
 `PARAMS` is a comma-separated list of "TYPE NAME" pairs, as in Java.
 
@@ -79,9 +79,9 @@ of objects which could have returned true. For example::
   if (file.checkCanRead(caller)) {
       file.get();
       image.grantReadAccess(caller);
-   }
+  }
 
-Expands to::
+Expands to (see Embedding_ below for an explanation of this syntax)::
 
   file.checkCanRead(caller);
 
@@ -222,13 +222,7 @@ into one context. Doing this avoids some false positives where calls via an Unkn
 aggregated with calls made directly.
 
 
-The Value type
---------------
-Objects of type "Value" represent pure values (e.g. strings and numbers). It is not usually
-necessary to model these in SAM, but if you do need to pass them around then mark them as
-`isA("myValue", "Value")` to avoid errors about them not being objects. Values are not shown
-on the graph. They have no behaviour and cannot hold references to other objects.
-
+.. _Embedding:
 
 Embedding Datalog
 -----------------
@@ -237,19 +231,22 @@ rules. The syntax is::
 
   [TYPE] NAME = VAR :- QUERY;
 
-For example, an object that only stores value types (int, string, etc) rather than references
-can be modelled as::
+This can be read as "the assignment NAME = VAR may occur if QUERY".
 
-  class ValueStore {
-      private Object myValue;
+For example, a method that returns `true` if the given user would be permitted to call the `get` method could be written as::
 
-      public void store(Object value) {
-          myValue = value :- isA(value, "Value");
-      }
+  class File {
+    ...
+    public boolean checkCanRead(String id) {
+      boolean verified = false;
+      verified = true :-
+          grantsRole(this, ?Role, id),
+          PermittedRole("File.get", ?Role);
+      return verified;
+    }
   }
 
-(note: this is not a very realistic example, since you could achieve the same effect by just
-declaring the field as `private Value myValue`)
+That is, `verified` may be `true` if there is a role `?Role` such that this object :func:`grantsRole` `?Role` to `id`, and `?Role` is permitted to call the `File.get` method.
 
 You can use any Datalog query as the test and you can mix Java variables, Datalog variables and "special"
 variables freely. The special variables recognised are:
