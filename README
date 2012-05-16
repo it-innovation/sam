@@ -1,0 +1,27 @@
+Introduction
+
+The SERSCIS Access Modeller (SAM) takes a model of a system (e.g. a set of objects
+within a computer program or a set of machines on a network) and attempts to verify
+certain security properties about the system, by exploring all the ways access can
+propagate through the system.
+
+It is designed to handle dynamic systems (e.g. systems containing factories
+which may create new objects at runtime) and systems where behaviour of some
+of the objects is unknown or not trusted.
+
+A typical approach is to model a system initially with most objects having
+defined (trusted) behaviour, and then to explore the effects of making them
+undefined or of adding additional actors with undefined behaviour into the system.
+
+
+Documentation
+
+A full manual and tutorial is available in the "doc" directory, or from the SAM
+web site:
+
+  http://www.serscis.eu/sam/
+
+
+Legal issues
+
+See doc/index.rst for copyright and license information.
