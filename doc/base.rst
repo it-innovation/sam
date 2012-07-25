@@ -29,10 +29,6 @@ Objects
 
    This object is a reference type (it is passed by reference).
 
-.. function:: isConstant(Object object)
-
-   This object is a constant type (it is passed by value).
-
 .. function:: isA(Ref object, String type)
 
    The object has the given type. Note than an object may have multiple

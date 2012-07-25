@@ -39,7 +39,6 @@ declare field(Ref object, String fieldName, Object value).
 declare getsAccess(Ref sourceObject, Ref targetObject).
 declare isA(Ref object, String type).
 declare isRef(Ref ref).
-declare isConstant(Object object).
 declare live(Ref object).
 declare liveMethod(Ref object, String invocation, String method).
 declare local(Ref object, String invocation, String varName, Object value).
@@ -232,10 +231,6 @@ didCall(?Caller, ?Target, ?Method) :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method).
 
 initialObject(<_testDriver>, "_TestDriver").
-
-isConstant(true).
-isConstant(false).
-isConstant(?Identity) :- hasIdentity(?Object, ?Identity).
 
 /* The creator of an object is the factory that did the "new" operation. */
 didCreate(?Factory, ?Object) :-
