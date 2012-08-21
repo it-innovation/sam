@@ -123,6 +123,15 @@ public class GUI {
 
 		MenuItem reloadItem = new MenuItem(fileMenu, SWT.PUSH);
 		reloadItem.setText("&Reload\tF5");
+
+		reloadItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				System.out.println("Reloading...");
+				evaluate();
+				System.out.println("Reloaded");
+			}
+		});
+
 		// Do it this way so it works in any window
 		display.addFilter(SWT.KeyDown, new Listener() {
 			public void handleEvent(Event ev) {
@@ -311,11 +320,13 @@ public class GUI {
 					relationsMenuHeader.setEnabled(false);
 					objectsMenuHeader.setEnabled(false);
 					if (myFile == null) {
-						welcomeTab = new TabItem(mainFolder, 0);
-						welcomeTab.setText("Welcome");
-						Label label = new Label(mainFolder, 0);
-						label.setText("Open a file to start");
-						welcomeTab.setControl(label);
+						if (welcomeTab == null) {
+							welcomeTab = new TabItem(mainFolder, 0);
+							welcomeTab.setText("Welcome");
+							Label label = new Label(mainFolder, 0);
+							label.setText("Open a file to start");
+							welcomeTab.setControl(label);
+						}
 						return;
 					}
 
