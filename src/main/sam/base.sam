@@ -92,7 +92,7 @@ declare savesMethodInLocal(String method, String localVarName).
 declare callsMethodInLocal(String callSite, String localVarName).
 declare callsMethod(String callSite, String methodName).
 declare methodName(String method, String methodName).
-declare mayCallObject(Ref caller, String callerInvocation, String callSite, Object target).
+declare mayCallObject(Ref caller, String callerInvocation, String callSite, Ref target).
 declare didCreate(Ref caller, String invocation, String callSite, Ref newChild).
 declare hasConstructor(String type, String method).
 declare didGet(Ref caller, String callerInvocation, String callSite, Object resultValue).

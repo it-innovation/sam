@@ -161,7 +161,7 @@ Methods
 
 Call-sites
 ----------
-.. function:: mayCallObject(Ref caller, String callerInvocation, String callSite, Object target)
+.. function:: mayCallObject(Ref caller, String callerInvocation, String callSite, Ref target)
 
    This call invokes `Target`.
 

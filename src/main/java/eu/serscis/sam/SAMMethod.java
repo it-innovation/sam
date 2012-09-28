@@ -285,7 +285,8 @@ class SAMMethod {
 		// mayCallObject(?Caller, ?CallerInvocation, ?CallSite, ?Value) :-
 		//	isA(?Caller, ?Type),
 		//	liveMethod(?Caller, ?CallerInvocation, method),
-		//	value(?Caller, ?CallerInvocation, ?TargetVar, ?Value).
+		//	value(?Caller, ?CallerInvocation, ?TargetVar, ?Value),
+		//	isRef(?Value).
 
 		ITuple tuple = BASIC.createTuple(
 				TERM.createVariable("Caller"),
@@ -303,7 +304,10 @@ class SAMMethod {
 						TERM.createVariable("CallerInvocation"),
 						methodNameFull)));
 
-		IRule rule = BASIC.createRule(makeList(head), makeList(isA, liveMethod, getValue(callExpr.getName())));
+		ILiteral isRef = BASIC.createLiteral(true, BASIC.createAtom(isRefP, BASIC.createTuple(
+						TERM.createVariable("Value"))));
+
+		IRule rule = BASIC.createRule(makeList(head), makeList(isA, liveMethod, getValue(callExpr.getName()), isRef));
 		//System.out.println(rule);
 		parent.model.addRule(rule);
 
