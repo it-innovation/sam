@@ -129,6 +129,11 @@ Predicates
 
    This annotation indicates that all calls to the given method are OK. This is useful to annotate harmless methods.
 
+.. function:: failedCall(Ref caller, String invocation, String callSite, Ref target)
+
+   `caller` tried to invoke `target` from `callSite` (:func:`mayCallObject`), but was not able to
+   (:func:`didCall`). The GUI displays these results in the "Failed calls" tab in the object window.
+   This can be useful to understand why the baseline isn't working as expected.
 
 Debugging
 ---------

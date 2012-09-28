@@ -30,3 +30,4 @@ guiObjectTab(10, "Fields", "field/3", "object").
 guiObjectTab(20, "Local variables", "local/4", "object").
 guiObjectTab(30, "Was called", "didCall/6", "target").
 guiObjectTab(40, "Called", "didCall/6", "caller").
+guiObjectTab(50, "Failed calls", "failedCall/4", "caller").

@@ -96,3 +96,12 @@ mayCall(?Object, ?Object, "BaseUnknown.*") :- isA(?Object, "Unknown").
 error("No activation found for call") :-
 	didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?Method),
 	!didCall(?Caller, ?CallerInvocation, ?CallSite, ?Target, ?AnyContext, ?Method).
+
+// Caller's callSite would have called target if it had been possible.
+failedCall(?Caller, ?Invocation, ?CallSite, ?Target) :-
+	mayCallObject(?Caller, ?Invocation, ?CallSite, ?Target),
+	?Target != <_testDriver>,
+        !didCall(?Caller, ?Invocation, ?CallSite, ?Target, ?Method).
+
+error("Setup call failed", ?CallSite, ?Target) :-
+	failedCall(<_testDriver>, ?Invocation, ?CallSite, ?Target).

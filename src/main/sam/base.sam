@@ -61,6 +61,7 @@ declare expectFailure().
 declare hasRef(Ref object, Ref target).
 declare haveBadAccess(Ref sourceObject, Ref targetObject).
 declare missingGoodAccess(Ref sourceObject, Ref targetObject).
+declare failedCall(Ref caller, String invocation, String callSite, Ref target).
 
 declare graphNode(String node, String attrs).
 declare graphEdge(String source, String target, String attrs).
