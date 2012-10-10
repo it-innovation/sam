@@ -13,6 +13,15 @@ To get SAM (creating a command called "sam")::
 
   $ 0alias sam http://www.serscis.eu/0install/serscis-access-modeller 
 
+Mac OS X
+--------
+
+Get the 0install bundle from http://0install.net/install-mac.html (version 1.11 or later).
+
+To get SAM (creating a command called "sam") enter this command in terminal::
+
+  $ 0alias sam http://www.serscis.eu/0install/serscis-access-modeller
+
 Windows
 -------
 1. Get 0install from `0install.de <http://0install.de/downloads/?lang=en>`_.
