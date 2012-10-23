@@ -51,7 +51,15 @@ declare missingMustCall(Ref source, Ref target, String method).
 missingMustCall(?Source, ?Target, ?Method) :-
     mustCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?Method),
     !isA(?Source, "Unknown"),
+    !isA(?Target, "Unknown"),
     !didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?AnyInvocation, ?Method).
+
+// Known objects must call from the correct call-site, but can call any method on Unknown targets
+missingMustCall(?Source, ?Target, ?Method) :-
+    mustCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?Method),
+    !isA(?Source, "Unknown"),
+    isA(?Target, "Unknown"),
+    !didCall(?Source, ?SourceInvocation, ?CallSite, ?Target, ?AnyInvocation, ?AnyMethod).
 
 // Unknown objects may call from any call-site
 missingMustCall(?Source, ?Target, ?Method) :-
