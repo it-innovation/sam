@@ -1,5 +1,6 @@
+#declare scenario attacker
+
 import "includes/compose.sam".
-//import "mustCall.sam".
 
 class Delegate {
     public void test(Object file) {
@@ -24,8 +25,12 @@ config {
     }
 
     test "NotLogged" {
-        Object delegate = new Delegate();
-        //Object delegate = new Unknown();
+        Object delegate;
+#if attacker
+        delegate = new Unknown();
+#else
+        delegate = new Delegate();
+#endif
         delegate.test(logged);
     }
 }

@@ -1,5 +1,6 @@
+#declare scenario attacker
+
 import "includes/compose.sam".
-//import "mustCall.sam".
 
 class Delegate {
     public void test(Object file) {
@@ -30,8 +31,11 @@ config {
     test {
         Object delegate;
         
+#if attacker
+        delegate = new Unknown();
+#else
         delegate = new Delegate();
-        //delegate = new Unknown();
+#endif
 
         delegate.test(readOnly);
     }

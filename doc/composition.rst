@@ -47,9 +47,7 @@ during setup.
 
 The read-only proxy
 -------------------
-If we follow the usual SAM approach of saving a base-line (`File` -> `Export calls`), importing the
-resulting `mustCall.sam` file, and changing the behaviour of the delegate to `Unknown`, we discover
-that `File.write` may be called.
+Creating a second scenario where `delegate` has `Unknown` type shows that `File.write` may be called.
 
 To prevent `delegate` from calling `write`, we create a new `ReadOnly` class. Calling `readOnly` on
 a `File` returns a read-only proxy to it::
