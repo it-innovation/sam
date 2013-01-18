@@ -31,7 +31,9 @@ systems (e.g. modelling factories).</description>
 	<environment insert="doc/examples" name="SAM_EXAMPLES"/>
       </compile:implementation>
     </command>
-    <requires interface="http://repo.roscidus.com/python/sphinx"/>
+    <requires interface="http://repo.roscidus.com/python/sphinx">
+      <executable-in-path name='sphinx-build'/>
+    </requires>
     <requires compile:include-binary="true" interface="http://repo.roscidus.com/java/iris"/>
 
     <requires compile:include-binary="true" interface="http://repo.roscidus.com/java/swt">
