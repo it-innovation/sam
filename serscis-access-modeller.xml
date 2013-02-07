@@ -25,7 +25,11 @@ systems (e.g. modelling factories).</description>
 	  <environment insert="." name="GRAPHVIZ_HOME"/>
 	</requires>
 	<command name="run">
-	  <runner interface="http://repo.roscidus.com/java/openjdk-jre"/>
+	  <runner interface="http://repo.roscidus.com/java/openjdk-jre">
+	    <for-each item-from="ZEROINSTALL_EXTRA_JAVA_OPTIONS" separator=" ">
+	      <arg>${item}</arg>
+	    </for-each>
+	  </runner>
 	  <arg>eu.serscis.sam.Main</arg>
 	</command>
 	<environment insert="doc/examples" name="SAM_EXAMPLES"/>
